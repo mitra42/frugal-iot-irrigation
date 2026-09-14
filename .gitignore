@@ -1,0 +1,27 @@
+# PlatformIO build output and downloaded dependencies
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# The library. Two ways to get it, neither of them committed here:
+#   - PlatformIO downloads it into .pio/libdeps from the lib_deps line in platformio.ini
+#   - a developer working on the library too puts a SYMLINK here, which takes precedence:
+#       ln -s ../../frugal-iot-demo/lib/Frugal-IoT lib/Frugal-IoT
+lib/
+
+# Arduino IDE build output
+build/
+
+# Secrets. data/ is uploaded to the device's filesystem and holds WiFi passwords -
+# see data/README.md. Nothing under it belongs in a public repository.
+data/wifi/
+data/frugal_iot/
+
+# Local developer overrides - the file that switches the build onto lib/Frugal-IoT.
+# See "Building against a local library" in CLAUDE.md.
+platformio-local.ini
+
+# Editor and OS noise
+.vscode/
+.DS_Store
+*.swp

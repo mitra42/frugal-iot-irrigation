@@ -23,14 +23,22 @@
 // unlike two envs for the same board, where it keeps only the first.
 
 // [platformio]
-// name: Frugal-IoT OSPIT
-// description: Frugal IoT - OSPIT irrigation - sequenced soil-moisture irrigation with tank and battery interlocks
+// name: Frugal-IoT Irrigation
+// description: Solar-powered sequenced soil-moisture irrigation - a port of OSPIT onto Frugal-IoT
 // src_dir = .
-//This src_dir line should be present if your program is in xxx.ino or commented out if your program is in src/main.cpp
+// src_dir = . keeps the sketch at the top of the repo, which is what lets the SAME directory build
+// in the Arduino IDE: it needs a .ino whose name matches the folder, beside its own .cpp/.h files.
+// Arduino ignores every subdirectory except src/, so lib/, data/, scripts/ and .pio/ are invisible
+// to it.
 
 // [common]
+// Until ospit-p1 is merged into the library's main branch, build against that branch directly.
+// A developer working on the library at the same time drops a symlink at lib/Frugal-IoT (it is
+// gitignored) - PlatformIO searches the project's own lib/ before lib_deps, so the symlink wins
+// and edits to the library are picked up with no reinstall.
+// Arduino IDE users install Frugal-IoT from the Library Manager instead.
 // lib_deps =
-//     Frugal-IoT@^0.1.6
+//     https://github.com/mitra42/frugal-iot.git#ospit-p1
     // ModbusMaster (the RS485 soil probes) is a declared dependency of Frugal-IoT, so
     // lib_ldf_mode = chain pulls it in - it does not need listing here.
 
