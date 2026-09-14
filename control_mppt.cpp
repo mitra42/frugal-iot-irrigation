@@ -197,10 +197,11 @@ void Control_MPPT::setup() {
 
 /* Back the charge voltage off while the board's own heatsink is too hot.
  *
- * OSPIT subtracts its step on EVERY cycle the heatsink is over the threshold and restores the
- * whole lot when it falls below the lower one. We keep that shape - responding to "still too hot"
- * rather than assuming how much one step buys - but bound the total, which OSPIT does not: a board
- * that stays hot would otherwise walk its charge voltage down without limit.
+ * Subtracts another step on EVERY cycle the heatsink is over the threshold, and restores the whole
+ * lot when it falls below the lower one - OSPIT's shape, and deliberately NOT capped. Lowering the
+ * target does nothing until it falls below the battery's own voltage, so a cap can stop the
+ * protection engaging at all; the header explains this at length because it is easy to get wrong.
+ * The bound that does exist is a floor on the target, in computeTarget().
  *
  * With no heatsink sensor wired there is nothing to protect against and no derating is applied.
  */
@@ -209,9 +210,6 @@ void Control_MPPT::updateDerate() {
     const float t = heatsink->floatValue();
     if (t > (float)CONTROL_MPPT_DERATE_START_C) {
       derate_mv += (float)CONTROL_MPPT_DERATE_STEP_MV;
-      if (derate_mv > (float)CONTROL_MPPT_DERATE_MAX_MV) {
-        derate_mv = (float)CONTROL_MPPT_DERATE_MAX_MV;
-      }
     } else if (t < (float)CONTROL_MPPT_DERATE_RESTORE_C) {
       derate_mv = 0; // Restored in one go, as OSPIT does - the hysteresis is what stops it chattering
     }
@@ -236,6 +234,11 @@ float Control_MPPT::computeTarget() {
     }
   } // else no sensor: no correction, and `target` will simply equal `chargeend`
   t -= derate_mv;
+  if (t < (float)CONTROL_MPPT_TARGET_MIN_MV) {
+    // Below any usable battery, so the charger is already fully backed off - this only keeps the
+    // number meaningful. NOT a limit on the heatsink protection; see updateDerate().
+    t = (float)CONTROL_MPPT_TARGET_MIN_MV;
+  }
   if (t > chargeend->floatValue()) {
     // Only a cold battery can get here, and only by the coefficient. Allowed - but never let the
     // two corrections between them produce something ABOVE what the profile asked for by more
@@ -312,7 +315,9 @@ void Control_MPPT::periodically() {
        * voltage. Stays in REGULATING so it resumes fine control once back in range.
        */
       applyStep(safeStep());
-      setState("overshoot");
+      // "too hot" when this is the heatsink protection deliberately cutting charging, rather than the
+      // regulator having been surprised - otherwise a tester would report a fault that isn't one
+      setState((derate_mv > 0) ? "too hot" : "overshoot");
       phase = REGULATING;
     } else if (vp < vb) {
       // The panel is below the battery, so nothing flows into it whatever we ask for
@@ -330,13 +335,13 @@ void Control_MPPT::periodically() {
         setState("tracking");
       } else {
         regulate(vb, tgt);
-        setState("regulating");
+        setState((derate_mv > 0) ? "too hot" : "regulating");
       }
     } else if (vb > (tgt + (float)CONTROL_MPPT_ENTER_MV)) {
       // Bulk charging has brought the battery up to its voltage; hold it there instead
       phase = REGULATING;
       regulate(vb, tgt);
-      setState("regulating");
+      setState((derate_mv > 0) ? "too hot" : "regulating");
     } else if (phase == SWEEPING) {
       if ((now - phase_since) >= (uint32_t)CONTROL_MPPT_SETTLE_S) {
         /* The panel has been unloaded since the previous cycle, so this reading IS the

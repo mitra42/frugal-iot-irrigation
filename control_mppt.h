@@ -98,11 +98,25 @@
  *   voltage outright rather than extrapolating.
  *
  *   Heatsink temperature. If the board's own heatsink is too hot, back off. OSPIT subtracts
- *   heatsink_derate_step_mv from the target on EVERY cycle that the heatsink is over its
- *   threshold, and restores the lot when it falls below the lower one - with no floor, so a board
- *   that stays hot walks its charge voltage down without limit. We keep the shape, which has the
- *   merit of responding to "still too hot" rather than assuming a gain, but bound it with
- *   CONTROL_MPPT_DERATE_MAX_MV.
+ *   heatsink_derate_step_mv from the target on EVERY cycle the heatsink is over its threshold,
+ *   and restores the lot when it falls below the lower one.
+ *
+ *   That looks unbounded, and an earlier version of this file "fixed" it with a cap. The cap was
+ *   wrong and is worth explaining, because the mistake is easy to repeat. Lowering the target does
+ *   NOTHING while the battery is below it - in bulk the target is not used for current control at
+ *   all, only to decide when to start regulating. The derate begins to bite only once the target
+ *   has fallen BELOW the battery's actual voltage. So with AGM's 14.1V and a 1V cap, the target
+ *   stops at 13.1V; a discharged battery under charge sitting at 13.0V is still below that, so the
+ *   board is still in bulk, still at full current, still heating - and the protection has hit its
+ *   limit without ever engaging. The cap defeated the case it was meant to handle.
+ *
+ *   Unbounded is correct, and it is not a runaway. Once the target drops below the battery
+ *   voltage, CONTROL_MPPT_OVERSHOOT_MV sends the step to safe, current stops, the board cools, and
+ *   below the restore threshold the whole derate is dropped at once. It is an integral controller
+ *   with a reset. If the board is hot for a reason unrelated to charging - high ambient, blocked
+ *   airflow - then walking down until charging stops altogether is the right answer, not a
+ *   failure. CONTROL_MPPT_TARGET_MIN_MV exists only to stop the arithmetic reaching values that
+ *   mean nothing; it sits below any usable battery, so it never limits the protection.
  *
  * With no battery temperature sensor wired, no compensation is applied and `target` simply equals
  * `chargeend` - so set chargeend for the warmest conditions the battery will see. The published
@@ -148,8 +162,8 @@
  *   CONTROL_MPPT_HOT_LIMIT_C   (42)    battery above this uses the profile's hot-battery voltage
  *   CONTROL_MPPT_DERATE_START_C   (60) heatsink above this starts backing the target off
  *   CONTROL_MPPT_DERATE_RESTORE_C (58) and below this restores it
- *   CONTROL_MPPT_DERATE_STEP_MV   (100) by this much per cycle
- *   CONTROL_MPPT_DERATE_MAX_MV    (1000) but never more than this in total - OSPIT has no limit
+ *   CONTROL_MPPT_DERATE_STEP_MV   (100) by this much per cycle, for as long as it is too hot
+ *   CONTROL_MPPT_TARGET_MIN_MV  (10000) floor on the target, below any usable battery
  */
 
 #ifndef CONTROL_MPPT_H
@@ -250,9 +264,12 @@
 #ifndef CONTROL_MPPT_DERATE_STEP_MV
   #define CONTROL_MPPT_DERATE_STEP_MV 100
 #endif
-#ifndef CONTROL_MPPT_DERATE_MAX_MV
-  // OSPIT has no equivalent, so a board that stays hot walks its charge voltage down for ever
-  #define CONTROL_MPPT_DERATE_MAX_MV 1000
+#ifndef CONTROL_MPPT_TARGET_MIN_MV
+  /* A floor on the TARGET, not a cap on the derating - see "Temperature" above for why that
+   * distinction matters. 10V is below any usable 12V battery, so this never stops the heatsink
+   * protection from doing its job; it only keeps the arithmetic somewhere meaningful.
+   */
+  #define CONTROL_MPPT_TARGET_MIN_MV 10000
 #endif
 
 /* Charge-end voltages in millivolts, by battery chemistry - OSPIT's battery_profile_defaults().

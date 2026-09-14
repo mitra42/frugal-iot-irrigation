@@ -547,6 +547,7 @@ The **State** line tells you what it is doing in one word:
 | `sweeping` | Measuring the panel with nothing drawing from it — lasts a few seconds |
 | `tracking` | Stage 1 — filling the battery as fast as the panel allows |
 | `regulating` | Stage 2 — holding the battery at the target voltage |
+| `too hot` | The board's heatsink is too hot, so it is deliberately charging less. See below |
 | `overshoot` | The battery went well above the target, so charging was cut right back. Expect to
   see this briefly, if at all. If it stays there, tell us |
 | `dark` | The panel has nothing useful to give |
@@ -566,6 +567,19 @@ sunset, and the battery voltage close to **Target** while regulating.
 
 **Worth checking while you are there:** if the battery warms up during the day, **Target** should
 go *down* a little — about 30 mV for each degree. That is the temperature correction working.
+
+### About `too hot`
+
+If the board's own heatsink goes over 60 °C, the board lowers **Target** by 0.1 V every ten
+seconds for as long as it stays hot. At first nothing visible happens — charging continues — but
+once **Target** has come down past the battery's actual voltage, charging cuts right back and the
+board cools. Below 58 °C everything is restored at once.
+
+So `too hot` with a **Target** well under the battery voltage is the protection working, not a fault.
+It is only worth reporting if it happens **often**, or if the board never cools down again.
+
+**Please tell us** if you see `too hot` at all: how hot the heatsink got, what the weather was, and
+whether the board recovered by itself.
 
 ## Step I4 — Check it stops
 
