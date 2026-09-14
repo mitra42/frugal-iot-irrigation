@@ -234,6 +234,19 @@ void setup() {
       mppt->panel->wireTo(frugal_iot.messages->path("panel/panel"));
     #endif
     mppt->battery->wireTo(frugal_iot.messages->path("battery/battery"));
+    #ifdef OSPIT_ONEWIRE_PIN
+      mppt->batttemp->wireTo(frugal_iot.messages->path("batttemp/batttemp"));
+      /* The heatsink reading comes from whichever sensor this board actually has: a DS18B20
+       * on the 1-Wire bus, or the diode pair on an ADC pin. Both write the same meaning, and
+       * only one is ever compiled - see question 4 in HARDWARE-QUESTIONS.md.
+       */
+      #ifndef OSPIT_HEATSINK_PIN
+        mppt->heatsink->wireTo(frugal_iot.messages->path("pcbtemp/pcbtemp"));
+      #endif
+    #endif
+    #ifdef OSPIT_HEATSINK_PIN
+      mppt->heatsink->wireTo(frugal_iot.messages->path("heatsink/heatsink"));
+    #endif
   #endif
 
   /* ---- Display ---------------------------------------------------------------------------

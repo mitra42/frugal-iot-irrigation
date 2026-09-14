@@ -63,16 +63,50 @@
  *   panel below the battery, or Voc barely above it -> dark. See CONTROL_MPPT_IDLE_STEP.
  *   automatic switched off                     -> whatever step a person last asked for.
  *
- * What it does NOT yet have, and what that means:
+ * ---------------------------------------------------------------------------------------------
+ * Two stages: bulk, then absorption
  *
- *   - No temperature compensation of the charge-end voltage. Lead-acid wants roughly -30 mV/degC
- *     from 25 degC; charging a hot battery to a cold battery's voltage overcharges it. Until P5.4
- *     the charge-end voltage is fixed, so set it for the warmest conditions the battery will see
- *     rather than the coldest.
- *   - No fine regulation. This is a bang-bang controller: it charges at the tracked point until
- *     the battery reaches the limit, then stops. A regulated charger instead eases off as it
- *     approaches. The practical effect is that the battery will oscillate slowly around the
- *     charge-end voltage rather than settling on it. Not harmful, not ideal, and it is P5.4.
+ * TRACKING is the bulk stage - take whatever the panel will give, at the maximum power point.
+ * That is right until the battery approaches the voltage it should be charged to; past that,
+ * pushing more current in overcharges it. So once the battery rises CONTROL_MPPT_ENTER_MV above
+ * the target the controller switches to REGULATING, where it stops chasing maximum power and
+ * instead nudges the step up or down to HOLD the battery at the target. It returns to bulk when
+ * the battery has fallen CONTROL_MPPT_EXIT_MV below the target - a wide gap, because a load
+ * switching on should not be mistaken for the battery discharging.
+ *
+ * The regulator is proportional and slew-limited rather than the single step OSPIT moves:
+ *
+ *     delta = error / CONTROL_MPPT_REGULATE_MV_PER_STEP, clamped to CONTROL_MPPT_MAX_SLEW
+ *
+ * because OSPIT regulates every 600 ms against a reading it takes itself, while this runs once a
+ * wake cycle against the battery sensor's reading - roughly ten seconds. One step per cycle would
+ * take most of an hour to cross the range. If field testing shows it oscillating, lower the gain
+ * or the slew; if it is sluggish, raise them. Both are build flags.
+ *
+ * CONTROL_MPPT_OVERSHOOT_MV is the backstop that makes the slow loop safe: past that much above
+ * the target the controller stops arguing and goes straight to the safe step. Whatever the gain
+ * is doing, the battery cannot be held far above its charge voltage.
+ *
+ * ---------------------------------------------------------------------------------------------
+ * Temperature
+ *
+ * Two corrections, both of which LOWER the voltage the battery is charged to:
+ *
+ *   Battery temperature. Lead-acid wants about -30 mV per degree above 25 C (per cell-string; the
+ *   figure is per profile). A hot battery charged to a cold battery's voltage gases and loses
+ *   water. Above CONTROL_MPPT's hot limit the target is clamped to the profile's hot-battery
+ *   voltage outright rather than extrapolating.
+ *
+ *   Heatsink temperature. If the board's own heatsink is too hot, back off. OSPIT subtracts
+ *   heatsink_derate_step_mv from the target on EVERY cycle that the heatsink is over its
+ *   threshold, and restores the lot when it falls below the lower one - with no floor, so a board
+ *   that stays hot walks its charge voltage down without limit. We keep the shape, which has the
+ *   merit of responding to "still too hot" rather than assuming a gain, but bound it with
+ *   CONTROL_MPPT_DERATE_MAX_MV.
+ *
+ * With no battery temperature sensor wired, no compensation is applied and `target` simply equals
+ * `chargeend` - so set chargeend for the warmest conditions the battery will see. The published
+ * `target` always says what is actually being aimed at.
  *
  * AUTOMATIC IS OFF BY DEFAULT. Nothing here has run on real hardware. It stays off until someone
  * has worked through TESTING.md and is satisfied the readings are right. Turning it on is one
@@ -103,8 +137,19 @@
  *   CONTROL_MPPT_SWEEP_S       (300)   seconds between open-circuit measurements
  *   CONTROL_MPPT_SETTLE_S      (2)     shortest gap between unloading the panel and believing it
  *   CONTROL_MPPT_IDLE_STEP     (29)    what to write when the panel is dark
- *   CONTROL_MPPT_RESUME_MV     (200)   how far below the limit the battery must fall to restart
  *   CONTROL_MPPT_VOC_MARGIN_MV (500)   Voc must beat the battery by this to be worth charging from
+ *   CONTROL_MPPT_ENTER_MV      (50)    above target -> leave bulk, start regulating
+ *   CONTROL_MPPT_EXIT_MV       (300)   below target -> back to bulk tracking
+ *   CONTROL_MPPT_DEADBAND_MV   (30)    no correction while the error is smaller than this
+ *   CONTROL_MPPT_REGULATE_MV_PER_STEP (50) battery error one DAC step is assumed to correct.
+ *                              A GUESS - the first thing to tune if regulation misbehaves.
+ *   CONTROL_MPPT_MAX_SLEW      (8)     most steps to move in one cycle
+ *   CONTROL_MPPT_OVERSHOOT_MV  (300)   past this above target, go straight to the safe step
+ *   CONTROL_MPPT_HOT_LIMIT_C   (42)    battery above this uses the profile's hot-battery voltage
+ *   CONTROL_MPPT_DERATE_START_C   (60) heatsink above this starts backing the target off
+ *   CONTROL_MPPT_DERATE_RESTORE_C (58) and below this restores it
+ *   CONTROL_MPPT_DERATE_STEP_MV   (100) by this much per cycle
+ *   CONTROL_MPPT_DERATE_MAX_MV    (1000) but never more than this in total - OSPIT has no limit
  */
 
 #ifndef CONTROL_MPPT_H
@@ -159,11 +204,55 @@
    */
   #define CONTROL_MPPT_IDLE_STEP 29
 #endif
-#ifndef CONTROL_MPPT_RESUME_MV
-  #define CONTROL_MPPT_RESUME_MV 200
-#endif
 #ifndef CONTROL_MPPT_VOC_MARGIN_MV
   #define CONTROL_MPPT_VOC_MARGIN_MV 500
+#endif
+#ifndef CONTROL_MPPT_ENTER_MV
+  #define CONTROL_MPPT_ENTER_MV 50
+#endif
+#ifndef CONTROL_MPPT_EXIT_MV
+  #define CONTROL_MPPT_EXIT_MV 300
+#endif
+#ifndef CONTROL_MPPT_DEADBAND_MV
+  #define CONTROL_MPPT_DEADBAND_MV 30
+#endif
+#ifndef CONTROL_MPPT_REGULATE_MV_PER_STEP
+  /* How much battery error one DAC step is assumed to correct.
+   *
+   * A GUESS. The real figure depends on the panel, the battery's internal resistance and the state
+   * of charge, and it is not constant. Too large and regulation is sluggish; too small and it
+   * oscillates. CONTROL_MPPT_MAX_SLEW and CONTROL_MPPT_OVERSHOOT_MV bound what a bad guess can do.
+   */
+  #define CONTROL_MPPT_REGULATE_MV_PER_STEP 50
+#endif
+#ifndef CONTROL_MPPT_MAX_SLEW
+  /* Most steps to move in one cycle.
+   *
+   * Note this does NOT bind at the default settings: ENTER_MV, EXIT_MV and OVERSHOOT_MV between
+   * them hold the error regulation ever sees to +/-300 mV, and 300/50 is 6, under this limit. It
+   * is here for a re-tuned system - lowering REGULATE_MV_PER_STEP after field testing is exactly
+   * what would make a single correction large enough to matter.
+   */
+  #define CONTROL_MPPT_MAX_SLEW 8
+#endif
+#ifndef CONTROL_MPPT_OVERSHOOT_MV
+  #define CONTROL_MPPT_OVERSHOOT_MV 300
+#endif
+#ifndef CONTROL_MPPT_HOT_LIMIT_C
+  #define CONTROL_MPPT_HOT_LIMIT_C 42
+#endif
+#ifndef CONTROL_MPPT_DERATE_START_C
+  #define CONTROL_MPPT_DERATE_START_C 60
+#endif
+#ifndef CONTROL_MPPT_DERATE_RESTORE_C
+  #define CONTROL_MPPT_DERATE_RESTORE_C 58
+#endif
+#ifndef CONTROL_MPPT_DERATE_STEP_MV
+  #define CONTROL_MPPT_DERATE_STEP_MV 100
+#endif
+#ifndef CONTROL_MPPT_DERATE_MAX_MV
+  // OSPIT has no equivalent, so a board that stays hot walks its charge voltage down for ever
+  #define CONTROL_MPPT_DERATE_MAX_MV 1000
 #endif
 
 /* Charge-end voltages in millivolts, by battery chemistry - OSPIT's battery_profile_defaults().
@@ -173,11 +262,18 @@
  * persists like any other setting. OSPIT carries an is_custom_profile flag and a parallel set of
  * variables to achieve the same thing.
  *
- * These are the charge-end figures only. The temperature coefficient and the hot-battery cap from
- * the same table arrive with the temperature compensation in P5.4; a setting that nothing reads
- * is worse than no setting.
+ * Each row carries the charge-end voltage, the temperature coefficient and the hot-battery cap,
+ * and selecting a profile writes all three.
  */
 enum Control_MPPT_Profile { MPPT_AGM = 0, MPPT_GEL = 1, MPPT_FLOODED = 2, MPPT_LIFEPO4 = 3 };
+
+// One row of the profile table - see MPPT_PROFILES in control_mppt.cpp
+struct Control_MPPT_Chemistry {
+  const char* name;
+  float chargeend_mv;      // At 25 C
+  float tempcoeff_mv_per_c;
+  float hotcharge_mv;      // Once the battery is over CONTROL_MPPT_HOT_LIMIT_C
+};
 
 class Control_MPPT : public Control {
   public:
@@ -185,9 +281,14 @@ class Control_MPPT : public Control {
     INuint16* step;       // DAC step. Written by the algorithm when automatic, by a person when not
     INbool*   automatic;  // OFF by default - see "Safety" above
     INuint16* profile;    // Battery chemistry; selecting one writes chargeend
-    INfloat*  chargeend;  // Stop charging at this battery voltage, mV
+    INfloat*  chargeend;  // Charge to this battery voltage at 25 C, mV
+    INfloat*  tempcoeff;  // mV to subtract per degree above 25 C; 0 for chemistries that do not care
+    INfloat*  hotcharge;  // Voltage to use instead once the battery is over the hot limit, mV
     INfloat*  panel;      // Wire from panel/panel, mV
     INfloat*  battery;    // Wire from battery/battery, mV
+    INfloat*  batttemp;   // Wire from a battery-mounted probe, C. Unwired means no compensation
+    INfloat*  heatsink;   // Wire from the board's own temperature, C. Unwired means no derating
+    OUTfloat* target;     // The voltage actually being aimed at now, after both corrections, mV
     OUTfloat* vmpp;       // Panel voltage we PREDICT the current step asks for - a guess
     OUTfloat* voc;        // Open-circuit voltage from the last sweep, mV
     OUTfloat* dacvolts;   // Wire to an Actuator_Analog's set path; volts at the DAC pin
@@ -198,23 +299,25 @@ class Control_MPPT : public Control {
     /* Where the sweep has got to. Not persisted and not in RTC memory: after any restart the right
      * thing is to sweep again, and the safe step is the right thing to hold until we have.
      */
-    enum Phase { TRACKING, SWEEPING };
+    enum Phase { TRACKING, SWEEPING, REGULATING };
     Phase phase = TRACKING;
     uint32_t phase_since = 0;  // sleepSafeSecs() when the current phase began
     uint32_t last_sweep = 0;   // sleepSafeSecs() of the last completed sweep; 0 = never
-    bool     full = false;     // Latched at the charge-end voltage, cleared RESUME_MV below it
-    uint16_t profile_applied = 0; // Which profile's charge-end voltage is currently loaded
+    float    derate_mv = 0;    // Accumulated heatsink derating, bounded by DERATE_MAX_MV
+    uint16_t profile_applied = 0; // Which profile's voltages are currently loaded
     bool     configured = false;  // False while setup() is replaying stored settings - see act()
     void act() override;
     void dispatch(System_Message &msg) override;
     void applyStep(uint16_t s);      // Clamp, publish vmpp and dacvolts
     void setState(const char* s);
+    void updateDerate();             // Heatsink protection - see "Temperature" above
+    float computeTarget();           // chargeend, corrected for battery and heatsink temperature
+    void regulate(float vb, float tgt); // Proportional, slew-limited nudge towards the target
     uint16_t safeStep() const;       // Highest step - least current. See the top of this file
     uint16_t maxStep() const;
     float vmppForStep(uint16_t s) const;
     float voltsForStep(uint16_t s) const;
     uint16_t stepForVmpp(float v) const;
-    float chargeEndFor(uint16_t p) const;
 };
 
 #endif // OSPIT_MPPT_DAC_PIN

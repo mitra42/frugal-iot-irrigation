@@ -485,35 +485,53 @@ on, the board does not charge on its own at all.
 
 ## What it will do
 
-Every five minutes it briefly stops charging, measures the solar panel's voltage with nothing
-drawing from it, and then asks for about 80% of that — which for most panels is close to the
-voltage that gives the most power. In between, it holds that setting. It stops charging when the
-battery reaches the **Charge end** voltage, and starts again when the battery has fallen 0.2 V
-below it.
+Charging happens in two stages, like any proper charger.
 
-It will also stop, and stay stopped, if either the panel or the battery reading goes missing.
+**Stage 1, filling the battery.** Every five minutes it briefly stops charging, measures the solar
+panel's voltage with nothing drawing from it, and then asks for about 80% of that — which for most
+panels is close to the voltage that gives the most power. In between, it holds that setting.
+
+**Stage 2, holding it full.** Once the battery has come up to the voltage it should be charged to,
+the board stops chasing maximum power and instead makes small adjustments to *hold* the battery at
+that voltage. If the battery later drops well below it — a pump switching on, or the sun going in
+— it goes back to stage 1.
+
+It also **lowers the voltage it charges to when things are warm**: a warm battery must be charged
+to a slightly lower voltage than a cold one, and if the board's own heatsink gets hot it backs off
+further. The **Target** line always shows the voltage actually being aimed at, so you can see this
+happening.
+
+It will stop, and stay stopped, if either the panel or the battery reading goes missing.
 
 ## Step I1 — Set the battery type
 
 In the **Charge Control** section, set **Battery type** to match your battery:
 
-| Type | Enter | Charge end voltage it sets |
-|---|---|---|
-| AGM | 0 | 14.10 V |
-| GEL | 1 | 14.10 V |
-| Flooded (wet, with caps you can open to add water) | 2 | 14.40 V |
-| LiFePO4 / Lithium | 3 | 14.20 V |
+| Type | Enter | Charge end | Lower by, per °C above 25 | If battery is over 42 °C |
+|---|---|---|---|---|
+| AGM | 0 | 14.10 V | 30 mV | 13.10 V |
+| GEL | 1 | 14.10 V | 24 mV | 13.10 V |
+| Flooded (wet, with caps you can open to add water) | 2 | 14.40 V | 30 mV | 13.30 V |
+| LiFePO4 / Lithium | 3 | 14.20 V | none | 13.60 V |
 
-Choosing a type fills in **Charge end** for you. You can then change **Charge end** yourself if
-you have been told a different figure for your battery — your value will be kept.
+Choosing a type fills in all three of those for you. You can then change any of them yourself if
+you have been told different figures for your battery — your values will be kept.
 
 **If you are not sure what battery you have, stop and ask.** Charging a battery to the wrong
 voltage will shorten its life, and in the worst case can make a sealed battery vent gas.
 
-**One thing to know:** this version does **not** yet adjust the charge voltage for how warm the
-battery is, which a full charge controller does. A battery that gets hot should be charged to a
-slightly lower voltage. If your battery lives somewhere hot, set **Charge end** about 0.3 V lower
-than the table says, and tell us the temperature it reaches.
+## Step I1b — Make sure a temperature sensor is on the battery
+
+The correction only happens if the board can measure the battery's temperature. In Part G you
+assigned one of the temperature sensors to **Battery Temperature** — that sensor should be
+physically attached to the battery, touching its case, not hanging in the air.
+
+Check the **Charge Control** section shows a sensible **Battery temp**.
+
+**If it shows `--`**, no correction is applied and **Target** will simply equal **Charge end**.
+That is safe in cool weather but not in hot. If you cannot fit a sensor to the battery, set
+**Charge end** about 0.3 V lower than the table says, and tell us the temperature the battery
+reaches.
 
 ## Step I2 — Switch it on
 
@@ -526,23 +544,28 @@ The **State** line tells you what it is doing in one word:
 | State | Meaning |
 |---|---|
 | `manual` | Automatic is off; it is using the number you typed |
-| `sweeping` | Measuring the panel with nothing drawing from it — lasts one cycle |
-| `tracking` | Charging at the voltage it worked out |
+| `sweeping` | Measuring the panel with nothing drawing from it — lasts a few seconds |
+| `tracking` | Stage 1 — filling the battery as fast as the panel allows |
+| `regulating` | Stage 2 — holding the battery at the target voltage |
+| `overshoot` | The battery went well above the target, so charging was cut right back. Expect to
+  see this briefly, if at all. If it stays there, tell us |
 | `dark` | The panel has nothing useful to give |
-| `full` | The battery has reached the charge-end voltage |
 | `no reading` | A sensor has stopped reporting. It has stopped charging on purpose |
 
 **Please record, over one sunny day:**
 
-| Time | State | Open circuit (V) | Panel target (V) | Panel measured (V) | Battery (V) |
-|---|---|---|---|---|---|
-| mid-morning | | | | | |
-| midday | | | | | |
-| mid-afternoon | | | | | |
-| after sunset | | | | | |
+| Time | State | Battery temp (°C) | Target (V) | Open circuit (V) | Panel measured (V) | Battery measured (V) |
+|---|---|---|---|---|---|---|
+| mid-morning | | | | | | |
+| midday | | | | | | |
+| mid-afternoon | | | | | | |
+| after sunset | | | | | | |
 
-**What we expect:** `tracking` for most of the day, `dark` after sunset, and the measured panel
-voltage close to **Panel target**. If the battery gets full you will see `full`.
+**What we expect:** `tracking` in the morning, `regulating` once the battery fills, `dark` after
+sunset, and the battery voltage close to **Target** while regulating.
+
+**Worth checking while you are there:** if the battery warms up during the day, **Target** should
+go *down* a little — about 30 mV for each degree. That is the temperature correction working.
 
 ## Step I4 — Check it stops
 
@@ -553,6 +576,13 @@ tell us and we will suggest another way.
 **You should see:** the state changes to `no reading` within a minute, and charging stops.
 
 Reconnect it. Within a minute it should go back to `tracking`.
+
+## Step I5 — Things worth telling us either way
+
+- Does the battery voltage sit steadily at **Target** while `regulating`, or does it swing up and
+  down? Swinging means we need to adjust how strongly the board corrects, which is one number.
+- Does it ever show `overshoot`? For how long?
+- Does the heatsink get hot enough that **Target** drops? If so, how hot, and what was the weather?
 
 ## If anything looks wrong
 

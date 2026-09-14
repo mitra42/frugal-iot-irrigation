@@ -13,11 +13,12 @@
 
 // Charge-end voltage in mV per chemistry - OSPIT's battery_profile_defaults(). See the note on
 // the enum in control_mppt.h for why there is no "Custom" entry.
-static const struct { const char* name; float chargeend_mv; } MPPT_PROFILES[] = {
-  { "AGM",     14100 },
-  { "GEL",     14100 },
-  { "Flooded", 14400 },
-  { "LiFePO4", 14200 },
+static const Control_MPPT_Chemistry MPPT_PROFILES[] = {
+  //  name        charge@25C   mV/degC   hot-battery
+  { "AGM",         14100,        30,       13100 },
+  { "GEL",         14100,        24,       13100 },
+  { "Flooded",     14400,        30,       13300 },
+  { "LiFePO4",     14200,         0,       13600 }, // Lithium does not want the compensation
 };
 #define MPPT_PROFILE_COUNT ((uint16_t)(sizeof(MPPT_PROFILES) / sizeof(MPPT_PROFILES[0])))
 
@@ -34,6 +35,12 @@ Control_MPPT::Control_MPPT(const char* const id, const char* const name)
   chargeend(new INfloat(id, "chargeend", "Charge end", MPPT_PROFILES[MPPT_AGM].chargeend_mv, 0,
     DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max,
     DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max, DEFAULT_mppt_chargeend_color, false)),
+  tempcoeff(new INfloat(id, "tempcoeff", "Temp coefficient", MPPT_PROFILES[MPPT_AGM].tempcoeff_mv_per_c, 0,
+    DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max,
+    DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max, DEFAULT_mppt_tempcoeff_color, false)),
+  hotcharge(new INfloat(id, "hotcharge", "Hot battery", MPPT_PROFILES[MPPT_AGM].hotcharge_mv, 0,
+    DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max,
+    DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max, DEFAULT_mppt_hotcharge_color, false)),
   /* NAN, so a node with nothing wired to these reads as "no reading" and stays safe - rather than
    * believing the panel and the battery are both sitting at zero volts, which would look like a
    * flat battery in the dark and is exactly the state we least want to guess about.
@@ -44,6 +51,17 @@ Control_MPPT::Control_MPPT(const char* const id, const char* const name)
   battery(new INfloat(id, "battery", "Battery", NAN, 0,
     DEFAULT_mppt_battery_min, DEFAULT_mppt_battery_max,
     DEFAULT_mppt_battery_min, DEFAULT_mppt_battery_max, DEFAULT_mppt_battery_color, true)),
+  /* NAN, so an unwired temperature simply means "no correction" rather than "0 degrees", which
+   * would subtract 25 x the coefficient and undercharge the battery by most of a volt.
+   */
+  batttemp(new INfloat(id, "batttemp", "Battery temp", NAN, 1,
+    DEFAULT_mppt_batttemp_min, DEFAULT_mppt_batttemp_max,
+    DEFAULT_mppt_batttemp_min, DEFAULT_mppt_batttemp_max, DEFAULT_mppt_batttemp_color, true)),
+  heatsink(new INfloat(id, "heatsink", "Heatsink temp", NAN, 1,
+    DEFAULT_mppt_heatsink_min, DEFAULT_mppt_heatsink_max,
+    DEFAULT_mppt_heatsink_min, DEFAULT_mppt_heatsink_max, DEFAULT_mppt_heatsink_color, true)),
+  target(new OUTfloat(id, "target", "Target", NAN, 0,
+    DEFAULT_mppt_target_min, DEFAULT_mppt_target_max, DEFAULT_mppt_target_color, false)),
   vmpp(new OUTfloat(id, "vmpp", "Panel target", NAN, 2,
     DEFAULT_mppt_vmpp_min, DEFAULT_mppt_vmpp_max, DEFAULT_mppt_vmpp_color, false)),
   voc(new OUTfloat(id, "voc", "Open circuit", NAN, 0,
@@ -56,8 +74,13 @@ Control_MPPT::Control_MPPT(const char* const id, const char* const name)
   inputs.push_back(automatic);
   inputs.push_back(profile);
   inputs.push_back(chargeend);
+  inputs.push_back(tempcoeff);
+  inputs.push_back(hotcharge);
   inputs.push_back(panel);
   inputs.push_back(battery);
+  inputs.push_back(batttemp);
+  inputs.push_back(heatsink);
+  outputs.push_back(target);
   outputs.push_back(vmpp);
   outputs.push_back(voc);
   outputs.push_back(dacvolts);
@@ -105,9 +128,7 @@ float Control_MPPT::voltsForStep(uint16_t s) const {
   return ((float)ACTUATOR_ANALOG_VREF * (float)s) / (float)maxStep();
 }
 
-float Control_MPPT::chargeEndFor(uint16_t p) const {
-  return MPPT_PROFILES[(p < MPPT_PROFILE_COUNT) ? p : MPPT_AGM].chargeend_mv;
-}
+
 
 // ---- output ---------------------------------------------------------------------------
 
@@ -156,7 +177,11 @@ void Control_MPPT::dispatch(System_Message &msg) {
 void Control_MPPT::act() {
   if (configured && (profile->value != profile_applied)) {
     profile_applied = profile->value;
-    chargeend->set(chargeEndFor(profile_applied));
+    const Control_MPPT_Chemistry& c =
+      MPPT_PROFILES[(profile_applied < MPPT_PROFILE_COUNT) ? profile_applied : MPPT_AGM];
+    chargeend->set(c.chargeend_mv);
+    tempcoeff->set(c.tempcoeff_mv_per_c);
+    hotcharge->set(c.hotcharge_mv);
   }
 }
 
@@ -168,10 +193,102 @@ void Control_MPPT::setup() {
   setState(automatic->value ? "starting" : "manual");
 }
 
+// ---- temperature ----------------------------------------------------------------------
+
+/* Back the charge voltage off while the board's own heatsink is too hot.
+ *
+ * OSPIT subtracts its step on EVERY cycle the heatsink is over the threshold and restores the
+ * whole lot when it falls below the lower one. We keep that shape - responding to "still too hot"
+ * rather than assuming how much one step buys - but bound the total, which OSPIT does not: a board
+ * that stays hot would otherwise walk its charge voltage down without limit.
+ *
+ * With no heatsink sensor wired there is nothing to protect against and no derating is applied.
+ */
+void Control_MPPT::updateDerate() {
+  if (heatsink->isValid()) {
+    const float t = heatsink->floatValue();
+    if (t > (float)CONTROL_MPPT_DERATE_START_C) {
+      derate_mv += (float)CONTROL_MPPT_DERATE_STEP_MV;
+      if (derate_mv > (float)CONTROL_MPPT_DERATE_MAX_MV) {
+        derate_mv = (float)CONTROL_MPPT_DERATE_MAX_MV;
+      }
+    } else if (t < (float)CONTROL_MPPT_DERATE_RESTORE_C) {
+      derate_mv = 0; // Restored in one go, as OSPIT does - the hysteresis is what stops it chattering
+    }
+  }
+}
+
+/* The voltage actually being aimed at: the configured charge-end voltage, corrected downwards for
+ * a warm battery and for a hot heatsink. Never corrected upwards - both corrections only ever
+ * reduce it, so a failed sensor cannot cause overcharging.
+ */
+float Control_MPPT::computeTarget() {
+  float t = chargeend->floatValue();
+  if (batttemp->isValid()) {
+    const float bt = batttemp->floatValue();
+    if (bt > (float)CONTROL_MPPT_HOT_LIMIT_C) {
+      // Past the limit, clamp outright rather than extrapolating a coefficient beyond its range
+      t = hotcharge->floatValue();
+    } else {
+      // Positive coefficient, subtracted: hotter battery, lower voltage. Below 25 C this raises
+      // the target, which is correct and is what the chemistry wants.
+      t -= (bt - 25.0f) * tempcoeff->floatValue();
+    }
+  } // else no sensor: no correction, and `target` will simply equal `chargeend`
+  t -= derate_mv;
+  if (t > chargeend->floatValue()) {
+    // Only a cold battery can get here, and only by the coefficient. Allowed - but never let the
+    // two corrections between them produce something ABOVE what the profile asked for by more
+    // than the cold-battery term, which is what this guards against if a coefficient is mis-set.
+    const float ceiling = chargeend->floatValue() + (25.0f * tempcoeff->floatValue());
+    if (t > ceiling) {
+      t = ceiling;
+    }
+  }
+  return t;
+}
+
+// ---- regulation -----------------------------------------------------------------------
+
+/* Nudge the step so the battery sits at the target.
+ *
+ * Proportional and slew-limited rather than OSPIT's single step, because this runs once a wake
+ * cycle (~10s) against the battery sensor's reading, where OSPIT runs every 600ms against a
+ * reading it takes itself. One step per cycle would take most of an hour to cross the range.
+ *
+ * Raising the step asks for a higher panel voltage and so draws LESS current - see the header. So
+ * a battery ABOVE the target needs a HIGHER step.
+ */
+void Control_MPPT::regulate(float vb, float tgt) {
+  const float err = vb - tgt;
+  int32_t s = (int32_t)step->value;
+  if (std::fabs(err) > (float)CONTROL_MPPT_DEADBAND_MV) {
+    int32_t delta = (int32_t)(err / (float)CONTROL_MPPT_REGULATE_MV_PER_STEP);
+    if (delta == 0) {
+      delta = (err > 0) ? 1 : -1; // Outside the deadband, always move at least one step
+    }
+    if (delta > (int32_t)CONTROL_MPPT_MAX_SLEW) {
+      delta = (int32_t)CONTROL_MPPT_MAX_SLEW;
+    } else if (delta < -(int32_t)CONTROL_MPPT_MAX_SLEW) {
+      delta = -(int32_t)CONTROL_MPPT_MAX_SLEW;
+    }
+    s += delta;
+    if (s < 0) {
+      s = 0;
+    } else if (s > (int32_t)maxStep()) {
+      s = (int32_t)maxStep();
+    }
+    applyStep((uint16_t)s);
+  } // else inside the deadband - leave it alone, which is what stops it hunting
+}
+
 // ---- the algorithm --------------------------------------------------------------------
 
 void Control_MPPT::periodically() {
   const uint32_t now = frugal_iot.powercontroller->sleepSafeSecs();
+  updateDerate();
+  const float tgt = computeTarget();
+  target->set(tgt);
 
   if (!automatic->value) {
     setState("manual"); // A person owns `step`; do not touch it
@@ -187,23 +304,39 @@ void Control_MPPT::periodically() {
     const float vp = panel->floatValue();
     const float vb = battery->floatValue();
 
-    // Charge limit, latched with hysteresis so it does not chatter at the threshold
-    if (vb >= chargeend->floatValue()) {
-      full = true;
-    } else if (vb < (chargeend->floatValue() - (float)CONTROL_MPPT_RESUME_MV)) {
-      full = false;
-    }
-
-    if (full) {
+    if (vb > (tgt + (float)CONTROL_MPPT_OVERSHOOT_MV)) {
+      /* Well past the target. Stop arguing about gains and go straight to the safe step.
+       *
+       * This is what makes a once-a-cycle regulator safe: whatever CONTROL_MPPT_REGULATE_MV_PER_STEP
+       * is doing, and however badly it is guessed, the battery cannot be held far above its charge
+       * voltage. Stays in REGULATING so it resumes fine control once back in range.
+       */
       applyStep(safeStep());
-      setState("full");
-      phase = TRACKING;
+      setState("overshoot");
+      phase = REGULATING;
     } else if (vp < vb) {
       // The panel is below the battery, so nothing flows into it whatever we ask for
       applyStep(CONTROL_MPPT_IDLE_STEP);
       voc->setInvalid();
       setState("dark");
       phase = TRACKING;
+    } else if (phase == REGULATING) {
+      if (vb < (tgt - (float)CONTROL_MPPT_EXIT_MV)) {
+        /* The battery has fallen well below the target - a load came on, or the sun went in.
+         * Back to taking whatever the panel will give. The gap is deliberately wide so a load
+         * switching on is not mistaken for the battery needing bulk charge again.
+         */
+        phase = TRACKING;
+        setState("tracking");
+      } else {
+        regulate(vb, tgt);
+        setState("regulating");
+      }
+    } else if (vb > (tgt + (float)CONTROL_MPPT_ENTER_MV)) {
+      // Bulk charging has brought the battery up to its voltage; hold it there instead
+      phase = REGULATING;
+      regulate(vb, tgt);
+      setState("regulating");
     } else if (phase == SWEEPING) {
       if ((now - phase_since) >= (uint32_t)CONTROL_MPPT_SETTLE_S) {
         /* The panel has been unloaded since the previous cycle, so this reading IS the
