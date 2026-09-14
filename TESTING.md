@@ -570,16 +570,21 @@ go *down* a little — about 30 mV for each degree. That is the temperature corr
 
 ### About `too hot`
 
-If the board's own heatsink goes over 60 °C, the board lowers **Target** by 0.1 V every ten
-seconds for as long as it stays hot. At first nothing visible happens — charging continues — but
-once **Target** has come down past the battery's actual voltage, charging cuts right back and the
-board cools. Below 58 °C everything is restored at once.
+The board protects itself in two ways.
 
-So `too hot` with a **Target** well under the battery voltage is the protection working, not a fault.
-It is only worth reporting if it happens **often**, or if the board never cools down again.
+**Above 55 °C** it starts gently reducing **Target**, by 0.1 V every ten seconds. Near the end of
+charging this is enough to settle the board down without stopping.
 
-**Please tell us** if you see `too hot` at all: how hot the heatsink got, what the weather was, and
-whether the board recovered by itself.
+**At 60 °C it stops charging immediately** — within ten seconds, whatever else is going on — and
+stays stopped until the heatsink has cooled to 53 °C. The state shows `too hot` throughout. This is
+the one that matters: a gradual reduction cannot keep the temperature under a limit, because the
+board goes on heating for as long as it goes on charging.
+
+So `too hot` is the protection working, not a fault. It is worth reporting if it happens **often**,
+or if the board never cools down again.
+
+**Please tell us** if you see `too hot` at all: how hot the heatsink got, what the weather was,
+whether the board was in the sun, and how long it took to cool down and start again.
 
 ## Step I4 — Check it stops
 

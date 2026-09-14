@@ -97,26 +97,35 @@
  *   water. Above CONTROL_MPPT's hot limit the target is clamped to the profile's hot-battery
  *   voltage outright rather than extrapolating.
  *
- *   Heatsink temperature. If the board's own heatsink is too hot, back off. OSPIT subtracts
- *   heatsink_derate_step_mv from the target on EVERY cycle the heatsink is over its threshold,
- *   and restores the lot when it falls below the lower one.
+ *   Heatsink temperature. TWO mechanisms, and the distinction matters:
  *
- *   That looks unbounded, and an earlier version of this file "fixed" it with a cap. The cap was
- *   wrong and is worth explaining, because the mistake is easy to repeat. Lowering the target does
- *   NOTHING while the battery is below it - in bulk the target is not used for current control at
- *   all, only to decide when to start regulating. The derate begins to bite only once the target
- *   has fallen BELOW the battery's actual voltage. So with AGM's 14.1V and a 1V cap, the target
- *   stops at 13.1V; a discharged battery under charge sitting at 13.0V is still below that, so the
- *   board is still in bulk, still at full current, still heating - and the protection has hit its
- *   limit without ever engaging. The cap defeated the case it was meant to handle.
+ *   A HARD CUT at CONTROL_MPPT_MAX_C. At or above it, charging stops at once - one cycle, whatever
+ *   the battery is doing - and stays stopped until the board has cooled to
+ *   CONTROL_MPPT_DERATE_RESTORE_C. This is what actually guarantees the temperature stays under
+ *   the limit, and it is the only thing that can: any gradual scheme keeps charging while it works,
+ *   and a board that is still charging is still heating.
  *
- *   Unbounded is correct, and it is not a runaway. Once the target drops below the battery
- *   voltage, CONTROL_MPPT_OVERSHOOT_MV sends the step to safe, current stops, the board cools, and
- *   below the restore threshold the whole derate is dropped at once. It is an integral controller
- *   with a reset. If the board is hot for a reason unrelated to charging - high ambient, blocked
- *   airflow - then walking down until charging stops altogether is the right answer, not a
- *   failure. CONTROL_MPPT_TARGET_MIN_MV exists only to stop the arithmetic reaching values that
- *   mean nothing; it sits below any usable battery, so it never limits the protection.
+ *   A PROGRESSIVE BACKOFF from the lower CONTROL_MPPT_DERATE_START_C, which subtracts
+ *   CONTROL_MPPT_DERATE_STEP_MV from the target on each cycle still above it. This is OSPIT's
+ *   mechanism and it is kept because near the end of charge it works well - the target is already
+ *   close to the battery voltage, so a small reduction smoothly reduces current and may settle the
+ *   board without ever reaching the hard limit.
+ *
+ *   Why it cannot be the only mechanism is worth spelling out, because it is not obvious and this
+ *   file got it wrong twice. Lowering the target does NOTHING while the battery is below it - in
+ *   bulk the target is not used for current control at all, only to decide when to start
+ *   regulating. So the backoff only bites once the target has been walked down BELOW the battery's
+ *   actual voltage, and everything above that is dead travel. Measured, at a 10s cycle and 100mV
+ *   per step: with the battery near full it cuts in about 30s, but with a discharged battery at
+ *   12.4V it takes about 180s - and the discharged battery is the one drawing the most current and
+ *   making the most heat. The response was slowest exactly when it was needed most. Hence the hard
+ *   cut, which has no dead travel at all.
+ *
+ *   (An even earlier version capped the total backoff, which was worse still: the cap stopped the
+ *   target above a discharged battery's voltage, so the protection never engaged at all.)
+ *
+ *   CONTROL_MPPT_TARGET_MIN_MV exists only to stop the arithmetic reaching values that mean
+ *   nothing; it sits below any usable battery, so it never limits anything.
  *
  * With no battery temperature sensor wired, no compensation is applied and `target` simply equals
  * `chargeend` - so set chargeend for the warmest conditions the battery will see. The published
@@ -160,9 +169,10 @@
  *   CONTROL_MPPT_MAX_SLEW      (8)     most steps to move in one cycle
  *   CONTROL_MPPT_OVERSHOOT_MV  (300)   past this above target, go straight to the safe step
  *   CONTROL_MPPT_HOT_LIMIT_C   (42)    battery above this uses the profile's hot-battery voltage
- *   CONTROL_MPPT_DERATE_START_C   (60) heatsink above this starts backing the target off
- *   CONTROL_MPPT_DERATE_RESTORE_C (58) and below this restores it
- *   CONTROL_MPPT_DERATE_STEP_MV   (100) by this much per cycle, for as long as it is too hot
+ *   CONTROL_MPPT_MAX_C            (60) at or above, charging stops at once and stays stopped
+ *   CONTROL_MPPT_DERATE_START_C   (55) above this, start backing the target off gradually
+ *   CONTROL_MPPT_DERATE_RESTORE_C (53) below this, clear both the backoff and the hard cut
+ *   CONTROL_MPPT_DERATE_STEP_MV   (100) how much to back off per cycle
  *   CONTROL_MPPT_TARGET_MIN_MV  (10000) floor on the target, below any usable battery
  */
 
@@ -255,11 +265,20 @@
 #ifndef CONTROL_MPPT_HOT_LIMIT_C
   #define CONTROL_MPPT_HOT_LIMIT_C 42
 #endif
+#ifndef CONTROL_MPPT_MAX_C
+  /* The temperature the board must not exceed. OSPIT uses 60 as the point where it STARTS backing
+   * off; here it is the point where charging stops outright, and the gradual backoff begins lower.
+   */
+  #define CONTROL_MPPT_MAX_C 60
+#endif
 #ifndef CONTROL_MPPT_DERATE_START_C
-  #define CONTROL_MPPT_DERATE_START_C 60
+  #define CONTROL_MPPT_DERATE_START_C 55
 #endif
 #ifndef CONTROL_MPPT_DERATE_RESTORE_C
-  #define CONTROL_MPPT_DERATE_RESTORE_C 58
+  // Clears both the gradual backoff and the hard cut. Well below MAX_C on purpose: having stopped
+  // charging because the board was too hot, resume only once it is properly cool, not 2 degrees
+  // later - otherwise it cycles on and off around the limit.
+  #define CONTROL_MPPT_DERATE_RESTORE_C 53
 #endif
 #ifndef CONTROL_MPPT_DERATE_STEP_MV
   #define CONTROL_MPPT_DERATE_STEP_MV 100
@@ -320,7 +339,8 @@ class Control_MPPT : public Control {
     Phase phase = TRACKING;
     uint32_t phase_since = 0;  // sleepSafeSecs() when the current phase began
     uint32_t last_sweep = 0;   // sleepSafeSecs() of the last completed sweep; 0 = never
-    float    derate_mv = 0;    // Accumulated heatsink derating, bounded by DERATE_MAX_MV
+    float    derate_mv = 0;    // Accumulated gradual backoff, in mV off the target
+    bool     overheated = false; // Latched at CONTROL_MPPT_MAX_C, cleared at DERATE_RESTORE_C
     uint16_t profile_applied = 0; // Which profile's voltages are currently loaded
     bool     configured = false;  // False while setup() is replaying stored settings - see act()
     void act() override;

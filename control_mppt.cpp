@@ -197,21 +197,32 @@ void Control_MPPT::setup() {
 
 /* Back the charge voltage off while the board's own heatsink is too hot.
  *
- * Subtracts another step on EVERY cycle the heatsink is over the threshold, and restores the whole
- * lot when it falls below the lower one - OSPIT's shape, and deliberately NOT capped. Lowering the
- * target does nothing until it falls below the battery's own voltage, so a cap can stop the
- * protection engaging at all; the header explains this at length because it is easy to get wrong.
- * The bound that does exist is a floor on the target, in computeTarget().
+ * Two mechanisms - see "Temperature" in the header for why one is not enough:
  *
- * With no heatsink sensor wired there is nothing to protect against and no derating is applied.
+ *   at or above MAX_C          latch `overheated`, which stops charging on this very cycle
+ *   above DERATE_START_C       back the target off another step, a gentler attempt to settle the
+ *                              board before it ever reaches MAX_C
+ *   below DERATE_RESTORE_C     clear both
+ *
+ * Between RESTORE and START nothing changes, which is the hysteresis that stops it chattering.
+ *
+ * With no heatsink sensor wired there is nothing to protect against, and nothing is applied - a
+ * board with no sensor must not be left permanently latched off by a reading that never arrives.
  */
 void Control_MPPT::updateDerate() {
-  if (heatsink->isValid()) {
+  if (!heatsink->isValid()) {
+    overheated = false;
+  } else {
     const float t = heatsink->floatValue();
-    if (t > (float)CONTROL_MPPT_DERATE_START_C) {
-      derate_mv += (float)CONTROL_MPPT_DERATE_STEP_MV;
+    if (t >= (float)CONTROL_MPPT_MAX_C) {
+      overheated = true; // Latched - only cooling to DERATE_RESTORE_C clears it
     } else if (t < (float)CONTROL_MPPT_DERATE_RESTORE_C) {
-      derate_mv = 0; // Restored in one go, as OSPIT does - the hysteresis is what stops it chattering
+      overheated = false;
+      derate_mv = 0;
+    }
+    if (!overheated && (t > (float)CONTROL_MPPT_DERATE_START_C)) {
+      // No point accumulating while already cut off - it would only delay the restart
+      derate_mv += (float)CONTROL_MPPT_DERATE_STEP_MV;
     }
   }
 }
@@ -303,6 +314,17 @@ void Control_MPPT::periodically() {
     applyStep(safeStep());
     setState("no reading");
     phase = TRACKING;
+  } else if (overheated) {
+    /* Over the temperature limit. Stop now, on this cycle, whatever the battery is doing.
+     *
+     * Ahead of every charging decision on purpose: a gradual reduction cannot bound a temperature,
+     * because the board goes on heating for as long as it goes on charging. Back to TRACKING so
+     * that when it does resume it takes a fresh open-circuit measurement rather than trusting one
+     * from before it got hot.
+     */
+    applyStep(safeStep());
+    setState("too hot");
+    phase = TRACKING;
   } else {
     const float vp = panel->floatValue();
     const float vb = battery->floatValue();
@@ -370,7 +392,14 @@ void Control_MPPT::periodically() {
       setState("sweeping");
       phase = SWEEPING;
       phase_since = now;
-    } // else holding the tracked step - nothing to do
+    } else {
+      /* Holding the tracked step between sweeps. Nothing to change - but the state has to be set
+       * anyway, because coming back from "too hot" or "no reading" lands here and would otherwise
+       * leave the old word showing until the next sweep, minutes later. The state line is the
+       * first thing anyone looks at; a stale one is worse than no one at all.
+       */
+      setState("tracking");
+    }
   }
 }
 
