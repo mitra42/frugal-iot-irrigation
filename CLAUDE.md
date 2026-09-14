@@ -78,7 +78,7 @@ not.
 | `sensor_tank.{h,cpp}` | resistive float sender as a percentage |
 | `control_oled_ospit.{h,cpp}` | three display pages in a carousel |
 | `sensor_heatsink.{h,cpp}` | heatsink temperature from a diode pair, if the board has one |
-| `control_mppt.{h,cpp}` | solar charge control - manual only so far; the board-revision Vmpp cascade lives here |
+| `control_mppt.{h,cpp}` | solar charge control - fractional-Voc tracking; the board-revision Vmpp cascade lives here |
 | `platformio.ini` | the pin map for each board, and every build flag |
 | `TESTING.md` | commissioning a real board, written for someone who is not a developer |
 | `HARDWARE-QUESTIONS.md` | things only someone holding the board can answer |
@@ -96,6 +96,13 @@ not.
   because `OUTbool::set()` only sends on a change.
 - **Modbus slave ids start at 2.** Address 1 is the factory default every probe ships with and has
   to keep meaning "not yet provisioned".
+- **The MPPT DAC is an inverse throttle** — a HIGHER step asks for a higher panel voltage, leaves
+  the panel nearer open circuit, and so charges LESS. The safe fallback is therefore the top of the
+  range, not zero, and every path in `Control_MPPT` that is not a deliberate decision to charge
+  ends there. Getting this backwards means charging hardest when something has gone wrong.
+- **`mppt/automatic` is off by default.** None of the charge control has run on hardware. It stays
+  off until someone has been through `TESTING.md`; the setting is persisted, so it is turned on
+  once.
 
 ## Testing without hardware
 

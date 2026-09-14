@@ -121,7 +121,7 @@ void setup() {
 
   /* ---- Charge controller instrumentation (P5.1) -------------------------------------------
    *
-   * MEASUREMENT ONLY. Nothing here drives the charger - that is P5.2 onwards. The point of doing
+   * MEASUREMENT ONLY - the charge control below is what acts on these. The point of the split is
    * it separately is that every one of these numbers can be checked against a multimeter before
    * any code acts on it, and a charge controller working from a wrong reading damages a battery.
    *
@@ -215,20 +215,25 @@ void setup() {
   s3->valve->wireTo(frugal_iot.messages->setPath("valve3/on"));
 
   #ifdef OSPIT_MPPT_DAC_PIN
-    /* ---- Solar charge control, by hand (P5.2) ----------------------------------------------
+    /* ---- Solar charge control ---------------------------------------------------------------
      *
-     * The DAC tells the board's charge circuit what voltage to hold the solar panel at. Nothing
-     * tracks anything yet - a person sets `mppt/step` and watches what the panel and battery do.
-     * That is the measurement Part H of TESTING.md collects, and it is what the tracking loop in
-     * P5.3/P5.4 will be built on.
+     * The DAC tells the board's charge circuit what voltage to hold the solar panel at.
+     * Control_MPPT finds the best voltage by briefly unloading the panel, measuring its
+     * open-circuit voltage and then asking for about 80% of it - see control_mppt.h.
      *
-     * Control_MPPT starts at the step that charges LEAST, because the DAC is an inverse throttle
-     * and the safe fallback is therefore the top of the range, not the bottom. See control_mppt.h.
+     * AUTOMATIC IS OFF BY DEFAULT, so out of the box a person sets `mppt/step` by hand and watches
+     * what happens - that is Part H of TESTING.md. Switch `mppt/automatic` on once the readings
+     * have been checked against a meter. Either way it starts at the step that charges LEAST,
+     * because the DAC is an inverse throttle and the safe fallback is the top of the range.
      */
     frugal_iot.actuators->add(new Actuator_Analog("analog", "Charge DAC", OSPIT_MPPT_DAC_PIN));
     Control_MPPT* mppt = new Control_MPPT("mppt", "Charge Control");
     frugal_iot.controls->add(mppt);
     mppt->dacvolts->wireTo(frugal_iot.messages->setPath("analog/volts"));
+    #ifdef OSPIT_PANEL_PIN
+      mppt->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+    #endif
+    mppt->battery->wireTo(frugal_iot.messages->path("battery/battery"));
   #endif
 
   /* ---- Display ---------------------------------------------------------------------------

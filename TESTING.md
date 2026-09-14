@@ -475,3 +475,86 @@ When you have finished, set **DAC step** back to **255**.
 **If the panel voltage does not change at all** no matter what you type: tell us before doing
 anything else. Either the connection to the charge circuit is not what we think it is, or that
 part of the board works differently on your version.
+
+---
+
+# Part I — Letting it charge by itself
+
+Only do this **after** Part H, and only if Part H's numbers looked sensible. Until you switch this
+on, the board does not charge on its own at all.
+
+## What it will do
+
+Every five minutes it briefly stops charging, measures the solar panel's voltage with nothing
+drawing from it, and then asks for about 80% of that — which for most panels is close to the
+voltage that gives the most power. In between, it holds that setting. It stops charging when the
+battery reaches the **Charge end** voltage, and starts again when the battery has fallen 0.2 V
+below it.
+
+It will also stop, and stay stopped, if either the panel or the battery reading goes missing.
+
+## Step I1 — Set the battery type
+
+In the **Charge Control** section, set **Battery type** to match your battery:
+
+| Type | Enter | Charge end voltage it sets |
+|---|---|---|
+| AGM | 0 | 14.10 V |
+| GEL | 1 | 14.10 V |
+| Flooded (wet, with caps you can open to add water) | 2 | 14.40 V |
+| LiFePO4 / Lithium | 3 | 14.20 V |
+
+Choosing a type fills in **Charge end** for you. You can then change **Charge end** yourself if
+you have been told a different figure for your battery — your value will be kept.
+
+**If you are not sure what battery you have, stop and ask.** Charging a battery to the wrong
+voltage will shorten its life, and in the worst case can make a sealed battery vent gas.
+
+**One thing to know:** this version does **not** yet adjust the charge voltage for how warm the
+battery is, which a full charge controller does. A battery that gets hot should be charged to a
+slightly lower voltage. If your battery lives somewhere hot, set **Charge end** about 0.3 V lower
+than the table says, and tell us the temperature it reaches.
+
+## Step I2 — Switch it on
+
+Set **Automatic** to on.
+
+## Step I3 — Watch what it says it is doing
+
+The **State** line tells you what it is doing in one word:
+
+| State | Meaning |
+|---|---|
+| `manual` | Automatic is off; it is using the number you typed |
+| `sweeping` | Measuring the panel with nothing drawing from it — lasts one cycle |
+| `tracking` | Charging at the voltage it worked out |
+| `dark` | The panel has nothing useful to give |
+| `full` | The battery has reached the charge-end voltage |
+| `no reading` | A sensor has stopped reporting. It has stopped charging on purpose |
+
+**Please record, over one sunny day:**
+
+| Time | State | Open circuit (V) | Panel target (V) | Panel measured (V) | Battery (V) |
+|---|---|---|---|---|---|
+| mid-morning | | | | | |
+| midday | | | | | |
+| mid-afternoon | | | | | |
+| after sunset | | | | | |
+
+**What we expect:** `tracking` for most of the day, `dark` after sunset, and the measured panel
+voltage close to **Panel target**. If the battery gets full you will see `full`.
+
+## Step I4 — Check it stops
+
+This checks the most important safety behaviour. With the sun on the panel and the state showing
+`tracking`, **disconnect the wire from the solar panel voltage sensor** — or if that is not easy,
+tell us and we will suggest another way.
+
+**You should see:** the state changes to `no reading` within a minute, and charging stops.
+
+Reconnect it. Within a minute it should go back to `tracking`.
+
+## If anything looks wrong
+
+Set **Automatic** back to off. That returns control to you and the board goes to its gentlest
+setting. Nothing is damaged by leaving it off.
