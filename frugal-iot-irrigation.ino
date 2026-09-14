@@ -35,6 +35,7 @@
 #include "sensor_tank.h"
 #include "control_oled_ospit.h"
 #include "sensor_heatsink.h"
+#include "control_mppt.h"
 
 // Change the parameters here to match your ...
 // organization, project, device name, description
@@ -212,6 +213,23 @@ void setup() {
   Control_Sector* s3 = irr->addSector("sector3", "Sector 3");
   s3->moisture->wireTo(frugal_iot.messages->path("soil3/humidity"));
   s3->valve->wireTo(frugal_iot.messages->setPath("valve3/on"));
+
+  #ifdef OSPIT_MPPT_DAC_PIN
+    /* ---- Solar charge control, by hand (P5.2) ----------------------------------------------
+     *
+     * The DAC tells the board's charge circuit what voltage to hold the solar panel at. Nothing
+     * tracks anything yet - a person sets `mppt/step` and watches what the panel and battery do.
+     * That is the measurement Part H of TESTING.md collects, and it is what the tracking loop in
+     * P5.3/P5.4 will be built on.
+     *
+     * Control_MPPT starts at the step that charges LEAST, because the DAC is an inverse throttle
+     * and the safe fallback is therefore the top of the range, not the bottom. See control_mppt.h.
+     */
+    frugal_iot.actuators->add(new Actuator_Analog("analog", "Charge DAC", OSPIT_MPPT_DAC_PIN));
+    Control_MPPT* mppt = new Control_MPPT("mppt", "Charge Control");
+    frugal_iot.controls->add(mppt);
+    mppt->dacvolts->wireTo(frugal_iot.messages->setPath("analog/volts"));
+  #endif
 
   /* ---- Display ---------------------------------------------------------------------------
    *

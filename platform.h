@@ -162,6 +162,16 @@
     // give two different answers to the same question. Question 4 in HARDWARE-QUESTIONS.md asks
     // the tester to look for the diodes; uncomment if they are there and the DS18B20 is not.
 // #define OSPIT_HEATSINK_PIN 35
+    // --- solar charge control (P5.2 - set by hand, nothing tracks yet) ---
+    // DAC channel 1. Channel 2 is GPIO26, which this board uses as valve 1, so there is only one.
+#define OSPIT_MPPT_DAC_PIN 25
+    // Which panel-voltage range the charge circuit can ask for. With neither of these set nor a
+    // CONTROL_MPPT_BOARD_FF_1_0 / _1_1 flag, the v1.2 figures are used - the most recent board, so
+    // a new one needs nothing here. Question 1 in HARDWARE-QUESTIONS.md asks which board it is.
+// #define CONTROL_MPPT_BOARD_FF_1_0
+// #define CONTROL_MPPT_BOARD_FF_1_1
+// #define CONTROL_MPPT_VMPP_MIN 12.86 // give BOTH of these or NEITHER - control_mppt.h #errors
+// #define CONTROL_MPPT_VMPP_MAX 25.15
     // --- battery, for the low-voltage interlock ---
 #define SENSOR_BATTERY_PIN 33
     // OSPIT's own divider: 1k/15k, the 0.0625 ratio in mp2.lua's Voutmeasure(), so a factor of 16.

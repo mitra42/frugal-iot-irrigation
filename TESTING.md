@@ -340,18 +340,35 @@ same to the software, so it has to be told which is which — **once**, and it r
    sensors found, showing long codes like `28a1b2c3d4e5f601`. That code is printed into the
    sensor at the factory and never changes.
 
-To work out which is which:
+### The easy way: connect them one at a time
+
+If you can unplug the sensors, this is much easier than guessing, because at each step the code
+that has just **appeared** is certainly the sensor you have just plugged in.
+
+1. Disconnect all three sensors.
+2. Connect **one**. Wait about a minute.
+3. One code now appears in the drop-down lists. Choose it under the name that matches where that
+   sensor is physically attached — for example, the one clipped to the battery goes under
+   **Battery Temperature**. The choice is remembered, and survives switching the board off.
+4. Connect the **second** sensor. Wait a minute. A second code appears. Assign it the same way.
+5. Connect the **third**. You do not have to do anything: with only one name left unassigned and
+   only one sensor unclaimed, the board matches them up by itself.
+
+Write down each code and where that sensor is, so you have a record.
+
+### The other way: if they are already all connected
+
+If unplugging them is difficult, you can find each one by warming it:
 
 1. Hold **one** sensor in your closed hand for a minute, or warm it gently. Do not use a flame.
 2. Watch the three temperature readings. The one that rises is the sensor you are holding.
-3. In the drop-down for the **correct name**, choose the code that just moved. For example, if you
-   are holding the sensor that is clipped to the battery, choose that code under
-   **Battery Temperature**.
+3. In the drop-down for the **correct name**, choose the code that just moved.
 4. Repeat for each sensor.
 
 **Please record:** each code and where that sensor is physically attached.
 
-**If there is only one sensor connected,** it is assigned automatically and there is nothing to do.
+**If there is only one sensor connected in total,** it is assigned automatically and there is
+nothing to do.
 
 ## Step G3 — Sanity-check the temperatures
 
@@ -372,15 +389,89 @@ question.
 
 ---
 
-# Part H — Setting the charger by hand (not yet — for information)
+# Part H — Setting the charger by hand
 
-This is the step that will tell us most, and it needs software that does not exist yet.
+**This is the most valuable measurement in this document.** It tells us how the number our
+software sets relates to what the hardware actually does, which is the one thing we cannot work
+out without your board.
 
-We will add a control that lets you set the charger to about ten different settings by hand. At
-each setting you will record the solar panel voltage and the battery voltage with your meter — about
-twenty numbers, taken on one sunny day with the battery not already full.
+The board controls charging by telling the solar charge circuit what voltage to hold the solar
+panel at. Our software sets that as a number from **0 to 255**. We believe — but have not been
+able to check — that:
 
-That single table tells us the relationship between what the software asks for and what the
-hardware does, which is the one thing we cannot work out without your board.
+- **0** asks for the lowest panel voltage, which draws the **most** charging current
+- **255** asks for the highest panel voltage, which draws the **least**
 
-Answering [HARDWARE-QUESTIONS.md](HARDWARE-QUESTIONS.md) before then will save a lot of guessing.
+So the number works backwards from what most people expect, and confirming that is part of the
+point of this test.
+
+## Before you start
+
+**Conditions you need:**
+
+- A **sunny day**, with the sun on the panel, and ideally not much cloud moving across.
+- A battery that is **not already full** — early in the day is best. A full battery will not accept
+  charge whatever we ask for, and the test will show nothing.
+- About 30 minutes.
+
+**Safety.** Do not disconnect the battery while the solar panel is connected. The battery is what
+absorbs the panel's power; without it the charge circuit has nowhere to put it.
+
+**This test cannot harm the battery.** Every setting asks for *less* charging than the panel could
+give, or the same. Nothing here can overcharge anything. If you are worried at any point, set the
+number back to **255**, which is the gentlest setting.
+
+## Step H1 — Find the control
+
+On the board's page, find the section called **Charge Control**. It has:
+
+- **DAC step** — the box you type in, 0 to 255
+- **Panel target** — what the software *predicts* the panel voltage will be. **This is a guess.**
+  Checking it against your meter is exactly what this test does.
+- **DAC volts** — an internal value; ignore it.
+
+It starts at 255.
+
+## Step H2 — Work through the settings
+
+For each number in the table below:
+
+1. Type it into **DAC step** and send it.
+2. **Wait 30 seconds** for things to settle.
+3. Measure the **solar panel** voltage with your meter, at the board's panel terminals.
+4. Measure the **battery** voltage with your meter, at the battery terminals.
+5. Write down both, and what the page shows under **Panel target**.
+
+| DAC step | Panel target says (V) | Panel measured (V) | Battery measured (V) |
+|---|---|---|---|
+| 255 | | | |
+| 230 | | | |
+| 200 | | | |
+| 170 | | | |
+| 140 | | | |
+| 110 | | | |
+| 80 | | | |
+| 50 | | | |
+| 25 | | | |
+| 0 | | | |
+
+Please also note **roughly what the weather was doing** — full sun, thin cloud, and whether it
+changed while you worked through the table.
+
+## Step H3 — Put it back
+
+When you have finished, set **DAC step** back to **255**.
+
+## What we will learn
+
+- Whether the panel voltage follows the step at all, and in which direction.
+- Whether **Panel target** matches your measurements — if it is consistently out by the same
+  proportion, our arithmetic has one wrong number in it, which is easy to correct.
+- Where it stops responding. We expect the top of the range to be unreachable, and this shows
+  whether that is so and by how much.
+- Whether the battery voltage rises as you go towards 0, which is what "more charging current"
+  should look like.
+
+**If the panel voltage does not change at all** no matter what you type: tell us before doing
+anything else. Either the connection to the charge circuit is not what we think it is, or that
+part of the board works differently on your version.
