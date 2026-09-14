@@ -77,6 +77,7 @@ not.
 | `control_irrigation.{h,cpp}` | `Control_Irrigation` (the sequencer) and `Control_Sector` |
 | `sensor_tank.{h,cpp}` | resistive float sender as a percentage |
 | `control_oled_ospit.{h,cpp}` | three display pages in a carousel |
+| `sensor_heatsink.{h,cpp}` | heatsink temperature from a diode pair, if the board has one |
 | `platformio.ini` | the pin map for each board, and every build flag |
 | `TESTING.md` | commissioning a real board, written for someone who is not a developer |
 | `HARDWARE-QUESTIONS.md` | things only someone holding the board can answer |

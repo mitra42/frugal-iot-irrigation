@@ -34,6 +34,7 @@
 #include "control_irrigation.h"
 #include "sensor_tank.h"
 #include "control_oled_ospit.h"
+#include "sensor_heatsink.h"
 
 // Change the parameters here to match your ...
 // organization, project, device name, description
@@ -113,7 +114,54 @@ void setup() {
 
   // Resistive float sender in the tank. Publishes "nan" if no sender is fitted, which is NOT
   // treated as an empty tank - see sensor_tank.h.
-  frugal_iot.sensors->add(new Sensor_Tank("tank", "Water tank", OSPIT_TANK_PIN, true));
+  #ifdef OSPIT_TANK_PIN
+    frugal_iot.sensors->add(new Sensor_Tank("tank", "Water tank", OSPIT_TANK_PIN, true));
+  #endif
+
+  /* ---- Charge controller instrumentation (P5.1) -------------------------------------------
+   *
+   * MEASUREMENT ONLY. Nothing here drives the charger - that is P5.2 onwards. The point of doing
+   * it separately is that every one of these numbers can be checked against a multimeter before
+   * any code acts on it, and a charge controller working from a wrong reading damages a battery.
+   *
+   * Each is behind its own #define, so a board can be instrumented one piece at a time as the
+   * questions in HARDWARE-QUESTIONS.md get answered.
+   */
+  #ifdef OSPIT_PANEL_PIN
+    /* Solar panel voltage.
+     *
+     * Sensor_Voltage rather than a class of its own - it is the same job as the battery reading
+     * with a different divider. The diode offset is in millivolts AT THE PIN, so the drop at the
+     * panel is divided down: 300 mV through a 28:1 divider is about 11. Negative because the
+     * panel is HIGHER than the pin suggests. Set OSPIT_PANEL_DIODE_MV to 0 if D6 has been replaced
+     * by a wire on your board - see question 2 in HARDWARE-QUESTIONS.md.
+     */
+    frugal_iot.sensors->add(new Sensor_Voltage("panel", "Solar Panel", OSPIT_PANEL_PIN,
+      OSPIT_PANEL_DIVIDER, DEFAULT_panel_panel_min, DEFAULT_panel_panel_max,
+      -(OSPIT_PANEL_DIODE_MV / OSPIT_PANEL_DIVIDER), DEFAULT_panel_panel_color, true));
+  #endif
+
+  #ifdef OSPIT_HEATSINK_PIN
+    // The diode-pair heatsink sensor. Most boards seem to use a DS18B20 for this instead, in which
+    // case leave OSPIT_HEATSINK_PIN undefined and the class is not compiled at all.
+    frugal_iot.sensors->add(new Sensor_Heatsink("heatsink", "Heatsink", OSPIT_HEATSINK_PIN, true));
+  #endif
+
+  #ifdef OSPIT_ONEWIRE_PIN
+    /* Up to three DS18B20 temperature probes on one shared wire.
+     *
+     * They are told apart by the unique id burned into each probe, not by position, so which is
+     * which survives unplugging them - see "1-Wire" in the library's CLAUDE.md. With exactly one
+     * probe on the bus it binds itself; with several, bind them from the captive portal, and the
+     * choice is remembered.
+     *
+     * This is OSPIT's owids.lua/owread.lua arrangement, which maps the same three ids to
+     * airtemp, battery_temperature and heatsink_temperature.
+     */
+    frugal_iot.sensors->add(new Sensor_DS18B20("airtemp", "Air Temperature", OSPIT_ONEWIRE_PIN, true));
+    frugal_iot.sensors->add(new Sensor_DS18B20("batttemp", "Battery Temperature", OSPIT_ONEWIRE_PIN, true));
+    frugal_iot.sensors->add(new Sensor_DS18B20("pcbtemp", "Board Temperature", OSPIT_ONEWIRE_PIN, true));
+  #endif
 
   // ---- Battery interlock ----------------------------------------------------------------
   /* Reproduces OSPIT's low_voltage_disconnect: stop irrigating when the battery is too low.
@@ -141,7 +189,9 @@ void setup() {
   // ---- Irrigation ------------------------------------------------------------------------
   Control_Irrigation* irr = new Control_Irrigation("irrigation", "Irrigation");
   frugal_iot.controls->add(irr);
-  irr->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+  #ifdef OSPIT_TANK_PIN
+    irr->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+  #endif
   #ifdef OSPIT_PUMP_PIN
     irr->pump->wireTo(frugal_iot.messages->setPath("pump/on"));
   #endif
@@ -177,7 +227,9 @@ void setup() {
     soilPage->moisture1->wireTo(frugal_iot.messages->path("soil1/humidity"));
     soilPage->moisture2->wireTo(frugal_iot.messages->path("soil2/humidity"));
     soilPage->moisture3->wireTo(frugal_iot.messages->path("soil3/humidity"));
-    soilPage->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+    #ifdef OSPIT_TANK_PIN
+      soilPage->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+    #endif
     soilPage->active->wireTo(frugal_iot.messages->path("irrigation/active"));
   #endif
 

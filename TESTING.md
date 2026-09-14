@@ -298,16 +298,89 @@ deliberate: the board will not open a valve it has no measurement for.
 
 ---
 
-# Part G — Solar charging (not yet — for information)
+# Part G — The charge controller's own measurements
 
-The solar charge control is not in the software yet. When it is, these steps will be added:
+The board can measure its solar panel and its own temperature. **None of this controls anything** —
+the software only reads and reports. Controlling the charging comes later, and it will not be added
+until these readings have been checked against your meter, because a charger working from a wrong
+reading can damage a battery.
 
-- **G1** Measure the solar panel voltage and compare with the board's reading, as in Part E.
-- **G2** Identify which temperature sensor is which (there may be up to three).
-- **G3** The important one: we will add a control that lets you set the charger by hand to about
-  ten different settings. At each setting you record the panel voltage and the battery voltage.
-  That table of twenty numbers, taken on one sunny day, tells us more about the board than
-  anything else in this document.
+## Step G1 — The solar panel voltage
 
-If you are able to answer the questions in [HARDWARE-QUESTIONS.md](HARDWARE-QUESTIONS.md) before
-then, it will save a lot of guessing.
+**Safety first.** A solar panel in daylight is live and cannot be switched off. Do not touch the
+bare metal of the panel terminals. Measure at the board's terminals, with the panel connected.
+
+1. Set your multimeter to **DC volts**.
+2. Measure across the board's **solar panel** input terminals.
+3. Read **Solar Panel** on the board's page. It is in millivolts, so 18.4 V appears as about
+   `18400`.
+
+Do this **three times on the same day**:
+
+| When | Meter (V) | Board (mV) |
+|---|---|---|
+| Early morning, sun just reaching the panel | | |
+| Middle of the day, full sun | | |
+| Panel covered with a cloth or cardboard | | |
+
+**What we are looking for:** whether the board's number tracks the meter, and whether the
+difference stays the same size or grows as the voltage rises.
+
+**If the board reads roughly zero all day** while your meter shows a real voltage, the panel is
+probably connected to a different terminal than we assumed. Photograph the connections.
+
+## Step G2 — Which temperature sensor is which
+
+The board can have up to three temperature sensors on one shared pair of wires. They all look the
+same to the software, so it has to be told which is which — **once**, and it remembers.
+
+1. On the board's page you should see **Air Temperature**, **Battery Temperature** and
+   **Board Temperature**. Some may show `--`, meaning nothing is assigned to them yet.
+2. If more than one sensor is connected, each of those three has a **drop-down list** of the
+   sensors found, showing long codes like `28a1b2c3d4e5f601`. That code is printed into the
+   sensor at the factory and never changes.
+
+To work out which is which:
+
+1. Hold **one** sensor in your closed hand for a minute, or warm it gently. Do not use a flame.
+2. Watch the three temperature readings. The one that rises is the sensor you are holding.
+3. In the drop-down for the **correct name**, choose the code that just moved. For example, if you
+   are holding the sensor that is clipped to the battery, choose that code under
+   **Battery Temperature**.
+4. Repeat for each sensor.
+
+**Please record:** each code and where that sensor is physically attached.
+
+**If there is only one sensor connected,** it is assigned automatically and there is nothing to do.
+
+## Step G3 — Sanity-check the temperatures
+
+With everything at room temperature and the board not working hard, all the sensors should read
+within a degree or two of each other, and within a degree or two of the room.
+
+**Please record:** the three readings, and the actual room temperature if you can measure it.
+
+**If one reads about −127,** that sensor is not answering — check its wiring.
+
+## Step G4 — The heatsink (only if question 4 applies)
+
+If your board has the **pair of small diodes** near the heatsink rather than a temperature sensor
+(see question 4 in [HARDWARE-QUESTIONS.md](HARDWARE-QUESTIONS.md)), tell us — we will send you a
+build with that reading switched on. It is written but turned off by default, because we believe
+most boards use the other method and having both would give two different answers to the same
+question.
+
+---
+
+# Part H — Setting the charger by hand (not yet — for information)
+
+This is the step that will tell us most, and it needs software that does not exist yet.
+
+We will add a control that lets you set the charger to about ten different settings by hand. At
+each setting you will record the solar panel voltage and the battery voltage with your meter — about
+twenty numbers, taken on one sunny day with the battery not already full.
+
+That single table tells us the relationship between what the software asks for and what the
+hardware does, which is the one thing we cannot work out without your board.
+
+Answering [HARDWARE-QUESTIONS.md](HARDWARE-QUESTIONS.md) before then will save a lot of guessing.

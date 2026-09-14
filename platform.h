@@ -23,6 +23,9 @@
 // unlike two envs for the same board, where it keeps only the first.
 
 // [platformio]
+// An OPTIONAL, gitignored file for local overrides - see "Building against a local library" in
+// CLAUDE.md. PlatformIO ignores the line if the file does not exist, so a fresh clone needs nothing.
+// extra_configs = platformio-local.ini
 // name: Frugal-IoT Irrigation
 // description: Solar-powered sequenced soil-moisture irrigation - a port of OSPIT onto Frugal-IoT
 // src_dir = .
@@ -82,6 +85,12 @@
 // platform_esp32 = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
 
 // [env]
+// src_dir = . means "the project's sources are at the top of the repo", which is what makes the
+// same directory open in the Arduino IDE. But it also means PlatformIO would compile EVERY .cpp
+// below here as project source - including, through the lib/Frugal-IoT symlink, the library's own
+// examples and their downloaded dependencies. So say explicitly what is ours.
+// Arduino IDE needs no equivalent: it ignores every subdirectory except src/.
+// build_src_filter = +<*> -<lib/> -<data/> -<scripts/> -<.pio/> -<docs/>
 // monitor_speed = 460800 ; If not 460800 then also change in main.cpp: frugal_iot.startSerial(newspeed, 5000);
 // upload_speed = 460800
 // framework = arduino
@@ -126,14 +135,33 @@
     // OSPIT_PUMP_PIN and uncomment OSPIT_LOAD_PIN.
 #define OSPIT_PUMP_PIN 14
 // #define OSPIT_LOAD_PIN 14
+    // The tank gauge. mp2.lua's header comment calls GPIO32 a temperature sense input, but
+    // irrigation.lua reads it as the tank - question 7 in HARDWARE-QUESTIONS.md settles it. If it
+    // turns out to be the temperature input, comment this out and no tank code is compiled.
 #define OSPIT_TANK_PIN 32
-    // --- RS485 soil probes. Slave ids are set in ospit.ino and start at 2: address 1 is the
+    // --- RS485 soil probes. Slave ids are set in the .ino and start at 2: address 1 is the
     // factory default and has to stay meaning "not yet provisioned" - see sensor/soilmodbus.h
 #define SENSOR_SOILMODBUS_WANT
 #define SENSOR_SOILMODBUS_AUTOPROVISION
 #define SYSTEM_RS485_RX_PIN 16
 #define SYSTEM_RS485_TX_PIN 17
 #define OSPIT_RS485_UART Serial2
+    // --- charge controller instrumentation (P5.1 - measurement only, nothing is driven) ---
+    // Solar panel voltage. 1k/27k divider is the 0.035714 ratio in mp2.lua's Vinmeasure(), so 28.
+#define OSPIT_PANEL_PIN 34
+#define OSPIT_PANEL_DIVIDER 28
+    // The series Schottky D6 drops about 300mV, so the panel is that much higher than the pin says.
+    // SET THIS TO 0 if D6 has been replaced by a wire on your board - question 2 in
+    // HARDWARE-QUESTIONS.md tells the tester how to look.
+#define OSPIT_PANEL_DIODE_MV 300
+    // Up to three DS18B20 probes share this pin - air, battery and board temperature. They are told
+    // apart by the id burned into each probe, so which is which survives unplugging them.
+#define OSPIT_ONEWIRE_PIN 2
+    // The OTHER way this board can measure its own heat: two diodes read as an analog voltage.
+    // LEFT OFF DELIBERATELY - we believe the DS18B20 above does this job, and turning both on would
+    // give two different answers to the same question. Question 4 in HARDWARE-QUESTIONS.md asks
+    // the tester to look for the diodes; uncomment if they are there and the DS18B20 is not.
+// #define OSPIT_HEATSINK_PIN 35
     // --- battery, for the low-voltage interlock ---
 #define SENSOR_BATTERY_PIN 33
     // OSPIT's own divider: 1k/15k, the 0.0625 ratio in mp2.lua's Voutmeasure(), so a factor of 16.
