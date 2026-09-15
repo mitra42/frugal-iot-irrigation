@@ -170,42 +170,50 @@ void setup() {
     frugal_iot.sensors->add(new Sensor_DS18B20("pcbtemp", "Board Temperature", OSPIT_ONEWIRE_PIN, true));
   #endif
 
-  // ---- Battery interlock ----------------------------------------------------------------
-  /* Reproduces OSPIT's low_voltage_disconnect: stop irrigating when the battery is too low.
+  /* ---- Battery interlocks ----------------------------------------------------------------
    *
-   * Battery readings are millivolts, so this is OSPIT's 11.9 V cut-out / 12.3 V restore pair
-   * written as a limit of 12.1 V with a 200 mV dead band - without which a battery sagging under
-   * the pump load would chatter the interlock. `greater` defaults true, so `out` is true
-   * (irrigation permitted) above the limit.
+   * One Control_Hysteresis per thing that should give up when the battery gets low, each entirely
+   * independent of the others and each behind its own #define. A board defines as many or as few
+   * as it has pins for, and none of them knows about any other.
+   *
+   * The thresholds are what sets the ORDER things are shed in as the battery falls, and that is
+   * the interesting decision:
+   *
+   *   USB supply      12.8 / 13.4   given up first - the least important consumer
+   *   Irrigation      12.4 / 12.8   next: a pump is a big draw, and the watering can wait a day
+   *   Load (router)   11.9 / 12.3   last, because losing communications means losing the ability
+   *                                 to find out what went wrong
+   *
+   * OSPIT gates irrigation on the same low_voltage_disconnect_state as the load, i.e. both at
+   * 11.9/12.3. Setting OSPIT_LVD_IRRIGATION_MV to 12100 gives that behaviour back. Shedding the
+   * pump first is the deliberate difference: it is the heaviest intermittent load on the system.
+   *
+   * Each is written as a limit with a dead band rather than as a pair of thresholds, because that
+   * is what Control_Hysteresis takes: 12.1V +/- 0.2 IS 11.9 off, 12.3 on.
    */
-  Control_Hysteresis* ch = new Control_Hysteresis("controlhysteresis", "Battery interlock",
-                                                  12100, 0, 10000, 15000, 200);
-  frugal_iot.controls->add(ch);
-  ch->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+  #ifdef OSPIT_LOAD_PIN
+    Control_Hysteresis* chload = new Control_Hysteresis("controlhysteresis-load", "Load interlock",
+      OSPIT_LVD_LOAD_MV, 0, 10000, 15000, OSPIT_LVD_LOAD_HYST_MV);
+    frugal_iot.controls->add(chload);
+    chload->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+    chload->outputs[0]->wireTo(frugal_iot.messages->setPath("load/on"));
+  #endif
+
   #ifdef OSPIT_USB_PIN
-    /* The USB supply gets its own interlock at a HIGHER voltage than the load.
-     *
-     * OSPIT's thresholds: off below 12.8V, on above 13.4V - so a limit of 13.1 with a 300mV dead
-     * band. Higher than the load's 11.9/12.3 on purpose: it sheds the less important consumer
-     * first, and only takes the router down if the battery keeps falling.
-     */
-    Control_Hysteresis* chusb = new Control_Hysteresis("controlhysteresis2", "USB interlock",
-                                                       13100, 0, 10000, 15000, 300);
+    Control_Hysteresis* chusb = new Control_Hysteresis("controlhysteresis-usb", "USB interlock",
+      OSPIT_LVD_USB_MV, 0, 10000, 15000, OSPIT_LVD_USB_HYST_MV);
     frugal_iot.controls->add(chusb);
     chusb->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
     chusb->outputs[0]->wireTo(frugal_iot.messages->setPath("usb/on"));
   #endif
 
-  #ifdef OSPIT_LOAD_PIN
-    /* The interlock drives the load switch, and irrigation takes its permission from the load's
-     * published state rather than from the control directly - so "may I irrigate?" is answered by
-     * "is the load on?", which is exactly what OSPIT's low_voltage_disconnect_state means. One
-     * OUT has one wiredPath, so chaining them this way is also the only way to feed both.
-     */
-    ch->outputs[0]->wireTo(frugal_iot.messages->setPath("load/on"));
-  #else
-    ch->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation/power"));
-  #endif
+  // Not conditional: irrigation is the point of this node, so it always has an interlock of its
+  // own rather than borrowing the state of an output that may not exist.
+  Control_Hysteresis* chirr = new Control_Hysteresis("controlhysteresis-irrig", "Irrigation interlock",
+    OSPIT_LVD_IRRIGATION_MV, 0, 10000, 15000, OSPIT_LVD_IRRIGATION_HYST_MV);
+  frugal_iot.controls->add(chirr);
+  chirr->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+
 
   // ---- Irrigation ------------------------------------------------------------------------
   Control_Irrigation* irr = new Control_Irrigation("irrigation", "Irrigation");
@@ -216,9 +224,7 @@ void setup() {
   #ifdef OSPIT_PUMP_PIN
     irr->pump->wireTo(frugal_iot.messages->setPath("pump/on"));
   #endif
-  #ifdef OSPIT_LOAD_PIN
-    irr->power->wireTo(frugal_iot.messages->path("load/on"));
-  #endif
+  chirr->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation/power"));
 
   // Sectors run in the order they are added. addSector() registers each one as a control in its
   // own right, so each gets its own portal section, MQTT topics and discovery.
