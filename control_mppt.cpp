@@ -13,14 +13,14 @@
 
 // Charge-end voltage in mV per chemistry - OSPIT's battery_profile_defaults(). See the note on
 // the enum in control_mppt.h for why there is no "Custom" entry.
-static const Control_MPPT_Chemistry MPPT_PROFILES[] = {
+static const Battery_Chemistry BATTERY_PROFILES[] = {
   //  name        charge@25C   mV/degC   hot-battery
   { "AGM",         14100,        30,       13100 },
   { "GEL",         14100,        24,       13100 },
   { "Flooded",     14400,        30,       13300 },
   { "LiFePO4",     14200,         0,       13600 }, // Lithium does not want the compensation
 };
-#define MPPT_PROFILE_COUNT ((uint16_t)(sizeof(MPPT_PROFILES) / sizeof(MPPT_PROFILES[0])))
+#define BATTERY_PROFILE_COUNT ((uint16_t)(sizeof(BATTERY_PROFILES) / sizeof(BATTERY_PROFILES[0])))
 
 Control_MPPT::Control_MPPT(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
@@ -29,16 +29,16 @@ Control_MPPT::Control_MPPT(const char* const id, const char* const name)
     DEFAULT_mppt_step_min, DEFAULT_mppt_step_max, DEFAULT_mppt_step_color, false)),
   // OFF until someone has been through TESTING.md - see "Safety" in the header
   automatic(new INbool(id, "automatic", "Automatic", false, DEFAULT_mppt_automatic_color, false)),
-  profile(new INuint16(id, "profile", "Battery type", MPPT_AGM,
+  profile(new INuint16(id, "profile", "Battery type", BATTERY_AGM,
     DEFAULT_mppt_profile_min, DEFAULT_mppt_profile_max,
     DEFAULT_mppt_profile_min, DEFAULT_mppt_profile_max, DEFAULT_mppt_profile_color, false)),
-  chargeend(new INfloat(id, "chargeend", "Charge end", MPPT_PROFILES[MPPT_AGM].chargeend_mv, 0,
+  chargeend(new INfloat(id, "chargeend", "Charge end", BATTERY_PROFILES[BATTERY_AGM].chargeend_mv, 0,
     DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max,
     DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max, DEFAULT_mppt_chargeend_color, false)),
-  tempcoeff(new INfloat(id, "tempcoeff", "Temp coefficient", MPPT_PROFILES[MPPT_AGM].tempcoeff_mv_per_c, 0,
+  tempcoeff(new INfloat(id, "tempcoeff", "Temp coefficient", BATTERY_PROFILES[BATTERY_AGM].tempcoeff_mv_per_c, 0,
     DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max,
     DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max, DEFAULT_mppt_tempcoeff_color, false)),
-  hotcharge(new INfloat(id, "hotcharge", "Hot battery", MPPT_PROFILES[MPPT_AGM].hotcharge_mv, 0,
+  hotcharge(new INfloat(id, "hotcharge", "Hot battery", BATTERY_PROFILES[BATTERY_AGM].hotcharge_mv, 0,
     DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max,
     DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max, DEFAULT_mppt_hotcharge_color, false)),
   /* NAN, so a node with nothing wired to these reads as "no reading" and stays safe - rather than
@@ -177,8 +177,8 @@ void Control_MPPT::dispatch(System_Message &msg) {
 void Control_MPPT::act() {
   if (configured && (profile->value != profile_applied)) {
     profile_applied = profile->value;
-    const Control_MPPT_Chemistry& c =
-      MPPT_PROFILES[(profile_applied < MPPT_PROFILE_COUNT) ? profile_applied : MPPT_AGM];
+    const Battery_Chemistry& c =
+      BATTERY_PROFILES[(profile_applied < BATTERY_PROFILE_COUNT) ? profile_applied : BATTERY_AGM];
     chargeend->set(c.chargeend_mv);
     tempcoeff->set(c.tempcoeff_mv_per_c);
     hotcharge->set(c.hotcharge_mv);

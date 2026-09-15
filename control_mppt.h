@@ -182,6 +182,7 @@
 #ifdef OSPIT_MPPT_DAC_PIN
 
 #include "control/control.h"
+#include "battery_profile.h"
 
 /* Defining one of the pair and not the other would silently mix your value with a default, and
  * the result would look plausible. In the preprocessor defined() is 1 or 0, so this compares them.
@@ -301,16 +302,6 @@
  * Each row carries the charge-end voltage, the temperature coefficient and the hot-battery cap,
  * and selecting a profile writes all three.
  */
-enum Control_MPPT_Profile { MPPT_AGM = 0, MPPT_GEL = 1, MPPT_FLOODED = 2, MPPT_LIFEPO4 = 3 };
-
-// One row of the profile table - see MPPT_PROFILES in control_mppt.cpp
-struct Control_MPPT_Chemistry {
-  const char* name;
-  float chargeend_mv;      // At 25 C
-  float tempcoeff_mv_per_c;
-  float hotcharge_mv;      // Once the battery is over CONTROL_MPPT_HOT_LIMIT_C
-};
-
 class Control_MPPT : public Control {
   public:
     Control_MPPT(const char* const id, const char* const name);

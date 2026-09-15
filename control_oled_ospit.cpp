@@ -22,9 +22,15 @@ static void printValue(Print* out, INfloat* in, uint8_t width) {
 
 Control_Oled_OspitPower::Control_Oled_OspitPower()
   : Control_Oled("oledpower", "Display power", std::vector<IN*>{}),
-    battery(new INfloat("oledpower", "battery", "Battery", NAN, 0, 0, 15000, "#008000", true))
+    battery(new INfloat("oledpower", "battery", "Battery", NAN, 0, 0, 15000, "#008000", true)),
+    soc(new INfloat("oledpower", "soc", "Charge", NAN, 0, 0, 100, "#008000", true)),
+    panel(new INfloat("oledpower", "panel", "Panel", NAN, 0, 0, 30000, "#800080", true)),
+    mpptstate(new INtext("oledpower", "mpptstate", "Charger", "", "#000000", true))
 {
   inputs.push_back(battery);
+  inputs.push_back(soc);
+  inputs.push_back(panel);
+  inputs.push_back(mpptstate);
 }
 
 void Control_Oled_OspitPower::act() {
@@ -33,10 +39,9 @@ void Control_Oled_OspitPower::act() {
     display->clearDisplay();
     display->setTextSize(1);
     display->setTextColor(OLED_FG);
-    display->setCursor(0, 0);
-    display->print(F("Battery"));
+    // Battery volts, big, because it is the number people actually want
     display->setTextSize(2);
-    display->setCursor(0, 16);
+    display->setCursor(0, 0);
     if (battery->isValid()) {
       display->print(battery->floatValue() / 1000.0f, 2); // millivolts in, volts on screen
       display->print(F("V"));
@@ -44,10 +49,25 @@ void Control_Oled_OspitPower::act() {
       display->print(F("--"));
     }
     display->setTextSize(1);
+    display->setCursor(0, 20);
+    display->print(F("Charge"));
+    display->setCursor(72, 20);
+    printValue(display, soc, 0);
+    display->print(F("%"));
+    display->setCursor(0, 32);
+    display->print(F("Panel"));
+    display->setCursor(72, 32);
+    if (panel->isValid()) {
+      display->print(panel->floatValue() / 1000.0f, 1);
+      display->print(F("V"));
+    } else {
+      display->print(F("--"));
+    }
     display->setCursor(0, 48);
-    // TODO P4/P5 this is where OSPIT's solar open-circuit voltage, MPP tracking voltage, charge
-    // state and battery temperature go - display.lua page 1. None of it exists yet.
-    display->print(F("MPPT: not fitted"));
+    display->print(F("Charger"));
+    display->setCursor(50, 48);
+    // Empty on a board with no charge control, which is honest - there is no charger to describe
+    display->print(mpptstate->value.length() ? mpptstate->value : String(F("--")));
     display->display();
   }
 }

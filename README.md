@@ -23,8 +23,14 @@ MQTT, a web dashboard, graphing, and over-the-air updates.
   interlock) on separate pins.
 - Optional **OLED**: battery, then the sector moistures and tank, then IP/WiFi/MQTT.
 
-Solar **MPPT charge control is not implemented yet** — see `docs/` and the project plan. On the
-FF-OpenMPPT board this firmware currently leaves the charge hardware alone.
+- **Solar charge control** — two-stage MPPT tracking with temperature compensation, a hard
+  thermal cut-out, and battery-type profiles.
+- **Battery reporting** — state of charge and a health estimate, both derived rather than measured
+  and clearly labelled as such.
+
+**None of the charge control has run on real hardware yet**, so it ships switched off:
+`mppt/automatic` defaults to false and is turned on once, after the checks in
+[TESTING.md](TESTING.md).
 
 ## Hardware
 

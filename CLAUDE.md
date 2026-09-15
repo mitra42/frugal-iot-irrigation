@@ -79,6 +79,9 @@ not.
 | `control_oled_ospit.{h,cpp}` | three display pages in a carousel |
 | `sensor_heatsink.{h,cpp}` | heatsink temperature from a diode pair, if the board has one |
 | `control_mppt.{h,cpp}` | solar charge control - two-stage, temperature compensated; the board-revision Vmpp cascade lives here |
+| `control_soc.{h,cpp}` | state of charge from battery voltage - reporting only |
+| `control_health.{h,cpp}` | battery capacity left, from an overnight discharge - reporting only |
+| `battery_profile.h` | the chemistry enum and struct, shared by the charger and the charge estimate |
 | `platformio.ini` | the pin map for each board, and every build flag |
 | `TESTING.md` | commissioning a real board, written for someone who is not a developer |
 | `HARDWARE-QUESTIONS.md` | things only someone holding the board can answer |
@@ -100,6 +103,12 @@ not.
   the panel nearer open circuit, and so charges LESS. The safe fallback is therefore the top of the
   range, not zero, and every path in `Control_MPPT` that is not a deliberate decision to charge
   ends there. Getting this backwards means charging hardest when something has gone wrong.
+- **State of charge and battery health are REPORTING ONLY**, published read-only and unwireable.
+  A voltage-derived estimate is fine to look at and useless to charge from, which is why
+  `Control_MPPT` measures its own thresholds rather than reading them. OSPIT's eight overlapping
+  SoC heuristics are deliberately not ported: most of them try to infer charge WHILE CHARGING
+  without a current sensor, which cannot be done - charging voltage describes the charger, not
+  the battery. What is ported is the part that works, plus freezing the estimate while charging.
 - **`mppt/automatic` is off by default.** None of the charge control has run on hardware. It stays
   off until someone has been through `TESTING.md`; the setting is persisted, so it is turned on
   once.

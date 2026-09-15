@@ -620,6 +620,40 @@ limit low (for example 11.0 V) and confirm the socket powers up, then set it bac
 - Does it ever show `overshoot`? For how long?
 - Does the heatsink get hot enough that **Target** drops? If so, how hot, and what was the weather?
 
+## Step I7 — Battery charge and health (they look after themselves)
+
+Two more figures appear once everything above is running. Neither controls anything; they are
+there to be looked at.
+
+**State of Charge** estimates how full the battery is from its voltage. It is most accurate after
+a quiet night and least accurate in the middle of a sunny day, so it **stops updating while the
+battery is charging** — the `Charging` line tells you when. It also moves slowly on purpose, so a
+pump starting does not make it jump.
+
+**Battery Health** estimates how much of its original capacity the battery still has. It works by
+comparing how far the charge estimate falls between 22:00 and 04:00 against the load you tell it
+about, so it needs two numbers from you:
+
+1. **Capacity Ah** — from the battery's label. An 18 Ah battery is `18`.
+2. **Average load A** — roughly how much current everything draws overnight. If you do not know,
+   measure it once with the meter in series, or make your best estimate and tell us what you used.
+
+Its **State** line says what is happening:
+
+| State | Meaning |
+|---|---|
+| `waiting` | No charge estimate yet, or the clock is not set |
+| `measuring` | Inside the overnight window |
+| `voided` | That night did not count — usually because irrigation ran during it |
+| `measured` | A figure has been produced |
+
+**This is a trend, not a reading.** A number that falls steadily over months means the battery is
+ageing. A number that is 78 one week and 84 the next means nothing at all. Please record it once a
+week rather than watching it.
+
+**Please tell us:** what Capacity and Average load you entered, and the health figure each week
+for as long as you have the board.
+
 ## If anything looks wrong
 
 Set **Automatic** back to off. That returns control to you and the board goes to its gentlest

@@ -36,6 +36,8 @@
 #include "control_oled_ospit.h"
 #include "sensor_heatsink.h"
 #include "control_mppt.h"
+#include "control_soc.h"
+#include "control_health.h"
 
 // Change the parameters here to match your ...
 // organization, project, device name, description
@@ -275,6 +277,30 @@ void setup() {
     #endif
   #endif
 
+  /* ---- Reporting: how full the battery is, and how well it is holding up -------------------
+   *
+   * Both are REPORTING ONLY. Nothing is controlled from either, and both publish read-only - a
+   * voltage-derived estimate is fine to look at and useless to charge from, which is why
+   * Control_MPPT does its own measuring rather than reading these.
+   *
+   * State of charge freezes while the panel is above the battery, because a battery on charge
+   * reads high and tracking that would just report the charger. Battery health compares the
+   * overnight fall in that estimate against the load you tell it about, and refuses to report at
+   * all if irrigation ran during the window - which is the flaw in OSPIT's version, since it
+   * waters at 03:00 inside its own 22:00-04:00 measurement.
+   */
+  Control_SoC* soc = new Control_SoC("soc", "State of Charge");
+  frugal_iot.controls->add(soc);
+  soc->battery->wireTo(frugal_iot.messages->path("battery/battery"));
+  #ifdef OSPIT_PANEL_PIN
+    soc->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+  #endif
+
+  Control_Health* bh = new Control_Health("batteryhealth", "Battery Health");
+  frugal_iot.controls->add(bh);
+  bh->soc->wireTo(frugal_iot.messages->path("soc/soc"));
+  bh->active->wireTo(frugal_iot.messages->path("irrigation/active"));
+
   /* ---- Display ---------------------------------------------------------------------------
    *
    * Three pages in a carousel, ported from OSPIT's display.lua. It advances on its own; wire a
@@ -283,8 +309,15 @@ void setup() {
   #ifdef ACTUATOR_OLED_WANT
     Control_Carousel* display = ospitDisplay();
     (void)display; // Nothing else to wire to it here - a button would go to carousel/select/cycle
-    ((Control_Oled_OspitPower*)display->controls[0])->battery
-      ->wireTo(frugal_iot.messages->path("battery/battery"));
+    Control_Oled_OspitPower* powerPage = (Control_Oled_OspitPower*)display->controls[0];
+    powerPage->battery->wireTo(frugal_iot.messages->path("battery/battery"));
+    powerPage->soc->wireTo(frugal_iot.messages->path("soc/soc"));
+    #ifdef OSPIT_PANEL_PIN
+      powerPage->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+    #endif
+    #ifdef OSPIT_MPPT_DAC_PIN
+      powerPage->mpptstate->wireTo(frugal_iot.messages->path("mppt/state"));
+    #endif
     Control_Oled_OspitSoil* soilPage = (Control_Oled_OspitSoil*)display->controls[1];
     soilPage->moisture1->wireTo(frugal_iot.messages->path("soil1/humidity"));
     soilPage->moisture2->wireTo(frugal_iot.messages->path("soil2/humidity"));

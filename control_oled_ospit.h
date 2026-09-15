@@ -32,10 +32,17 @@
 #include "control/oled.h"
 #include "control/carousel.h"
 
-// Page 1 - battery. Grows into the MPPT page at P4/P5.
+/* Page 1 - the power system: how full the battery is, and what the charger is doing.
+ *
+ * On a board with no charge control the panel and state lines simply read "--", so the page is
+ * still worth having; nothing here is conditional.
+ */
 class Control_Oled_OspitPower : public Control_Oled {
   public:
     INfloat* battery;
+    INfloat* soc;    // Percent, from Control_SoC
+    INfloat* panel;  // Panel volts in mV, or nothing on a board with no panel sensor
+    INtext*  mpptstate; // Control_MPPT's state word - "tracking", "too hot" and so on
     Control_Oled_OspitPower();
     void act() override;
 };
