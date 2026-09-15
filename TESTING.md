@@ -647,6 +647,26 @@ Its **State** line says what is happening:
 | `voided` | That night did not count — usually because irrigation ran during it |
 | `measured` | A figure has been produced |
 
+### Is the battery the right size for the panel?
+
+Enter the solar panel's **watts** (from its label) in **Panel watts**, and the board works out
+whether the battery is big enough for it. A battery that is small relative to its panel gets
+charged too hard and wears out faster, so this is worth knowing before it happens rather than
+after.
+
+**Advice** says one of three things:
+
+| Advice | Meaning |
+|---|---|
+| `ok` | Sensibly sized, and currently more than half charged |
+| `battery low` | Sized fine, but sitting under half charged — which wears it in its own way |
+| `battery small` | Too small for this panel, or worn down until it is |
+
+This works from the first day — before there is a health figure it assumes the battery is as good
+as its label says.
+
+**Please tell us** what it says, along with the panel watts and battery Ah you entered.
+
 **This is a trend, not a reading.** A number that falls steadily over months means the battery is
 ageing. A number that is 78 one week and 84 the next means nothing at all. Please record it once a
 week rather than watching it.

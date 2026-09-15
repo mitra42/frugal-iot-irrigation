@@ -113,6 +113,28 @@ not.
   off until someone has been through `TESTING.md`; the setting is persisted, so it is turned on
   once.
 
+## Changing the schema
+
+Every `DEFAULT_*` macro this code uses comes from `frugal-iot-server`'s schema, not from here. To
+add a topic:
+
+1. Edit `config.d/schema/modules.yaml` (and `topics.yaml` if the topic type is new) on the server's
+   `schema-irrigation` branch. Work in a `git worktree` - the server's own checkout usually has
+   unrelated work in progress.
+2. `node scripts/check-schema.js <path>/config.d/schema`. It should report the **same 3
+   pre-existing warnings** and no more. A module that overrides a field its `leaf_from` topic does
+   not declare is flagged, correctly - that usually means a typo, or that the base topic is the
+   wrong one to inherit from.
+3. Regenerate `defaults.h` **from a scratch merge of `schema-irrigation` + `modbus-soil` +
+   `schema-analog`**, because the firmware uses all three. Generating from one branch silently
+   drops the others' macros. Compare the sorted SETS of macro names before and after, not the diff.
+4. Copy it to `lib/Frugal-IoT/src/defaults.h` and commit it there, on `ospit-p1`.
+
+Module ids and schema keys: the client matches a module id **exactly**, then falls back to the
+longest schema key that is a prefix, provided the remainder is all digits or starts with a
+separator. So `soil1` and `controlhysteresis-usb` both resolve, and readable instance names are
+possible. `door` does NOT resolve to `do`, which is the point of the rule.
+
 ## Testing without hardware
 
 `pio run` for both environments is the compile check. Beyond that, the logic that is worth testing
@@ -121,4 +143,26 @@ them into a small C++ program with the library types stubbed out. That found two
 much faster than reasoning about it. Do that again rather than trusting a reading of the code.
 
 Verify what actually linked with `nm` on the ELF rather than trusting a zero exit code — a
-conditional compile that silently did nothing looks exactly like success.
+conditional compile that silently did nothing looks exactly like success. Two things that made
+that check lie during this port, both worth remembering:
+
+- **Rebuild before inspecting.** A stale or missing ELF reports zero occurrences of everything,
+  which is indistinguishable from correct exclusion.
+- **`strings` has a four-character minimum** and the linker pools literals by suffix, so a short
+  state name can be present and unfindable. Name things you intend to check for distinctively.
+
+Compile each `#ifdef`-guarded feature at least once with its flag set. Everything optional here —
+`OSPIT_USB_PIN`, `OSPIT_LOAD_PIN`, `OSPIT_HEATSINK_PIN`, the board-revision flags — is off in at
+least one env, so a throwaway build with it on is the only thing that proves it compiles.
+
+## Where the state lives
+
+Nothing here uses `RTC_DATA_ATTR`. Anything that must survive a deep sleep is either a persisted
+`IN` (written to LittleFS and replayed through `dispatch()` at boot) or one of the eight sleep-safe
+timer slots on `System_Power`, whose array IS in RTC memory. `Control_Irrigation` uses exactly one
+of those, for both the per-sector maximum and the next start time — see its header for why one
+timer can do both jobs.
+
+`Control_MPPT`, `Control_SoC` and `Control_Health` deliberately keep their state in plain members:
+after a restart the right thing is to sweep again, re-estimate, and abandon a part-finished
+overnight measurement, not to resume from stale numbers.
