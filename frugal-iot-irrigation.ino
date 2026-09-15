@@ -94,6 +94,12 @@ void setup() {
   #ifdef OSPIT_LOAD_PIN
     frugal_iot.actuators->add(new Actuator_Digital("load", "Load", OSPIT_LOAD_PIN, DEFAULT_load_on_color));
   #endif
+  #ifdef OSPIT_USB_PIN
+    // A second switched output, for a USB supply. On the FF board this is the SAME PIN as valve 3
+    // - OSPIT decides which it is by whether a probe answers on sector 3. Here you choose by
+    // defining one or the other, and platformio.ini says so beside both.
+    frugal_iot.actuators->add(new Actuator_Digital("usb", "USB", OSPIT_USB_PIN, DEFAULT_usb_on_color));
+  #endif
 
   // ---- Sensors -------------------------------------------------------------------------
   // One RS485 bus, one probe per sector, slave ids 1..3. A probe that does not answer publishes
@@ -176,6 +182,20 @@ void setup() {
                                                   12100, 0, 10000, 15000, 200);
   frugal_iot.controls->add(ch);
   ch->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+  #ifdef OSPIT_USB_PIN
+    /* The USB supply gets its own interlock at a HIGHER voltage than the load.
+     *
+     * OSPIT's thresholds: off below 12.8V, on above 13.4V - so a limit of 13.1 with a 300mV dead
+     * band. Higher than the load's 11.9/12.3 on purpose: it sheds the less important consumer
+     * first, and only takes the router down if the battery keeps falling.
+     */
+    Control_Hysteresis* chusb = new Control_Hysteresis("controlhysteresis2", "USB interlock",
+                                                       13100, 0, 10000, 15000, 300);
+    frugal_iot.controls->add(chusb);
+    chusb->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+    chusb->outputs[0]->wireTo(frugal_iot.messages->setPath("usb/on"));
+  #endif
+
   #ifdef OSPIT_LOAD_PIN
     /* The interlock drives the load switch, and irrigation takes its permission from the load's
      * published state rather than from the control directly - so "may I irrigate?" is answered by

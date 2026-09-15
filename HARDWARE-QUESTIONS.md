@@ -130,7 +130,37 @@ rather plan around what is actually possible than send you a list you cannot com
 
 ---
 
-## 10. Anything that surprises you
+## 10. What happens to the outputs when the board is asleep?
+
+This one needs a measurement rather than a look, and it decides whether we can use a power-saving
+feature at all. **It can wait until you have done the rest** — ask us for a special test build when
+you are ready.
+
+The board can be told to sleep when the battery is low, so that the solar panel gets a chance to
+recharge it. But while an ESP32 sleeps, its output pins are normally *released* — they stop being
+driven — and we do not know what this board does then. The original software sets pin 14 with a
+"pull-up", which if it still applies while asleep would switch the load **on** at exactly the moment
+we were trying to save power.
+
+What we would ask you to do, with a test build we will send:
+
+1. With the load (the router) switched **on**, measure the voltage at the load output terminal.
+2. Put the board to sleep — the test build will have a button for this.
+3. Measure the same terminal again **while it is asleep**. Does the load stay on, or go off?
+4. Repeat with the load switched **off** before sleeping.
+
+And the same for the solar charge control:
+
+5. While charging normally, note the solar panel voltage.
+6. Put the board to sleep, and measure the panel voltage again while asleep. Does charging carry
+   on, stop, or change?
+
+**Why we ask:** if sleeping turns the load back on, or stops the battery charging, then sleeping
+to save power makes things worse rather than better, and we will leave the feature switched off.
+
+---
+
+## 11. Anything that surprises you
 
 If anything on the board looks damaged, modified, hand-soldered, or simply different from what
 these questions describe, please tell us and photograph it. A board that has been repaired or

@@ -596,7 +596,24 @@ tell us and we will suggest another way.
 
 Reconnect it. Within a minute it should go back to `tracking`.
 
-## Step I5 — Things worth telling us either way
+## Step I5 — The USB supply, if your board has one
+
+Skip this if nothing is connected to the USB output.
+
+The USB supply has its own voltage limit, set **higher** than the one that protects the router:
+it switches off at 12.8 V and back on at 13.4 V. The idea is that as the battery falls, the less
+important thing is given up first, and the router is only given up if it keeps falling.
+
+You cannot easily make the battery fall on demand, so this is mostly something to watch for over
+a few days:
+
+**Please tell us:** does the **USB** switch ever turn itself off? At what battery voltage, and did
+it come back on by itself?
+
+If you want to check the wiring works without waiting, temporarily set the USB section's control
+limit low (for example 11.0 V) and confirm the socket powers up, then set it back to 13.1.
+
+## Step I6 — Things worth telling us either way
 
 - Does the battery voltage sit steadily at **Target** while `regulating`, or does it swing up and
   down? Swinging means we need to adjust how strongly the board corrects, which is one number.
