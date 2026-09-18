@@ -57,7 +57,9 @@
 // #define SENSOR_SOILMODBUS_DEBUG
 // #define SYSTEM_MODBUS_DEBUG
 // #define SENSOR_ANALOG_DEBUG
-// #define SYSTEM_POWER_DEBUG
+    // On for the sleep-test branch: it is what prints `Sleeping` just before the board goes, which
+    // is the only indication a tester with a serial monitor gets.
+#define SYSTEM_POWER_DEBUG
 // #define SYSTEM_TIME_DEBUG
 // #define SYSTEM_MQTT_DEBUG
 // #define SYSTEM_WIFI_DEBUG
@@ -87,6 +89,17 @@
 #define OSPIT_LVD_IRRIGATION_MV 12600
 #define OSPIT_LVD_IRRIGATION_HYST_MV 200
 
+// THE SLEEP-TEST BRANCH ONLY - do not merge this section to main.
+// Deep sleep on a repeating cycle, so the outputs can be measured while the board is asleep. The
+// sleep is the remainder: 420000 - 300000 = five minutes awake, then two minutes asleep. Lengthen
+// the wake if reconnecting to WiFi leaves too little time to work with the page, or the cycle if
+// two minutes is not long enough to get the meter on to both terminals.
+// docs/sleep-test.md on main is the procedure; question 10 in HARDWARE-QUESTIONS.md is the why.
+// build_flags_sleeptest =
+#define OSPIT_SLEEP_TEST
+#define OSPIT_SLEEP_TEST_CYCLE_MS 420000
+#define OSPIT_SLEEP_TEST_WAKE_MS 300000
+
 // Ask the linker for a map file - scripts/size_report.py reads it.
 // build_flags_map =
 //     -Wl,-Map=$BUILD_DIR/firmware.map
@@ -96,6 +109,7 @@
 //     ${common.build_flags_main}
 //     ${common.build_flags_library}
 //     ${common.build_flags_lvd}
+//     ${common.build_flags_sleeptest}
 //     ${common.build_flags_map}
 
 // platform_esp32 = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip

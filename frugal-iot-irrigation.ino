@@ -62,7 +62,27 @@ void setup() {
    * returns to idle in setup(). Control_Irrigation::allowSleep() is the hook a sleep manager will
    * use to avoid exactly that; nothing calls it yet.
    */
-  frugal_iot.configure_power(Power_Loop, 10000, 10000);
+  #ifdef OSPIT_SLEEP_TEST
+    /* EXCEPT on the sleep-test branch, whose whole purpose is to be asleep at a predictable
+     * moment so someone with a multimeter can measure what the outputs do then. See
+     * docs/sleep-test.md, and question 10 in HARDWARE-QUESTIONS.md for why it matters.
+     *
+     * A repeating cycle rather than a button: the window comes round again every few minutes, so
+     * nothing has to be triggered or timed, and a reading that was missed simply gets taken next
+     * time. A button would also have needed System_Power::sleep() unprotected in the library.
+     *
+     * This goes through the ordinary loop() -> maybeSleep() -> prepare() -> sleep() path, so what
+     * gets measured is what a real SYSTEM_POWER_LOW_MV sleep would do. Sleeping some other way
+     * would answer a different question.
+     *
+     * Everything the comment above warns about is still true here - each sleep is a restart, so
+     * an irrigation run in progress is abandoned. That is exactly why this is a branch and not a
+     * flag on main.
+     */
+    frugal_iot.configure_power(Power_Deep, OSPIT_SLEEP_TEST_CYCLE_MS, OSPIT_SLEEP_TEST_WAKE_MS);
+  #else
+    frugal_iot.configure_power(Power_Loop, 10000, 10000);
+  #endif
 
   frugal_iot.pre_setup();
 
