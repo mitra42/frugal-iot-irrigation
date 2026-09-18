@@ -135,6 +135,17 @@ longest schema key that is a prefix, provided the remainder is all digits or sta
 separator. So `soil1` and `controlhysteresis-usb` both resolve, and readable instance names are
 possible. `door` does NOT resolve to `do`, which is the point of the rule.
 
+## Changing platformio.ini
+
+**Run `scripts/generate_platform_h.bash` and commit the result, in the same commit.** `platform.h`
+is generated from `platformio.ini` and is the only thing that gives the Arduino IDE the build
+flags; PlatformIO ignores it entirely. So nothing you can run here will tell you that you forgot -
+`pio run` passes, both boards build, and only the Arduino path is broken.
+
+It has been forgotten twice (`0d13975` and `cd665a1`, caught in `01373c4`), both times leaving
+defines the `.ino` names directly out of the Arduino build. Treat it as part of editing
+`platformio.ini` rather than as a follow-up step.
+
 ## Testing without hardware
 
 `pio run` for both environments is the compile check. Beyond that, the logic that is worth testing
