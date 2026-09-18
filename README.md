@@ -90,6 +90,9 @@ see "Building against a local library" in [CLAUDE.md](CLAUDE.md).
 and the battery. `HARDWARE-QUESTIONS.md` is a list of things we need someone with the hardware to
 look at.
 
+[docs/bom.md](docs/bom.md) lists the hardware the original OSPIT system is built from - the board,
+the sensors, the valves, the pump - with a source for every line.
+
 Because not everyone has sun, a multimeter and a fortnight, `docs/` holds three ready-made plans —
 [bench](docs/plan-bench.md), [sunny half-day](docs/plan-sunny-session.md),
 [days of running](docs/plan-long-run.md) — each a short ordered list of which Parts of `TESTING.md`
