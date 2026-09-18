@@ -7,6 +7,13 @@ something else.
 Please work through the steps **in order**. Each one depends on the ones before it. If a step
 fails, stop there and report it — going on will only produce confusing results.
 
+**You are probably not doing all of it.** Which Parts are worth your time depends on whether you
+have sun, a multimeter, and how long you have the board for. Question 9 in
+[HARDWARE-QUESTIONS.md](HARDWARE-QUESTIONS.md) has a table that picks one of
+[docs/plan-bench.md](docs/plan-bench.md), [docs/plan-sunny-session.md](docs/plan-sunny-session.md)
+or [docs/plan-long-run.md](docs/plan-long-run.md) for you. Each is a short list of which of the
+Parts below to do, in which order. Start there rather than here.
+
 ## Before you start
 
 **You need:**

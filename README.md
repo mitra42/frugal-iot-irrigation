@@ -81,6 +81,12 @@ library" in [CLAUDE.md](CLAUDE.md).
 and the battery. `HARDWARE-QUESTIONS.md` is a list of things we need someone with the hardware to
 look at.
 
+Because not everyone has sun, a multimeter and a fortnight, `docs/` holds three ready-made plans —
+[bench](docs/plan-bench.md), [sunny half-day](docs/plan-sunny-session.md),
+[days of running](docs/plan-long-run.md) — each a short ordered list of which Parts of `TESTING.md`
+to do. Question 9 of `HARDWARE-QUESTIONS.md` picks one. [docs/sleep-test.md](docs/sleep-test.md) is
+the one test that needs its own build, on the `sleep-test` branch.
+
 ## Licence
 
 Same as Frugal-IoT. The OSPIT algorithms this is derived from are GPL-2.0-or-later,

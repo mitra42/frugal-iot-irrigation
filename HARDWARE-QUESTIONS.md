@@ -125,35 +125,41 @@ another type's voltage will damage it, sometimes quickly.
   a short time?
 - Is there a sunny place to test, and roughly what hours does the sun reach the panel?
 
-**Why we ask:** some of the checks need readings taken at different times of day, and we would
-rather plan around what is actually possible than send you a list you cannot complete.
+**Why we ask:** some of the checks need readings taken at different times of day, and some need
+none of that. Please still tell us your answers — but **do not wait for us before starting.** Find
+your situation in this table and go straight to that plan.
+
+| Your situation | Your plan |
+|---|---|
+| An afternoon with the board, sun or no sun | [docs/plan-bench.md](docs/plan-bench.md) |
+| Sun on the panel, a multimeter, an hour and a half | [docs/plan-sunny-session.md](docs/plan-sunny-session.md) — do the bench plan first if you can |
+| The board can stay somewhere sunny for three days or more | [docs/plan-long-run.md](docs/plan-long-run.md) — after both of the above |
+| No multimeter | [docs/plan-bench.md](docs/plan-bench.md), skipping Part E. The two tests that need a meter are the ones we most need — there is a note at the end of that plan about what it costs us |
+
+Each plan is a short list pointing into [TESTING.md](TESTING.md), which has the actual steps. If
+none of the four describes your situation, tell us what you have got and we will write one that
+does.
 
 ---
 
 ## 10. What happens to the outputs when the board is asleep?
 
-This one needs a measurement rather than a look, and it decides whether we can use a power-saving
-feature at all. **It can wait until you have done the rest** — ask us for a special test build when
-you are ready.
+This one needs a measurement rather than a look, a multimeter, and a **different build of the
+software**. **It can wait until you have done the rest** — and you do not need anything from us to
+start it: the software is on a branch called `sleep-test`, and
+[docs/sleep-test.md](docs/sleep-test.md) says how to build it, how to tell when the board is
+asleep, and exactly what to measure.
 
 The board can be told to sleep when the battery is low, so that the solar panel gets a chance to
 recharge it. But while an ESP32 sleeps, its output pins are normally *released* — they stop being
 driven — and we do not know what this board does then. The original software sets pin 14 with a
-"pull-up", which if it still applies while asleep would switch the load **on** at exactly the moment
-we were trying to save power.
+"pull-up", which if it still applies while asleep would switch the load **on** at exactly the
+moment we were trying to save power.
 
-What we would ask you to do, with a test build we will send:
-
-1. With the load (the router) switched **on**, measure the voltage at the load output terminal.
-2. Put the board to sleep — the test build will have a button for this.
-3. Measure the same terminal again **while it is asleep**. Does the load stay on, or go off?
-4. Repeat with the load switched **off** before sleeping.
-
-And the same for the solar charge control:
-
-5. While charging normally, note the solar panel voltage.
-6. Put the board to sleep, and measure the panel voltage again while asleep. Does charging carry
-   on, stop, or change?
+That build sleeps on a repeating cycle — five minutes awake, two minutes asleep — so nothing has to
+be triggered or timed. It asks for six readings: the load output terminal with the load switched
+on and with it switched off, each measured while awake and then again while asleep, and the solar
+panel voltage the same way.
 
 **Why we ask:** if sleeping turns the load back on, or stops the battery charging, then sleeping
 to save power makes things worse rather than better, and we will leave the feature switched off.
