@@ -157,9 +157,9 @@ driven — and we do not know what this board does then. The original software s
 moment we were trying to save power.
 
 That build sleeps on a repeating cycle — five minutes awake, two minutes asleep — so nothing has to
-be triggered or timed. It asks for six readings: the load output terminal with the load switched
-on and with it switched off, each measured while awake and then again while asleep, and the solar
-panel voltage the same way.
+be triggered or timed. It asks for six readings: the pin 14 output terminal — the page calls it
+**Pump**, the original software uses it as the load switch — switched on and then switched off,
+each measured while awake and then again while asleep, and the solar panel voltage the same way.
 
 **Why we ask:** if sleeping turns the load back on, or stops the battery charging, then sleeping
 to save power makes things worse rather than better, and we will leave the feature switched off.

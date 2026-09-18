@@ -48,18 +48,28 @@ will need a file for this too — ask, the same way.
 That restart is also why irrigation goes back to idle after each sleep. That is normal and is not
 what we are testing here.
 
+## Which output to measure
+
+**Pin 14**, which the board's page calls **Pump**. Use the same terminal you measured in
+[Step B2](../TESTING.md#step-b2--switch-each-output-on-and-off), with the meter set up the same
+way: black probe on the battery's negative terminal, red probe on the output.
+
+The page calls it Pump because that is the role this software gives pin 14. The original OSPIT
+software uses the same pin as its **load** switch — the one that would have the router on it — and
+that is why this particular pin is the one worth measuring. It is the same pin and the same
+circuit either way.
+
 ## The measurements
 
 Six readings. Take them at the board's terminals with the meter, not from the page — the whole
 question is what the hardware does when the software is not running.
 
-**The load output**
+**Pin 14 / Pump**
 
-1. During an awake period, switch the load **on**. Measure the voltage at the load output terminal.
-   Write it down.
-2. Wait for it to go to sleep. Measure the **same terminal again while it is asleep**. Does the
-   load stay on, or go off?
-3. During the next awake period, switch the load **off**. Measure the terminal.
+1. During an awake period, switch **Pump** on. Measure the voltage at its terminal. Write it down.
+2. Wait for it to go to sleep. Measure the **same terminal again while it is asleep**. Does it stay
+   on, or go off?
+3. During the next awake period, switch **Pump** off. Measure the terminal.
 4. Wait for the next sleep and measure again. Does it stay off, or come on?
 
 Reading 4 is the one we are most worried about.
@@ -74,6 +84,10 @@ Reading 4 is the one we are most worried about.
 Do 5 and 6 in reasonably steady sunshine if you can — a cloud crossing between the two readings
 will change the voltage by itself and tell us nothing.
 
+**While you are there**, if you have a spare moment during any sleep, put the probe on **Valve 1**
+with the valve switched off and tell us what you see. A valve that comes on while the board is
+asleep matters a good deal more than a router does, and it is the same measurement.
+
 ## Putting it back
 
 ```bash
@@ -86,6 +100,6 @@ the page is lost — settings live on the board and survive both the sleeping an
 
 ## What to send back
 
-The six numbers, and for each of 2, 4 and 6, which of the outcomes it was. If the load behaved
+The six numbers, and for each of 2, 4 and 6, which of the outcomes it was. If the output behaved
 differently on different sleeps, say so — an output that is inconsistent is a more interesting
 answer than either of the tidy ones.
