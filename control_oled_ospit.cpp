@@ -1,6 +1,7 @@
 /* See control_oled_ospit.h - three pages in a carousel, ported from OSPIT's display.lua */
 
 #include "control_oled_ospit.h"
+#include "language.h"
 
 #ifdef ACTUATOR_OLED_WANT
 
@@ -50,12 +51,12 @@ void Control_Oled_OspitPower::act() {
     }
     display->setTextSize(1);
     display->setCursor(0, 20);
-    display->print(F("Charge"));
+    display->print(irrigationT->Charge);
     display->setCursor(72, 20);
     printValue(display, soc, 0);
     display->print(F("%"));
     display->setCursor(0, 32);
-    display->print(F("Panel"));
+    display->print(irrigationT->Panel);
     display->setCursor(72, 32);
     if (panel->isValid()) {
       display->print(panel->floatValue() / 1000.0f, 1);
@@ -64,7 +65,7 @@ void Control_Oled_OspitPower::act() {
       display->print(F("--"));
     }
     display->setCursor(0, 48);
-    display->print(F("Charger"));
+    display->print(irrigationT->Charger);
     display->setCursor(50, 48);
     // Empty on a board with no charge control, which is honest - there is no charger to describe
     display->print(mpptstate->value.length() ? mpptstate->value : String(F("--")));
@@ -98,7 +99,8 @@ void Control_Oled_OspitSoil::act() {
     INfloat* m[3] = { moisture1, moisture2, moisture3 };
     for (uint8_t i = 0; i < 3; i++) {
       display->setCursor(0, i * 10);
-      display->print(F("Sector "));
+      display->print(irrigationT->Sector);
+      display->print(F(" "));
       display->print(i + 1);
       // A marker beside the sector currently watering - nothing OSPIT shows, but it is the
       // question anyone standing at the box is actually asking
@@ -108,7 +110,7 @@ void Control_Oled_OspitSoil::act() {
       display->print(F("%"));
     }
     display->setCursor(0, 40);
-    display->print(F("Tank"));
+    display->print(irrigationT->Tank);
     display->setCursor(72, 40);
     printValue(display, tank, 0);   // "--" when no sender is fitted, which OSPIT reads as empty
     display->print(F("%"));
@@ -130,19 +132,24 @@ void Control_Oled_OspitNet::act() {
     display->setTextColor(OLED_FG);
     const bool up = (WiFi.status() == WL_CONNECTED);
     display->setCursor(0, 0);
-    display->print(F("IP   "));
-    display->print(up ? WiFi.localIP().toString() : String(F("no-ip")));
+    display->print(irrigationT->Ip);
+    display->print(F("   "));
+    display->print(up ? WiFi.localIP().toString() : String(irrigationT->NoIp));
     display->setCursor(0, 10);
-    display->print(F("WiFi "));
-    display->print(up ? WiFi.SSID() : String(F("disconnected")));
+    display->print(irrigationT->Wifi);
+    display->print(F(" "));
+    display->print(up ? WiFi.SSID() : String(irrigationT->Disconnected));
     display->setCursor(0, 20);
-    display->print(F("RSSI "));
+    display->print(irrigationT->Rssi);
+    display->print(F(" "));
     display->print(up ? String(WiFi.RSSI()) : String(F("-")));
     display->setCursor(0, 30);
-    display->print(F("MQTT "));
-    display->print(frugal_iot.mqtt->connected() ? F("on") : F("off"));
+    display->print(irrigationT->Mqtt);
+    display->print(F(" "));
+    display->print(frugal_iot.mqtt->connected() ? irrigationT->On : irrigationT->Off);
     display->setCursor(0, 40);
-    display->print(F("Heap "));
+    display->print(irrigationT->Heap);
+    display->print(F(" "));
     display->print(ESP.getFreeHeap());
     display->display();
   }

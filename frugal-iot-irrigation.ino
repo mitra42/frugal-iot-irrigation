@@ -38,12 +38,15 @@
 #include "control_mppt.h"
 #include "control_soc.h"
 #include "control_health.h"
+#include "language.h"
 
 // Change the parameters here to match your ...
 // organization, project, device name, description
 System_Frugal frugal_iot(SYSTEM_FRUGAL_ORG, SYSTEM_FRUGAL_PROJECT, "ospit", "OSPIT Irrigation");
 
 void setup() {
+  setupIrrigationLanguage();
+
   /* Battery sensor has to come before pre_setup, all others should come after.
    *
    * 10000..15000 mV rather than the 3000..5000 default: this is a 12V lead-acid bank, not a
@@ -65,6 +68,7 @@ void setup() {
   frugal_iot.configure_power(Power_Loop, 10000, 10000);
 
   frugal_iot.pre_setup();
+  syncIrrigationLanguage(frugal_iot.captive->language_code);
 
   // Override MQTT host, username and password if you have an "organization" other than "dev"
   frugal_iot.configure_mqtt("frugaliot.naturalinnovation.org", "dev", "public");
@@ -335,4 +339,5 @@ void setup() {
 
 void loop() {
   frugal_iot.loop(); // Should be running watchdog.loop which will call esp_task_wdt_reset()
+  syncIrrigationLanguage(frugal_iot.captive->language_code);
 }

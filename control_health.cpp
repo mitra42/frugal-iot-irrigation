@@ -1,34 +1,35 @@
 /* See control_health.h - the method, and the flaw in OSPIT's version that this fixes. */
 
 #include "control_health.h"
+#include "language.h"
 #include "Frugal-IoT.h"
 #include <cmath>
 
 Control_Health::Control_Health(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
-  soc(new INfloat(id, "soc", "Charge", NAN, 0,
+  soc(new INfloat(id, "soc", String(irrigationT->Charge), NAN, 0,
     DEFAULT_batteryhealth_soc_min, DEFAULT_batteryhealth_soc_max,
     DEFAULT_batteryhealth_soc_min, DEFAULT_batteryhealth_soc_max, DEFAULT_batteryhealth_soc_color, true)),
-  capacity(new INfloat(id, "capacity", "Capacity Ah", 18, 1,
+  capacity(new INfloat(id, "capacity", String(irrigationT->Capacity), 18, 1,
     DEFAULT_batteryhealth_capacity_min, DEFAULT_batteryhealth_capacity_max,
     DEFAULT_batteryhealth_capacity_min, DEFAULT_batteryhealth_capacity_max, DEFAULT_batteryhealth_capacity_color, false)),
-  load(new INfloat(id, "load", "Average load A", 1, 2,
+  load(new INfloat(id, "load", String(irrigationT->AverageLoad), 1, 2,
     DEFAULT_batteryhealth_load_min, DEFAULT_batteryhealth_load_max,
     DEFAULT_batteryhealth_load_min, DEFAULT_batteryhealth_load_max, DEFAULT_batteryhealth_load_color, false)),
-  panelwatts(new INfloat(id, "panelwatts", "Panel watts", 0, 0,
+  panelwatts(new INfloat(id, "panelwatts", String(irrigationT->PanelWatts), 0, 0,
     DEFAULT_batteryhealth_panelwatts_min, DEFAULT_batteryhealth_panelwatts_max,
     DEFAULT_batteryhealth_panelwatts_min, DEFAULT_batteryhealth_panelwatts_max,
     DEFAULT_batteryhealth_panelwatts_color, false)),
-  active(new INuint16(id, "active", "Irrigation active", 0,
+  active(new INuint16(id, "active", String(irrigationT->IrrigationActive), 0,
     DEFAULT_batteryhealth_active_min, DEFAULT_batteryhealth_active_max,
     DEFAULT_batteryhealth_active_min, DEFAULT_batteryhealth_active_max, DEFAULT_batteryhealth_active_color, true)),
-  health(new OUTfloat(id, "health", "Health", NAN, 0,
+  health(new OUTfloat(id, "health", String(irrigationT->Health), NAN, 0,
     DEFAULT_batteryhealth_health_min, DEFAULT_batteryhealth_health_max, DEFAULT_batteryhealth_health_color, false)),
-  state(new OUTtext(id, "state", "State", "waiting", DEFAULT_batteryhealth_state_color, false)),
-  storageratio(new OUTfloat(id, "storageratio", "Storage ratio", NAN, 1,
+  state(new OUTtext(id, "state", String(irrigationT->State), "waiting", DEFAULT_batteryhealth_state_color, false)),
+  storageratio(new OUTfloat(id, "storageratio", String(irrigationT->StorageRatio), NAN, 1,
     DEFAULT_batteryhealth_storageratio_min, DEFAULT_batteryhealth_storageratio_max,
     DEFAULT_batteryhealth_storageratio_color, false)),
-  advice(new OUTtext(id, "advice", "Advice", "", DEFAULT_batteryhealth_advice_color, false))
+  advice(new OUTtext(id, "advice", String(irrigationT->Advice), "", DEFAULT_batteryhealth_advice_color, false))
 {
   inputs.push_back(soc);
   inputs.push_back(capacity);
