@@ -72,6 +72,21 @@
 // build_flags_library =
 #define SYSTEM_OTA_PREFIX "ospit"
 
+// Battery interlock thresholds, in millivolts. Each is a LIMIT with a DEAD BAND: 12100 +/- 200
+// means "off below 11.9V, on again above 12.3V". Here rather than in the sketch because they are
+// the main thing that differs between installations - battery chemistry, panel size, and how much
+// you mind losing each thing. Together they set the ORDER things are given up in as the battery
+// falls: USB first, then irrigation, and the router last. See the note in the .ino.
+// Setting OSPIT_LVD_IRRIGATION_MV to 12100 restores OSPIT's behaviour of gating irrigation on the
+// same threshold as the load.
+// build_flags_lvd =
+#define OSPIT_LVD_LOAD_MV 12100
+#define OSPIT_LVD_LOAD_HYST_MV 200
+#define OSPIT_LVD_USB_MV 13100
+#define OSPIT_LVD_USB_HYST_MV 300
+#define OSPIT_LVD_IRRIGATION_MV 12600
+#define OSPIT_LVD_IRRIGATION_HYST_MV 200
+
 // Ask the linker for a map file - scripts/size_report.py reads it.
 // build_flags_map =
 //     -Wl,-Map=$BUILD_DIR/firmware.map
@@ -80,6 +95,7 @@
 //     ${common.build_flags_frugaliot}
 //     ${common.build_flags_main}
 //     ${common.build_flags_library}
+//     ${common.build_flags_lvd}
 //     ${common.build_flags_map}
 
 // platform_esp32 = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
@@ -135,6 +151,10 @@
     // OSPIT_PUMP_PIN and uncomment OSPIT_LOAD_PIN.
 #define OSPIT_PUMP_PIN 14
 // #define OSPIT_LOAD_PIN 14
+    // A USB supply on pin 12 - the SAME PIN as valve 3. OSPIT decides which it is by whether a
+    // probe answers on sector 3; here, define one or the other. If you enable this, remove
+    // OSPIT_VALVE3_PIN above and drop sector 3 from the sketch.
+// #define OSPIT_USB_PIN 12
     // The tank gauge. mp2.lua's header comment calls GPIO32 a temperature sense input, but
     // irrigation.lua reads it as the tank - question 7 in HARDWARE-QUESTIONS.md settles it. If it
     // turns out to be the temperature input, comment this out and no tank code is compiled.
@@ -172,7 +192,27 @@
 // #define CONTROL_MPPT_BOARD_FF_1_1
 // #define CONTROL_MPPT_VMPP_MIN 12.86 // give BOTH of these or NEITHER - control_mppt.h #errors
 // #define CONTROL_MPPT_VMPP_MAX 25.15
-    // --- battery, for the low-voltage interlock ---
+    // --- battery, for the low-voltage interlocks ---
+    // A reading below this is treated as a broken sensor rather than a flat battery, so it can
+    // never trigger the low-voltage sleep. 9V is under any usable 12V battery and over any
+    // plausible garbage; the library's 2500 default is sized for a single lithium cell.
+#define SYSTEM_POWER_BAD_READING_MV 9000
+    // Low-voltage deep sleep - OSPIT's low_voltage_sleep_enabled. DELIBERATELY NOT ENABLED YET.
+    // Uncommenting the two lines below reproduces OSPIT exactly: under 11.9V the node deep sleeps
+    // for five minutes at a time so the panel can put something back. The mechanism is in the
+    // library and works.
+    // It is off because we do not know what this board's outputs do while the ESP32 is asleep, and
+    // that decides whether it helps or hurts. A GPIO is released in deep sleep unless explicitly
+    // held, and is.lua configures pin 14 - the load switch - with PULL_UP. If that pull-up turns
+    // the router back ON while we sleep to save power, sleeping makes things worse. The same
+    // question applies to the DAC on pin 25: if charging stops while asleep, the battery cannot
+    // recover during the very sleep meant to let it.
+    // In proportion: the ESP32 draws well under a watt, so on an 18Ah battery it is not what
+    // flattens it - the load is, and the load interlock already sheds that at 11.9V. This is an
+    // optimisation, not something to enable on a guess. docs/sleep-test.md is the measurement that
+    // settles it, on the sleep-test branch; question 10 in HARDWARE-QUESTIONS.md points there.
+// #define SYSTEM_POWER_LOW_MV 11900
+// #define SYSTEM_POWER_LOW_MS 300000
 #define SENSOR_BATTERY_PIN 33
     // OSPIT's own divider: 1k/15k, the 0.0625 ratio in mp2.lua's Voutmeasure(), so a factor of 16.
     // At 12.6V that puts only 0.79V on the pin, using about a quarter of the ADC's range. Changing
