@@ -61,6 +61,11 @@
 // #define SYSTEM_TIME_DEBUG
 // #define SYSTEM_MQTT_DEBUG
 // #define SYSTEM_WIFI_DEBUG
+// #define SYSTEM_CAPTIVE_DEBUG // Heap, page,size, client disconnect tracing. 
+// #define SYSTEM_CAPTIVE_MINIMAL // replace portal with one-line page to tell transfort fault from content.
+// #define SYSTEM_GROUP_HEAP_DEBUG // free heap & largest contiguous block check after each module setup/loop
+#define SYSTEM_WIFI_DEBUG
+#define SYSTEM_MESSAGE_DEBUG
     // Turn off C++ exceptions - nothing in this example throws. See examples/agri/platformio.ini
     // for the measurements behind this.
 //     -fno-exceptions
@@ -248,6 +253,11 @@
 // board_build.partitions = min_spiffs.csv
 // build_flags =
 //     ${common.build_flags}
+    // AsyncTCP's task stack defaults to 8192*2 and is allocated from the internal heap, which on
+    // this board is the scarce one. 8192 is still ample for handleRequest() - the captive page is
+    // built with String temporaries on the heap, not on the stack. Raise it again if the AsyncTCP
+    // task ever overflows (it panics with a clear "***ERROR*** A stack overflow" and names the task).
+#define CONFIG_ASYNC_TCP_STACK_SIZE 8192
 #define SYSTEM_OTA_SUFFIX "s2_mini"
     // --- irrigation hardware ---
 #define OSPIT_VALVE1_PIN 10
@@ -265,10 +275,11 @@
 #define SYSTEM_RS485_TX_PIN 18
 #define OSPIT_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only - there is no Serial2
     // --- battery ---
-#define SENSOR_BATTERY_PIN 8 // ADC1_CH7. Note examples/agri uses 16 on this board, which is ADC2
-                            // and so subject to the "ADC2 is shared with WiFi" caveat.
+    // Comment this out if you don't have a battery sensor on this board e.g. if using on USB otherwise S2 will think floating 
+    // voltage is about 3V and go to sleep to avoid brownout
+// #define SENSOR_BATTERY_PIN 8 // ADC1_CH7. 
 #define SENSOR_BATTERY_VOLTAGE_DIVIDER 16 // Assumes you fit the same 1k/15k divider as the FF board
-#endif // ARDUINO_LOLIN_S2_MINI
+ #endif // ARDUINO_LOLIN_S2_MINI
 
 #ifndef FRUGAL_IOT_BOARD_CONFIGURED
   #error "This board has no settings in platform.h. Under Tools > Board, select one of the boards this example supports, or add a section for yours to its platformio.ini and re-run scripts/generate_platform_h.py. Supported here: ESP32 Dev Module / LOLIN S2 Mini"

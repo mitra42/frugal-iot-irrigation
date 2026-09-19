@@ -60,7 +60,7 @@ of power being applied.
 
 The board makes its own WiFi network when it does not know any other one.
 
-1. On your phone, look at the list of WiFi networks. One of them starts with `frugal-iot`.
+1. On your phone, look at the list of WiFi networks. One of them starts with `frugal-iot`, or possibly `ESP32`
 2. Connect to it. There is no password.
 3. A page should open by itself. If it does not, open a browser and type: `192.168.4.1`
 
