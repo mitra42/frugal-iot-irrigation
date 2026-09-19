@@ -3,6 +3,7 @@
  */
 
 #include "control_irrigation.h"
+#include "language.h"
 #include "Frugal-IoT.h"
 #include <cmath> // for NAN
 
@@ -12,14 +13,14 @@ Control_Sector::Control_Sector(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
   // Starts as "no reading", so a sector whose moisture input is never wired is skipped rather
   // than watered on the strength of a default of zero.
-  moisture(new INfloat(id, "moisture", "Moisture", NAN, 1,
+  moisture(new INfloat(id, "moisture", String(irrigationT->Moisture), NAN, 1,
     DEFAULT_sector_moisture_min, DEFAULT_sector_moisture_max,
     DEFAULT_sector_moisture_min, DEFAULT_sector_moisture_max, DEFAULT_sector_moisture_color, true)),
-  target(new INfloat(id, "target", "Target", 80, 1,
+  target(new INfloat(id, "target", String(irrigationT->Target), 80, 1,
     DEFAULT_sector_target_min, DEFAULT_sector_target_max,
     DEFAULT_sector_target_min, DEFAULT_sector_target_max, DEFAULT_sector_target_color, true)),
-  enable(new INbool(id, "enable", "Enable", false, DEFAULT_sector_enable_color, false)),
-  valve(new OUTbool(id, "valve", "Valve", false, DEFAULT_sector_valve_color, true))
+  enable(new INbool(id, "enable", String(irrigationT->Enable), false, DEFAULT_sector_enable_color, false)),
+  valve(new OUTbool(id, "valve", String(irrigationT->Valve), false, DEFAULT_sector_valve_color, true))
 {
   inputs.push_back(moisture);
   inputs.push_back(target);
@@ -96,36 +97,36 @@ Control_Irrigation::Control_Irrigation(const char* const id, const char* const n
   // start time while idle.
   t(frugal_iot.powercontroller->timer_next()),
   i(0), // Replaced by setup() with sectors.size(), i.e. idle, once the sectors are known
-  hour(new INuint16(id, "hour", "Start hour", 3,
+  hour(new INuint16(id, "hour", String(irrigationT->StartHour), 3,
     DEFAULT_irrigation_hour_min, DEFAULT_irrigation_hour_max,
     DEFAULT_irrigation_hour_min, DEFAULT_irrigation_hour_max, DEFAULT_irrigation_hour_color, false)),
-  minute(new INuint16(id, "minute", "Start minute", 0,
+  minute(new INuint16(id, "minute", String(irrigationT->StartMinute), 0,
     DEFAULT_irrigation_minute_min, DEFAULT_irrigation_minute_max,
     DEFAULT_irrigation_minute_min, DEFAULT_irrigation_minute_max, DEFAULT_irrigation_minute_color, false)),
-  maxminutes(new INfloat(id, "maxminutes", "Max minutes per sector", 5, 1,
+  maxminutes(new INfloat(id, "maxminutes", String(irrigationT->MaxMinutesPerSector), 5, 1,
     DEFAULT_irrigation_maxminutes_min, DEFAULT_irrigation_maxminutes_max,
     DEFAULT_irrigation_maxminutes_min, DEFAULT_irrigation_maxminutes_max,
     DEFAULT_irrigation_maxminutes_color, false)),
   // Defaults to OFF, as OSPIT's i_nbld does. Something that opens water valves unattended should
   // not start doing so merely because it was flashed - see the note in ospit.ino on turning it on.
-  enabled(new INbool(id, "enabled", "Enabled", false, DEFAULT_irrigation_enabled_color, false)),
-  tank(new INfloat(id, "tank", "Tank level", NAN, 1,
+  enabled(new INbool(id, "enabled", String(irrigationT->Enabled), false, DEFAULT_irrigation_enabled_color, false)),
+  tank(new INfloat(id, "tank", String(irrigationT->TankLevel), NAN, 1,
     DEFAULT_irrigation_tank_min, DEFAULT_irrigation_tank_max,
     DEFAULT_irrigation_tank_min, DEFAULT_irrigation_tank_max, DEFAULT_irrigation_tank_color, true)),
-  tankstart(new INfloat(id, "tankstart", "Tank level to start", 25, 1,
+  tankstart(new INfloat(id, "tankstart", String(irrigationT->TankLevelToStart), 25, 1,
     DEFAULT_irrigation_tankstart_min, DEFAULT_irrigation_tankstart_max,
     DEFAULT_irrigation_tankstart_min, DEFAULT_irrigation_tankstart_max,
     DEFAULT_irrigation_tankstart_color, false)),
-  tankempty(new INfloat(id, "tankempty", "Tank level to stop", 5, 1,
+  tankempty(new INfloat(id, "tankempty", String(irrigationT->TankLevelToStop), 5, 1,
     DEFAULT_irrigation_tankempty_min, DEFAULT_irrigation_tankempty_max,
     DEFAULT_irrigation_tankempty_min, DEFAULT_irrigation_tankempty_max,
     DEFAULT_irrigation_tankempty_color, false)),
   // Both interlocks default TRUE, so a node with nothing wired to them still irrigates. Wiring
   // one in can only ever stop irrigation, never enable it, which is the right way round.
-  power(new INbool(id, "power", "Power ok", true, DEFAULT_irrigation_power_color, true)),
-  solar(new INbool(id, "solar", "Input power", true, DEFAULT_irrigation_solar_color, true)),
-  pump(new OUTbool(id, "pump", "Pump", false, DEFAULT_irrigation_pump_color, true)),
-  active(new OUTuint16(id, "active", "Active sector", 0,
+  power(new INbool(id, "power", String(irrigationT->PowerOk), true, DEFAULT_irrigation_power_color, true)),
+  solar(new INbool(id, "solar", String(irrigationT->InputPower), true, DEFAULT_irrigation_solar_color, true)),
+  pump(new OUTbool(id, "pump", String(irrigationT->Pump), false, DEFAULT_irrigation_pump_color, true)),
+  active(new OUTuint16(id, "active", String(irrigationT->ActiveSector), 0,
     DEFAULT_irrigation_active_min, DEFAULT_irrigation_active_max, DEFAULT_irrigation_active_color, false))
 {
   inputs.push_back(hour);

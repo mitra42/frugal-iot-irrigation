@@ -1,12 +1,14 @@
-# Questions for whoever has the board
+# Questions for whoever has the FF-ESP32-OpenMPPT board
 
-We are writing software for a board we do not have. Everything below is something you can see or
-measure — none of it needs any knowledge of the software.
+We have added support for a board we do not have. Everything below is something you can see or
+measure - none of it needs any knowledge of the software.
 
 **Photographs are very welcome.** A clear photograph of the whole board, plus close-ups of
 anything a question mentions, often answers several questions at once.
 
-Please number your answers to match.
+Please number your answers to match. 
+
+Posting to a new issue on the repo is probably the best way, though email to support@naturalinnovation.org 
 
 ---
 
