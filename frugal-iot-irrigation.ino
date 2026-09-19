@@ -331,7 +331,8 @@ void setup() {
     #endif
     soilPage->active->wireTo(frugal_iot.messages->path("irrigation/active"));
   #endif
-
+  // Want NTP time (or set from browser)
+  frugal_iot.system->add(frugal_iot.time = new System_Time());
   // Dont change below here - should be after setup the actuators, controls and sensors
   frugal_iot.setup(); // Has to be after setup sensors and actuators and controls and system
   Serial.println(F("FrugalIoT Starting Loop"));
