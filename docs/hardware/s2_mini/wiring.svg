@@ -1,0 +1,308 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1270" width="1800" height="1270" font-family="Helvetica, Arial, sans-serif">
+<rect width="1800" height="1270" fill="#fbfaf5"/>
+<text x="30" y="46" font-size="27" text-anchor="start" font-weight="700" fill="#1a1a1a">Frugal-IoT Irrigation - Lolin S2 Mini wiring</text>
+<text x="30" y="70" font-size="13" text-anchor="start" font-weight="400" fill="#5b5b5b">Assembly view. Values, pin numbers and the reasoning are in schematic.pdf, wiring.md and README.md.</text>
+<rect x="30" y="110" width="180" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="120.0" y="131" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">12 V BATTERY</text>
+<text x="120.0" y="148" text-anchor="middle" font-size="11.5" fill="#5b5b5b">solar/charging not shown</text>
+<circle cx="210" cy="146" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="200" y="150" text-anchor="end" font-size="11.5" fill="#1a1a1a">+</text>
+<circle cx="210" cy="176" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="200" y="180" text-anchor="end" font-size="11.5" fill="#1a1a1a">-</text>
+<rect x="280" y="110" width="140" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="350.0" y="131" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">FUSE  3 A</text>
+<text x="350.0" y="148" text-anchor="middle" font-size="11.5" fill="#5b5b5b">in the + lead</text>
+<circle cx="280" cy="146" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="290" y="150" text-anchor="start" font-size="11.5" fill="#1a1a1a"></text>
+<circle cx="420" cy="146" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="410" y="150" text-anchor="end" font-size="11.5" fill="#1a1a1a"></text>
+<rect x="490" y="110" width="165" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="572.5" y="131" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">D1  1N5819</text>
+<text x="572.5" y="148" text-anchor="middle" font-size="11.5" fill="#5b5b5b">band = cathode</text>
+<text x="572.5" y="162" text-anchor="middle" font-size="11.5" fill="#5b5b5b">cathode -&gt; the rail</text>
+<circle cx="490" cy="146" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="500" y="150" text-anchor="start" font-size="11.5" fill="#1a1a1a">A</text>
+<circle cx="655" cy="146" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="645" y="150" text-anchor="end" font-size="11.5" fill="#1a1a1a">K</text>
+<path d="M 214 146 L 280 146" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="228" y="138" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">+12 V</text>
+<path d="M 424 146 L 490 146" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 659 146 L 700 146 L 700 240" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 214 176 L 240 176 L 240 282" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 20 240 L 1750 240" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="760" y="232" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">+12 V RAIL   (~11.6 V after D1)</text>
+<path d="M 12 282 L 1750 282" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="760" y="275" font-size="11.5" font-weight="600" fill="#1a1a1a" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">GND RAIL</text>
+<rect x="30" y="330" width="205" height="122" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="132.5" y="351" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">BUCK  MP1584EN</text>
+<text x="132.5" y="368" text-anchor="middle" font-size="11.5" fill="#5b5b5b">12 V in, 5 V out</text>
+<text x="132.5" y="382" text-anchor="middle" font-size="11.5" fill="#5b5b5b">SET TO 5.2 V, off-load,</text>
+<text x="132.5" y="396" text-anchor="middle" font-size="11.5" fill="#5b5b5b">BEFORE fitting the S2</text>
+<circle cx="30" cy="404" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="40" y="408" text-anchor="start" font-size="11.5" fill="#1a1a1a">IN+</text>
+<circle cx="30" cy="430" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="40" y="434" text-anchor="start" font-size="11.5" fill="#1a1a1a">IN-</text>
+<circle cx="235" cy="404" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="225" y="408" text-anchor="end" font-size="11.5" fill="#1a1a1a">OUT+</text>
+<circle cx="235" cy="430" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="225" y="434" text-anchor="end" font-size="11.5" fill="#1a1a1a">OUT-</text>
+<path d="M 26 240 L 26 404 L 30 404" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 12 282 L 12 430 L 30 430" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="300" y="330" width="155" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="377.5" y="351" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">D2  1N5819</text>
+<text x="377.5" y="368" text-anchor="middle" font-size="11.5" fill="#5b5b5b">REQUIRED</text>
+<text x="377.5" y="382" text-anchor="middle" font-size="11.5" fill="#5b5b5b">see README</text>
+<circle cx="300" cy="404" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="310" y="408" text-anchor="start" font-size="11.5" fill="#1a1a1a">A</text>
+<circle cx="455" cy="404" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="445" y="408" text-anchor="end" font-size="11.5" fill="#1a1a1a">K</text>
+<path d="M 239 404 L 300 404" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="250" y="396" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">5.2 V</text>
+<path d="M 239 430 L 268 430 L 268 282" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="530" y="330" width="240" height="310" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="650.0" y="351" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">LOLIN S2 MINI</text>
+<text x="650.0" y="368" text-anchor="middle" font-size="11.5" fill="#5b5b5b">USB-C at the top</text>
+<rect x="680" y="315" width="60" height="15" rx="3" fill="#d7d7d7" stroke="#5b5b5b"/>
+<text x="710" y="310" font-size="10" text-anchor="middle" font-weight="400" fill="#5b5b5b">USB-C</text>
+<circle cx="530" cy="394" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="540" y="398" text-anchor="start" font-size="11.5" fill="#1a1a1a">VBUS</text>
+<circle cx="530" cy="420" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="540" y="424" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<circle cx="530" cy="446" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="540" y="450" text-anchor="start" font-size="11.5" fill="#1a1a1a">3V3</text>
+<circle cx="530" cy="500" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="540" y="504" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO8</text>
+<circle cx="530" cy="526" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="540" y="530" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO6</text>
+<circle cx="770" cy="380" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="384" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO10</text>
+<circle cx="770" cy="406" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="410" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO13</text>
+<circle cx="770" cy="432" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="436" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO14</text>
+<circle cx="770" cy="458" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="462" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO38</text>
+<circle cx="770" cy="484" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="488" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO40</text>
+<circle cx="770" cy="540" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="544" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO16</text>
+<circle cx="770" cy="566" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="760" y="570" text-anchor="end" font-size="11.5" fill="#1a1a1a">GPIO18</text>
+<text x="650.0" y="628" font-size="10.5" text-anchor="middle" font-weight="400" fill="#5b5b5b">pin numbers: wiring.md</text>
+<path d="M 459 404 L 495 404 L 495 394 L 526 394" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="462" y="388" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">~4.9 V</text>
+<path d="M 490 282 L 490 420 L 526 420" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="30" y="690" width="210" height="100" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="135.0" y="711" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">BATTERY DIVIDER</text>
+<text x="135.0" y="728" text-anchor="middle" font-size="11.5" fill="#5b5b5b">R1 220k from +12 V</text>
+<text x="135.0" y="742" text-anchor="middle" font-size="11.5" fill="#5b5b5b">R2 39k to GND</text>
+<text x="135.0" y="756" text-anchor="middle" font-size="11.5" fill="#5b5b5b">C4 100nF across R2</text>
+<circle cx="30" cy="736" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="40" y="740" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="30" cy="762" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="40" y="766" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<circle cx="150" cy="690" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="160" y="694" text-anchor="start" font-size="11.5" fill="#1a1a1a">mid</text>
+<path d="M 26 240 L 26 736 L 30 736" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 12 282 L 12 762 L 30 762" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 150 686 L 150 500 L 526 500" fill="none" stroke="#2f6fd0" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="200" y="492" font-size="11.5" font-weight="600" fill="#2f6fd0" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">battery sense -&gt; GPIO8</text>
+<rect x="30" y="800" width="210" height="100" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="135.0" y="821" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">TANK SENDER</text>
+<text x="135.0" y="838" text-anchor="middle" font-size="11.5" fill="#5b5b5b">in the tank</text>
+<text x="135.0" y="852" text-anchor="middle" font-size="11.5" fill="#5b5b5b">resistive float</text>
+<text x="135.0" y="866" text-anchor="middle" font-size="11.5" fill="#5b5b5b">0 ohm empty, 170 ohm full</text>
+<circle cx="240" cy="846" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="230" y="850" text-anchor="end" font-size="11.5" fill="#1a1a1a">S</text>
+<circle cx="240" cy="872" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="230" y="876" text-anchor="end" font-size="11.5" fill="#1a1a1a">GND</text>
+<rect x="300" y="800" width="220" height="100" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="410.0" y="821" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">TANK INPUT</text>
+<text x="410.0" y="838" text-anchor="middle" font-size="11.5" fill="#5b5b5b">R3 820R  3V3 -&gt; pin</text>
+<text x="410.0" y="852" text-anchor="middle" font-size="11.5" fill="#5b5b5b">C5 100nF  pin -&gt; GND</text>
+<text x="410.0" y="866" text-anchor="middle" font-size="11.5" fill="#5b5b5b">both at the CONTROLLER end</text>
+<circle cx="300" cy="846" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="310" y="850" text-anchor="start" font-size="11.5" fill="#1a1a1a">sender</text>
+<circle cx="300" cy="872" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="310" y="876" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<circle cx="350" cy="800" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="360" y="804" text-anchor="start" font-size="11.5" fill="#1a1a1a">3V3</text>
+<circle cx="410" cy="800" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="420" y="804" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO6</text>
+<circle cx="470" cy="800" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="480" y="804" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<path d="M 244 846 L 296 846" fill="none" stroke="#2f6fd0" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 244 872 L 296 872" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 350 796 L 350 446 L 526 446" fill="none" stroke="#e08700" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="360" y="438" font-size="11.5" font-weight="600" fill="#e08700" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">3V3</text>
+<path d="M 410 796 L 410 526 L 526 526" fill="none" stroke="#2f6fd0" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="420" y="518" font-size="11.5" font-weight="600" fill="#2f6fd0" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">tank sense -&gt; GPIO6</text>
+<path d="M 470 796 L 470 282" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="880" y="330" width="215" height="148" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="987.5" y="351" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">RS485 MODULE</text>
+<text x="987.5" y="368" text-anchor="middle" font-size="11.5" fill="#5b5b5b">HARDWARE AUTOMATIC</text>
+<text x="987.5" y="382" text-anchor="middle" font-size="11.5" fill="#5b5b5b">FLOW CONTROL</text>
+<text x="987.5" y="396" text-anchor="middle" font-size="11.5" fill="#5b5b5b">not a DE/RE board</text>
+<circle cx="880" cy="404" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="890" y="408" text-anchor="start" font-size="11.5" fill="#1a1a1a">VCC</text>
+<circle cx="880" cy="430" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="890" y="434" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<circle cx="880" cy="456" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="890" y="460" text-anchor="start" font-size="11.5" fill="#1a1a1a">RXD</text>
+<circle cx="880" cy="482" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="890" y="486" text-anchor="start" font-size="11.5" fill="#1a1a1a">TXD</text>
+<circle cx="1095" cy="410" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1085" y="414" text-anchor="end" font-size="11.5" fill="#1a1a1a">A</text>
+<circle cx="1095" cy="440" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1085" y="444" text-anchor="end" font-size="11.5" fill="#1a1a1a">B</text>
+<path d="M 350 660 L 868 660 L 868 404 L 876 404" fill="none" stroke="#e08700" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="520" y="652" font-size="11.5" font-weight="600" fill="#e08700" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">3V3 to module</text>
+<path d="M 350 446 L 350 660" fill="none" stroke="#e08700" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 862 282 L 862 430 L 876 430" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 540 L 820 540 L 820 456 L 876 456" fill="none" stroke="#00796b" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="792" y="534" font-size="11.5" font-weight="600" fill="#00796b" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">RXD</text>
+<path d="M 774 566 L 838 566 L 838 482 L 876 482" fill="none" stroke="#8e24aa" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="792" y="590" font-size="11.5" font-weight="600" fill="#8e24aa" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">TXD</text>
+<rect x="1140" y="560" width="250" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1265.0" y="581" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">SOIL PROBE 1</text>
+<text x="1265.0" y="598" text-anchor="middle" font-size="11.5" fill="#5b5b5b">Modbus slave id 2</text>
+<circle cx="1140" cy="626" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1150" y="630" text-anchor="start" font-size="11.5" fill="#1a1a1a">V+   GND   A   B</text>
+<rect x="1140" y="664" width="250" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1265.0" y="685" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">SOIL PROBE 2</text>
+<text x="1265.0" y="702" text-anchor="middle" font-size="11.5" fill="#5b5b5b">Modbus slave id 3</text>
+<circle cx="1140" cy="730" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1150" y="734" text-anchor="start" font-size="11.5" fill="#1a1a1a">V+   GND   A   B</text>
+<rect x="1140" y="768" width="250" height="92" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1265.0" y="789" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">SOIL PROBE 3</text>
+<text x="1265.0" y="806" text-anchor="middle" font-size="11.5" fill="#5b5b5b">Modbus slave id 4</text>
+<circle cx="1140" cy="834" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1150" y="838" text-anchor="start" font-size="11.5" fill="#1a1a1a">V+   GND   A   B</text>
+<path d="M 1108 240 L 1108 626 L 1136 626" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1116" y="232" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">+12 V</text>
+<path d="M 1108 626 L 1108 730 L 1136 730" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1108 730 L 1108 834 L 1136 834" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1122 282 L 1122 638 L 1136 638" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1122 638 L 1122 742 L 1136 742" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1122 742 L 1122 846 L 1136 846" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1099 410 L 1112 410 L 1112 520 L 1128 520 L 1128 650 L 1136 650" fill="none" stroke="#00796b" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1104" y="402" font-size="11.5" font-weight="600" fill="#00796b" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">A</text>
+<path d="M 1128 650 L 1128 754 L 1136 754" fill="none" stroke="#00796b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1128 754 L 1128 858 L 1136 858" fill="none" stroke="#00796b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1099 440 L 1104 440 L 1104 534 L 1134 534 L 1134 662 L 1136 662" fill="none" stroke="#8e24aa" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1104" y="460" font-size="11.5" font-weight="600" fill="#8e24aa" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">B</text>
+<path d="M 1134 662 L 1134 766 L 1136 766" fill="none" stroke="#8e24aa" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1134 766 L 1134 870 L 1136 870" fill="none" stroke="#8e24aa" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1140" y="892" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">Connect probes ONE AT A TIME, in sector order.</text>
+<text x="1140" y="910" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">120R across A/B at the LAST probe only.</text>
+<rect x="1440" y="330" width="285" height="250" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1582.5" y="351" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">WIRE COLOUR KEY</text>
+<text x="1582.5" y="368" text-anchor="middle" font-size="11.5" fill="#5b5b5b">every wire is labelled too -</text>
+<text x="1582.5" y="382" text-anchor="middle" font-size="11.5" fill="#5b5b5b">colour is never the only cue</text>
+<path d="M 1458 412 L 1504 412" stroke="#d1332e" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="416" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">+12 V  (red)</text>
+<path d="M 1458 440 L 1504 440" stroke="#1a1a1a" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="444" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">GND  (black)</text>
+<path d="M 1458 468 L 1504 468" stroke="#e08700" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="472" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">3V3  (orange)</text>
+<path d="M 1458 496 L 1504 496" stroke="#2f6fd0" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="500" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">analog sense  (blue)</text>
+<path d="M 1458 524 L 1504 524" stroke="#00796b" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="528" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">RS485 A  (green)</text>
+<path d="M 1458 552 L 1504 552" stroke="#8e24aa" stroke-width="3.6" stroke-linecap="round"/>
+<text x="1516" y="556" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">RS485 B  (purple)</text>
+<text x="1440" y="606" font-size="11.5" text-anchor="start" font-weight="400" fill="#5b5b5b">Shielded twisted pair to the probes:</text>
+<text x="1440" y="622" font-size="11.5" text-anchor="start" font-weight="400" fill="#5b5b5b">one pair A/B, one pair 12 V/GND.</text>
+<text x="1440" y="638" font-size="11.5" text-anchor="start" font-weight="400" fill="#5b5b5b">Earth the shield at the controller end only.</text>
+<path d="M 1750 240 L 1750 946 L 20 946" fill="none" stroke="#d1332e" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1520" y="940" font-size="11.5" font-weight="600" fill="#d1332e" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">+12 V to the drivers</text>
+<path d="M 1736 282 L 1736 968 L 20 968" fill="none" stroke="#1a1a1a" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1520" y="962" font-size="11.5" font-weight="600" fill="#1a1a1a" paint-order="stroke" stroke="#fbfaf5" stroke-width="3.5">GND to the drivers</text>
+<text x="30" y="926" font-size="18" text-anchor="start" font-weight="700" fill="#1a1a1a">OUTPUT DRIVERS  -  five identical low-side channels</text>
+<rect x="30" y="990" width="300" height="190" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="180.0" y="1011" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">VALVE 1</text>
+<text x="180.0" y="1028" text-anchor="middle" font-size="11.5" fill="#5b5b5b">GPIO10  -&gt;  100R  -&gt;  gate</text>
+<circle cx="30" cy="1028" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="40" y="1032" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO</text>
+<circle cx="120" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="130" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="220" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="230" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<text x="44" y="1064" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">100k gate to GND  (safety)</text>
+<text x="44" y="1084" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">IRLZ44N:  G / D / S,   S -&gt; GND</text>
+<text x="44" y="1104" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">1N5819 across the load, cathode to +12 V</text>
+<text x="44" y="1124" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">output terminal:  +12 V  and  drain</text>
+<text x="44" y="1148" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">12 V NORMALLY-CLOSED solenoid</text>
+<path d="M 120 946 L 120 990" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 220 968 L 220 990" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 380 L 846 380 L 846 964 L 14 964 L 14 1028 L 30 1028" fill="none" stroke="#e08700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="382" y="990" width="300" height="190" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="532.0" y="1011" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">VALVE 2</text>
+<text x="532.0" y="1028" text-anchor="middle" font-size="11.5" fill="#5b5b5b">GPIO13  -&gt;  100R  -&gt;  gate</text>
+<circle cx="382" cy="1028" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="392" y="1032" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO</text>
+<circle cx="472" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="482" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="572" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="582" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<text x="396" y="1064" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">100k gate to GND  (safety)</text>
+<text x="396" y="1084" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">IRLZ44N:  G / D / S,   S -&gt; GND</text>
+<text x="396" y="1104" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">1N5819 across the load, cathode to +12 V</text>
+<text x="396" y="1124" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">output terminal:  +12 V  and  drain</text>
+<text x="396" y="1148" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">12 V NORMALLY-CLOSED solenoid</text>
+<path d="M 472 946 L 472 990" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 572 968 L 572 990" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 406 L 851 406 L 851 968 L 366 968 L 366 1028 L 382 1028" fill="none" stroke="#e08700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="734" y="990" width="300" height="190" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="884.0" y="1011" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">VALVE 3</text>
+<text x="884.0" y="1028" text-anchor="middle" font-size="11.5" fill="#5b5b5b">GPIO14  -&gt;  100R  -&gt;  gate</text>
+<circle cx="734" cy="1028" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="744" y="1032" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO</text>
+<circle cx="824" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="834" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="924" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="934" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<text x="748" y="1064" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">100k gate to GND  (safety)</text>
+<text x="748" y="1084" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">IRLZ44N:  G / D / S,   S -&gt; GND</text>
+<text x="748" y="1104" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">1N5819 across the load, cathode to +12 V</text>
+<text x="748" y="1124" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">output terminal:  +12 V  and  drain</text>
+<text x="748" y="1148" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">12 V NORMALLY-CLOSED solenoid</text>
+<path d="M 824 946 L 824 990" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 924 968 L 924 990" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 432 L 856 432 L 856 972 L 718 972 L 718 1028 L 734 1028" fill="none" stroke="#e08700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1086" y="990" width="300" height="190" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1236.0" y="1011" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">PUMP</text>
+<text x="1236.0" y="1028" text-anchor="middle" font-size="11.5" fill="#5b5b5b">GPIO38  -&gt;  100R  -&gt;  gate</text>
+<circle cx="1086" cy="1028" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1096" y="1032" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO</text>
+<circle cx="1176" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1186" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="1276" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1286" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<text x="1100" y="1064" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">100k gate to GND  (safety)</text>
+<text x="1100" y="1084" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">IRLZ44N:  G / D / S,   S -&gt; GND</text>
+<text x="1100" y="1104" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">1N5819 across the load, cathode to +12 V</text>
+<text x="1100" y="1124" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">output terminal:  +12 V  and  drain</text>
+<text x="1100" y="1148" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">for a 12 V pump or router</text>
+<path d="M 1176 946 L 1176 990" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1276 968 L 1276 990" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 458 L 861 458 L 861 976 L 1070 976 L 1070 1028 L 1086 1028" fill="none" stroke="#e08700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1438" y="990" width="300" height="190" rx="6" fill="#f7f4ea" stroke="#5b5b5b" stroke-width="2"/>
+<text x="1588.0" y="1011" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1a1a1a">LOAD</text>
+<text x="1588.0" y="1028" text-anchor="middle" font-size="11.5" fill="#5b5b5b">GPIO40  -&gt;  100R  -&gt;  gate</text>
+<circle cx="1438" cy="1028" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1448" y="1032" text-anchor="start" font-size="11.5" fill="#1a1a1a">GPIO</text>
+<circle cx="1528" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1538" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">+12 V</text>
+<circle cx="1628" cy="990" r="4.2" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.8"/>
+<text x="1638" y="994" text-anchor="start" font-size="11.5" fill="#1a1a1a">GND</text>
+<text x="1452" y="1064" font-size="11.5" text-anchor="start" font-weight="400" fill="#b3261e">100k gate to GND  (safety)</text>
+<text x="1452" y="1084" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">IRLZ44N:  G / D / S,   S -&gt; GND</text>
+<text x="1452" y="1104" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">1N5819 across the load, cathode to +12 V</text>
+<text x="1452" y="1124" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">output terminal:  +12 V  and  drain</text>
+<text x="1452" y="1148" font-size="11.5" text-anchor="start" font-weight="400" fill="#1a1a1a">for a 12 V pump or router</text>
+<path d="M 1528 946 L 1528 990" fill="none" stroke="#d1332e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1628 968 L 1628 990" fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 774 484 L 866 484 L 866 980 L 1422 980 L 1422 1028 L 1438 1028" fill="none" stroke="#e08700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="30" y="1254" font-size="13" text-anchor="start" font-weight="700" fill="#b3261e">Valves must be NORMALLY CLOSED and must not be latching.  Outputs are ACTIVE HIGH - most cheap opto-relay boards are active LOW.  A mains pump or router goes behind an external Sonoff.</text>
+</svg>

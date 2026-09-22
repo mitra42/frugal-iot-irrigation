@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "s2_mini_irrigation")(type "KiCad")(uri "${KIPRJMOD}/s2_mini_irrigation.kicad_sym")(options "")(descr "Modules and field devices for the Frugal-IoT irrigation S2 Mini reference wiring"))
+)

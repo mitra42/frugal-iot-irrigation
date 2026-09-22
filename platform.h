@@ -278,10 +278,23 @@
 #define SYSTEM_RS485_TX_PIN 18
 #define OSPIT_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only - there is no Serial2
     // --- battery ---
-    // Comment this out if you don't have a battery sensor on this board e.g. if using on USB otherwise S2 will think floating 
-    // voltage is about 3V and go to sleep to avoid brownout
-// #define SENSOR_BATTERY_PIN 8 // ADC1_CH7. 
-#define SENSOR_BATTERY_VOLTAGE_DIVIDER 16 // Assumes you fit the same 1k/15k divider as the FF board
+    // The divider in docs/hardware/s2_mini is 220k/39k from the 12V rail, ratio 6.641 - high
+    // values because resolution does not matter here and a 12V bank moves slowly, so 48uA of
+    // standing drain is worth more than the extra bits. 15V puts 2.26V on the pin, inside the
+    // S2's 0..2500mV linear range at the default attenuation; 12.6V puts 1.90V.
+    //
+    // The earlier note here said to comment this out when running on USB, because a FLOATING pin
+    // reads a few hundred mV, times the old divider of 16 lands in the 2500..3400mV window that
+    // System_Power::checkLevel() treats as a flat battery, and the board deep sleeps. Fitting the
+    // divider is most of the fix - with the lower leg present an absent 12V rail pulls the pin to
+    // ground and reads ~0mV, which is below SYSTEM_POWER_BAD_READING_MV and ignored. If you run
+    // this board on USB with NO divider fitted, comment the pin out again.
+#define SENSOR_BATTERY_PIN 8 // ADC1_CH7
+#define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k - configure_battery() takes a float
+    // Same as the FF env, and for the same reason: below this a reading is a broken sensor, not a
+    // flat battery. Without it the default is 2500 - sized for a single lithium cell - which
+    // leaves the 2500..3400mV sleep window open for a half-connected divider to fall into.
+#define SYSTEM_POWER_BAD_READING_MV 9000
  #endif // ARDUINO_LOLIN_S2_MINI
 
 #ifndef FRUGAL_IOT_BOARD_CONFIGURED

@@ -48,11 +48,14 @@ Two boards are supported out of the box. See `platformio.ini` for the full pin l
 | Board | Notes |
 |---|---|
 | **FF-ESP32-OpenMPPT** | the solar charge controller OSPIT runs on. Pin assignments are OSPIT's own |
-| **Lolin S2 Mini** | the same application on a plain dev board, no charging hardware |
+| **Lolin S2 Mini** | the same application on a plain dev board, no charging hardware. [docs/hardware/s2_mini](docs/hardware/s2_mini/) is a full reference design - schematic, wiring diagram and BOM |
 | other | Setting up support for most other boards is trivial, look in the [Frugal-IoT/examples/all](https://github.com/mitra42/frugal-iot/blob/main/examples/all/platformio.ini) for example configuration for many popular boards or [add a new issue](https://github.com/mitra42/frugal-iot-irrigation/issues/new) in this repo.
 
 You will also need: 12 V valves and a driver for them, one Modbus soil probe per sector, an RS485
 transceiver, and optionally a tank float sender and a pump.
+
+For the Lolin S2 Mini there is now a worked hardware design in [docs/hardware/s2_mini](docs/hardware/s2_mini/) at BOM cost about $9/controller + ~$22/sector, detailed explanation of choices in 
+[README](docs/hardware/s2_mini/README.md). 
 
 ## Building
 

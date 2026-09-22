@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schemas.kicad.org/erc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-09-22T16:30:49",
+    "ignored_checks": [
+        {
+            "description": "Global label only appears once in the schematic",
+            "key": "single_global_label"
+        },
+        {
+            "description": "Four connection points are joined together",
+            "key": "four_way_junction"
+        },
+        {
+            "description": "SPICE model issue",
+            "key": "simulation_model_issue"
+        },
+        {
+            "description": "Assigned footprint doesn't match footprint filters",
+            "key": "footprint_filter"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.4",
+    "sheets": [
+        {
+            "path": "/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13",
+            "violations": []
+        },
+        {
+            "path": "/Valve 1/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13/c1000000-0000-4000-8000-000000000001",
+            "violations": []
+        },
+        {
+            "path": "/Valve 2/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13/c1000000-0000-4000-8000-000000000002",
+            "violations": []
+        },
+        {
+            "path": "/Valve 3/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13/c1000000-0000-4000-8000-000000000003",
+            "violations": []
+        },
+        {
+            "path": "/Pump/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13/c1000000-0000-4000-8000-000000000004",
+            "violations": []
+        },
+        {
+            "path": "/Load/",
+            "uuid_path": "/0c9e5d2a-1f3b-4c77-9a61-2f4e8b0d5a13/c1000000-0000-4000-8000-000000000005",
+            "violations": []
+        }
+    ],
+    "source": "s2_mini_irrigation.kicad_sch"
+}
