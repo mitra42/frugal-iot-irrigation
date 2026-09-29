@@ -17,9 +17,15 @@ build/
 data/wifi/
 data/frugal_iot/
 
-# Local developer overrides - the file that switches the build onto lib/Frugal-IoT.
-# See "Building against a local library" in CLAUDE.md.
-platformio-local.ini
+# Settings for one checkout, loaded by "extra_configs = *-local.ini" in platformio.ini:
+# platformio-local.ini (the local library, debug flags - see "Building against a local library" in
+# CLAUDE.md) and platformio-secrets-local.ini (the enrolment secret, which server). Never committed.
+# platform-secrets-local.h is the Arduino IDE form of the secrets - see the library's _settings.h.
+*-local.ini
+*-local.h
+
+# Where scripts/release.zsh --build stages and collects the OTA builds
+ota-stage/
 
 # Editor and OS noise
 .vscode/

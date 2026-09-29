@@ -7,21 +7,12 @@
 # so the library's _settings.h picks the file up automatically.
 #
 # Run this after ANY change to platformio.ini. PlatformIO does not use platform.h, so forgetting
-# leaves the two toolchains disagreeing - and only the Arduino one is wrong.
+# leaves the two toolchains disagreeing - and only the Arduino one is wrong. scripts/release.zsh
+# runs it too.
 #
-# The generator lives in the library, so find the library first: a developer's symlink at
-# lib/Frugal-IoT, otherwise whatever PlatformIO downloaded into .pio/libdeps.
+# The generator is a copy of the library's scripts/generate_platform_h.py, kept identical so the
+# two can be copied either way. --esp32 because every board here is an ESP32, so there is no
+# ESP8266 globals file to write; --no-readme because README.md is written by hand.
 set -e
 cd "$(dirname "$0")/.."
-
-for candidate in lib/Frugal-IoT .pio/libdeps/*/Frugal-IoT; do
-  if [ -f "$candidate/scripts/generate_platform_h.py" ]; then
-    echo "Using the generator from $candidate"
-    exec "$candidate/scripts/generate_platform_h.py"
-  fi
-done
-
-echo "Could not find Frugal-IoT." >&2
-echo "Either run 'pio run' once so PlatformIO downloads it, or symlink your working copy:" >&2
-echo "  ln -s ../../frugal-iot-demo/lib/Frugal-IoT lib/Frugal-IoT" >&2
-exit 1
+exec python3 scripts/generate_platform_h.py --esp32 --no-readme

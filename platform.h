@@ -23,9 +23,15 @@
 // unlike two envs for the same board, where it keeps only the first.
 
 // [platformio]
-// An OPTIONAL, gitignored file for local overrides - see "Building against a local library" in
-// CLAUDE.md. PlatformIO ignores the line if the file does not exist, so a fresh clone needs nothing.
-// extra_configs = platformio-local.ini
+// Anything matching *-local.ini is loaded on top of this file, and is never committed. Two of them,
+// for two different jobs - see build_flags_secrets below:
+//   platformio-local.ini          your own overrides: the local library (see "Building against a
+//                                 local library" in CLAUDE.md) and debug flags. Never reaches a
+//                                 release build.
+//   platformio-secrets-local.ini  the enrolment secret, and which server this build is for.
+//                                 scripts/release.zsh --build hands it to the release build.
+// A GLOB rather than names, so a fresh clone with neither builds unchanged.
+// extra_configs = *-local.ini
 // name: Frugal-IoT Irrigation
 // description: Solar-powered sequenced soil-moisture irrigation
 // src_dir = .
@@ -40,8 +46,7 @@
 // and edits to the library are picked up with no reinstall.
 // Arduino IDE users install Frugal-IoT from the Library Manager instead.
 // lib_deps =
-    // Use the github main branch until 0.1.7 or later is released 
-//     https://github.com/mitra42/frugal-iot.git
+//     Frugal-IoT@^2.0.3
     // ModbusMaster (the RS485 soil probes) is a declared dependency of Frugal-IoT, so
     // lib_ldf_mode = chain pulls it in - it does not need listing here.
 
@@ -73,8 +78,19 @@
     // for the measurements behind this.
 //     -fno-exceptions
 
+// Filled in by the *-local.ini files, which are never committed. Empty here, so this file can be
+// committed and a checkout without them still builds. Two keys rather than one because a value set
+// in a *-local.ini REPLACES the one here rather than adding to it, so each file needs its own:
+//   build_flags_secrets - platformio-secrets-local.ini: the enrolment secret, and which server
+//                         this build is for. ota_build.py --secrets links it into a release build.
+//   build_flags_local   - platformio-local.ini: your own debug flags. Never reaches an OTA build.
+// build_flags_secrets =
+// build_flags_local =
+
 // flags that apply only in main (the library can see them, but doesnt need them)
 // build_flags_main =
+//     ${common.build_flags_secrets}
+//     ${common.build_flags_local}
 
 // project specific flags that are needed by the library
 // build_flags_library =
@@ -99,12 +115,31 @@
 // build_flags_map =
 //     -Wl,-Map=$BUILD_DIR/firmware.map
 
+// AsyncTCP's service task stack, which is HEAP, not static - so it does not show up in the RAM
+// figure at the end of a build, and that is why it went unnoticed.
+//
+// The library defaults it to 8192*2, sixteen kilobytes, which is the same size as one of mbedTLS's
+// two TLS record buffers. The captive portal's handlers are a form POST, a status page and a couple
+// of redirects - nothing that needs half of that. On an S2, where TinyUSB has already taken 23KB
+// of internal RAM, those sixteen kilobytes are the difference between a TLS handshake that fits and
+// one that returns "SSL - Memory allocation failed".
+//
+// #define works
+// not an sdkconfig setting.
+//
+// 8192 moved an S2 from "cannot allocate the record buffers" to "failed during chain verification" -
+// further in, still short. 4096 is the next step and is still generous for handlers that parse a
+// small form and print a status page. Raise it again if a portal handler ever does real work.
+// build_flags_async =
+#define CONFIG_ASYNC_TCP_STACK_SIZE 4096
+
 // build_flags =
 //     ${common.build_flags_frugaliot}
 //     ${common.build_flags_main}
 //     ${common.build_flags_library}
 //     ${common.build_flags_lvd}
 //     ${common.build_flags_map}
+//     ${common.build_flags_async}
 
 // platform_esp32 = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
 
@@ -114,7 +149,9 @@
 // below here as project source - including, through the lib/Frugal-IoT symlink, the library's own
 // examples and their downloaded dependencies. So say explicitly what is ours.
 // Arduino IDE needs no equivalent: it ignores every subdirectory except src/.
-// build_src_filter = +<*> -<lib/> -<data/> -<scripts/> -<.pio/> -<docs/>
+// ota-stage/ is where scripts/release.zsh --build stages its builds, each a tree of symlinks back to
+// these same sources - so without excluding it, every file would be compiled twice.
+// build_src_filter = +<*> -<lib/> -<data/> -<scripts/> -<.pio/> -<docs/> -<ota-stage/>
 // monitor_speed = 460800 ; If not 460800 then also change in main.cpp: frugal_iot.startSerial(newspeed, 5000);
 // upload_speed = 460800
 // framework = arduino
@@ -141,7 +178,7 @@
 // SSD1306.lua and leaves the SSD1327 line commented out.
 
 // ===== [env:ff_openmppt] -> ARDUINO_ESP32_DEV
-#ifdef ARDUINO_ESP32_DEV
+#if defined(ARDUINO_ESP32_DEV) || defined(FF_OPENMPPT)
 #define FRUGAL_IOT_BOARD_CONFIGURED
 // platform = ${common.platform_esp32}
 // board = esp32dev ; defines ARDUINO_ESP32_DEV
@@ -249,7 +286,7 @@
 #endif // ARDUINO_ESP32_DEV
 
 // ===== [env:s2_mini] -> ARDUINO_LOLIN_S2_MINI
-#ifdef ARDUINO_LOLIN_S2_MINI
+#if defined(ARDUINO_LOLIN_S2_MINI) || defined(S2_MINI)
 #define FRUGAL_IOT_BOARD_CONFIGURED
 // platform = ${common.platform_esp32}
 // board = lolin_s2_mini ; defines ARDUINO_LOLIN_S2_MINI
@@ -277,23 +314,8 @@
 #define SYSTEM_RS485_RX_PIN 16
 #define SYSTEM_RS485_TX_PIN 18
 #define OSPIT_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only - there is no Serial2
-    // --- battery ---
-    // The divider in docs/hardware/s2_mini is 220k/39k from the 12V rail, ratio 6.641 - high
-    // values because resolution does not matter here and a 12V bank moves slowly, so 48uA of
-    // standing drain is worth more than the extra bits. 15V puts 2.26V on the pin, inside the
-    // S2's 0..2500mV linear range at the default attenuation; 12.6V puts 1.90V.
-    //
-    // The earlier note here said to comment this out when running on USB, because a FLOATING pin
-    // reads a few hundred mV, times the old divider of 16 lands in the 2500..3400mV window that
-    // System_Power::checkLevel() treats as a flat battery, and the board deep sleeps. Fitting the
-    // divider is most of the fix - with the lower leg present an absent 12V rail pulls the pin to
-    // ground and reads ~0mV, which is below SYSTEM_POWER_BAD_READING_MV and ignored. If you run
-    // this board on USB with NO divider fitted, comment the pin out again.
-#define SENSOR_BATTERY_PIN 8 // ADC1_CH7
-#define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k - configure_battery() takes a float
-    // Same as the FF env, and for the same reason: below this a reading is a broken sensor, not a
-    // flat battery. Without it the default is 2500 - sized for a single lithium cell - which
-    // leaves the 2500..3400mV sleep window open for a half-connected divider to fall into.
+#define SENSOR_BATTERY_PIN 8 // ADC1_CH7 comment out if testing on board with no resistor divider fitted or will auto-deep-sleep
+#define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k
 #define SYSTEM_POWER_BAD_READING_MV 9000
  #endif // ARDUINO_LOLIN_S2_MINI
 

@@ -83,6 +83,8 @@ not.
 | `control_health.{h,cpp}` | battery capacity left, from an overnight discharge - reporting only |
 | `battery_profile.h` | the chemistry enum and struct, shared by the charger and the charge estimate |
 | `platformio.ini` | the pin map for each board, and every build flag |
+| `scripts/release.zsh` | the release, in four stages - see "Releasing" below |
+| `scripts/*.py` | COPIES of the library's and the demo's scripts - see "Releasing" |
 | `TESTING.md` | commissioning a real board, written for someone who is not a developer |
 | `HARDWARE-QUESTIONS.md` | things only someone holding the board can answer |
 
@@ -145,6 +147,30 @@ flags; PlatformIO ignores it entirely. So nothing you can run here will tell you
 It has been forgotten twice (`0d13975` and `cd665a1`, caught in `01373c4`), both times leaving
 defines the `.ino` names directly out of the Arduino build. Treat it as part of editing
 `platformio.ini` rather than as a follow-up step.
+
+## Releasing
+
+```bash
+scripts/release.zsh 2.0.4             # set Frugal-IoT@^2.0.4, regenerate platform.h + keywords.txt
+                                      # ... review, commit
+scripts/release.zsh --publish         # push, create the 2.0.4 release on GitHub
+scripts/release.zsh --build           # build every env into ota-stage/, against the registry library
+scripts/release.zsh --upload --org dev
+```
+
+The version IS the library version this builds against - the demo's `release.zsh` already bumps
+that line at each library release, so there is one number, not two. `-n` dry-runs any stage; `-h`
+has the rest.
+
+`--build` runs `ota_build.py --project`, which stages the build as symlinks under `ota-stage/`.
+That is how `platformio-local.ini` (your local library, debug flags) is kept out of a release
+while `platformio-secrets-local.ini` (the enrolment secret) is kept in. `ota-stage/` is excluded in
+`build_src_filter` for that reason - without it a normal `pio run` would compile everything twice.
+
+The `.py` files in `scripts/` are **copies, kept byte-identical**: `generate_platform_h.py`,
+`generate_keywords.py`, `ota_build.py` and `ota_keymap.py` from the library's `scripts/`, and
+`ota_keys.py` and `ota_upload.py` from `frugal-iot-demo/scripts/`. Change the original and copy it
+here, not the other way round, and check with `cmp`.
 
 ## Testing without hardware
 
