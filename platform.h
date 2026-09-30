@@ -64,7 +64,7 @@
 // #define SENSOR_ANALOG_DEBUG
     // On for the sleep-test branch: it is what prints `Sleeping` just before the board goes, which
     // is the only indication a tester with a serial monitor gets.
-#define SYSTEM_POWER_DEBUG
+// #define SYSTEM_POWER_DEBUG
 // #define SYSTEM_TIME_DEBUG
 // #define SYSTEM_MQTT_DEBUG
 // #define SYSTEM_WIFI_DEBUG
@@ -72,8 +72,8 @@
 // #define SYSTEM_CAPTIVE_MINIMAL // replace portal with one-line page to tell transfort fault from content.
 // #define SYSTEM_GROUP_HEAP_DEBUG // free heap & largest contiguous block check after each module setup/loop
 #define SYSTEM_LITTLEFS_SUPPORTDEPRECATED // one-shot migration of saved config from /<id>/<leaf> dirs to flat /<id>.<leaf> files
-#define SYSTEM_WIFI_DEBUG
-#define SYSTEM_MESSAGE_DEBUG
+// #define SYSTEM_WIFI_DEBUG
+// #define SYSTEM_MESSAGE_DEBUG
     // Turn off C++ exceptions - nothing in this example throws. See examples/agri/platformio.ini
     // for the measurements behind this.
 //     -fno-exceptions
@@ -293,11 +293,8 @@
 // board_build.partitions = min_spiffs.csv
 // build_flags =
 //     ${common.build_flags}
-    // AsyncTCP's task stack defaults to 8192*2 and is allocated from the internal heap, which on
-    // this board is the scarce one. 8192 is still ample for handleRequest() - the captive page is
-    // built with String temporaries on the heap, not on the stack. Raise it again if the AsyncTCP
-    // task ever overflows (it panics with a clear "***ERROR*** A stack overflow" and names the task).
-#define CONFIG_ASYNC_TCP_STACK_SIZE 8192
+    // CONFIG_ASYNC_TCP_STACK_SIZE comes from common.build_flags_async. Do not override it here: a
+// #define only
 #define SYSTEM_OTA_SUFFIX "s2_mini"
     // --- irrigation hardware ---
 #define OSPIT_VALVE1_PIN 10
