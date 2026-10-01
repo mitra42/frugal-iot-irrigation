@@ -46,7 +46,7 @@
 // and edits to the library are picked up with no reinstall.
 // Arduino IDE users install Frugal-IoT from the Library Manager instead.
 // lib_deps =
-//     Frugal-IoT@^2.0.3
+//     Frugal-IoT@^2.0.4
     // ModbusMaster (the RS485 soil probes) is a declared dependency of Frugal-IoT, so
     // lib_ldf_mode = chain pulls it in - it does not need listing here.
 
@@ -293,8 +293,6 @@
 // board_build.partitions = min_spiffs.csv
 // build_flags =
 //     ${common.build_flags}
-    // CONFIG_ASYNC_TCP_STACK_SIZE comes from common.build_flags_async. Do not override it here: a
-// #define only
 #define SYSTEM_OTA_SUFFIX "s2_mini"
     // --- irrigation hardware ---
 #define OSPIT_VALVE1_PIN 10
