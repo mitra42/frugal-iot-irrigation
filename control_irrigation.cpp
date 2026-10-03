@@ -159,7 +159,7 @@ void Control_Irrigation::setup() {
   Control::setup();
 }
 
-bool Control_Irrigation::allowSleep() {
+bool Control_Irrigation::okToSleep(unsigned long ms, uint16_t how) {
   return !running();
 }
 

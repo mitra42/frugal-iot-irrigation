@@ -76,7 +76,7 @@ not.
 | `frugal-iot-irrigation.ino` | wiring: which sensors, which actuators, what is connected to what |
 | `control_irrigation.{h,cpp}` | `Control_Irrigation` (the sequencer) and `Control_Sector` |
 | `sensor_tank.{h,cpp}` | resistive float sender as a percentage |
-| `control_oled_ospit.{h,cpp}` | three display pages in a carousel |
+| `control_oled_irrigation.{h,cpp}` | three display pages in a carousel |
 | `sensor_heatsink.{h,cpp}` | heatsink temperature from a diode pair, if the board has one |
 | `control_mppt.{h,cpp}` | solar charge control - two-stage, temperature compensated; the board-revision Vmpp cascade lives here |
 | `control_soc.{h,cpp}` | state of charge from battery voltage - reporting only |
@@ -189,7 +189,7 @@ that check lie during this port, both worth remembering:
   state name can be present and unfindable. Name things you intend to check for distinctively.
 
 Compile each `#ifdef`-guarded feature at least once with its flag set. Everything optional here —
-`OSPIT_USB_PIN`, `OSPIT_LOAD_PIN`, `OSPIT_HEATSINK_PIN`, the board-revision flags — is off in at
+`IRRIGATION_USB_PIN`, `IRRIGATION_LOAD_PIN`, `SENSOR_HEATSINK_PIN`, the board-revision flags — is off in at
 least one env, so a throwaway build with it on is the only thing that proves it compiles.
 
 ## Where the state lives

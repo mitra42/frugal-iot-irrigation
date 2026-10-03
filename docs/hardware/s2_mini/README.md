@@ -104,7 +104,7 @@ Three independent layers, two of which constrain purchase decisions.
    two pins per valve.
 2. **The 100 k gate pull-downs.** Covers the case of 12 V present, controller dead, resetting, or still booting.
    The pull-down holds the gate due while the ESP32 GPIOs are floating before `setup()` runs and during a brownout,
-3. **The battery interlock**, at 12.6 V ± 0.2 (`OSPIT_LVD_IRRIGATION_MV`). This covers the slow
+3. **The battery interlock**, at 12.6 V ± 0.2 (`IRRIGATION_LVD_IRRIGATION_MV`). This covers the slow
    case — a sagging battery that can still hold a solenoid open but can no longer run the system.
 
 None of the five outputs is a strapping pin (those are GPIO0, GPIO45 and GPIO46 on the S2), so

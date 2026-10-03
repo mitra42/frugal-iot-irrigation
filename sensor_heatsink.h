@@ -39,35 +39,35 @@
  * The two constants are build flags because they are the sort of thing that differs between
  * boards and is easy to measure. With the board cold and at a known room temperature, read
  * <id>/<id> and compare: if it is out by a constant number of degrees, adjust
- * OSPIT_HEATSINK_MV_AT_25C by 4.8 mV for each degree of error. The slope is a property of silicon
+ * SENSOR_HEATSINK_MV_AT_25C by 4.8 mV for each degree of error. The slope is a property of silicon
  * and is unlikely to need changing.
  *
  * Build flags:
- *   OSPIT_HEATSINK_PIN            REQUIRED, or this class is not compiled at all
- *   OSPIT_HEATSINK_MV_AT_25C      (913)  sensor voltage at 25 C
- *   OSPIT_HEATSINK_MV_PER_C       (4.8)  how far it falls per degree - positive number, the sign
+ *   SENSOR_HEATSINK_PIN            REQUIRED, or this class is not compiled at all
+ *   SENSOR_HEATSINK_MV_AT_25C      (913)  sensor voltage at 25 C
+ *   SENSOR_HEATSINK_MV_PER_C       (4.8)  how far it falls per degree - positive number, the sign
  *                                        is handled below
- *   OSPIT_HEATSINK_MV_DISCONNECTED (2500) at or above this, assume no sensor is connected
+ *   SENSOR_HEATSINK_MV_DISCONNECTED (2500) at or above this, assume no sensor is connected
  */
 
 #ifndef SENSOR_HEATSINK_H
 #define SENSOR_HEATSINK_H
 
-#ifdef OSPIT_HEATSINK_PIN
+#ifdef SENSOR_HEATSINK_PIN
 
 #include "sensor/analog.h"
 
-#ifndef OSPIT_HEATSINK_MV_AT_25C
-  #define OSPIT_HEATSINK_MV_AT_25C 913
+#ifndef SENSOR_HEATSINK_MV_AT_25C
+  #define SENSOR_HEATSINK_MV_AT_25C 913
 #endif
-#ifndef OSPIT_HEATSINK_MV_PER_C
-  #define OSPIT_HEATSINK_MV_PER_C 4.8
+#ifndef SENSOR_HEATSINK_MV_PER_C
+  #define SENSOR_HEATSINK_MV_PER_C 4.8
 #endif
-#ifndef OSPIT_HEATSINK_MV_DISCONNECTED
+#ifndef SENSOR_HEATSINK_MV_DISCONNECTED
   // 2500 mV would be about -305 C, so nothing real can reach it. An input with nothing connected
   // floats up towards the supply rail; OSPIT treats the same condition as "sensor missing, or
   // connected the wrong way round".
-  #define OSPIT_HEATSINK_MV_DISCONNECTED 2500
+  #define SENSOR_HEATSINK_MV_DISCONNECTED 2500
 #endif
 
 class Sensor_Heatsink : public Sensor_Analog {
@@ -80,5 +80,5 @@ class Sensor_Heatsink : public Sensor_Analog {
     float convert(int mV) override;
 };
 
-#endif // OSPIT_HEATSINK_PIN
+#endif // SENSOR_HEATSINK_PIN
 #endif // SENSOR_HEATSINK_H

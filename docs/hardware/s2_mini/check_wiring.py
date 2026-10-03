@@ -22,12 +22,12 @@ CLI = '/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli'
 
 # key -> (platformio flag, expected net label on U1 in the schematic)
 SIGNALS = {
-    'valve1':   ('OSPIT_VALVE1_PIN',      'VALVE1_GPIO'),
-    'valve2':   ('OSPIT_VALVE2_PIN',      'VALVE2_GPIO'),
-    'valve3':   ('OSPIT_VALVE3_PIN',      'VALVE3_GPIO'),
-    'pump':     ('OSPIT_PUMP_PIN',        'PUMP_GPIO'),
-    'load':     ('OSPIT_LOAD_PIN',        'LOAD_GPIO'),
-    'tank':     ('OSPIT_TANK_PIN',        'TANK_SENSE'),
+    'valve1':   ('IRRIGATION_VALVE1_PIN',      'VALVE1_GPIO'),
+    'valve2':   ('IRRIGATION_VALVE2_PIN',      'VALVE2_GPIO'),
+    'valve3':   ('IRRIGATION_VALVE3_PIN',      'VALVE3_GPIO'),
+    'pump':     ('IRRIGATION_PUMP_PIN',        'PUMP_GPIO'),
+    'load':     ('IRRIGATION_LOAD_PIN',        'LOAD_GPIO'),
+    'tank':     ('SENSOR_TANK_PIN',        'TANK_SENSE'),
     'rs485_rx': ('SYSTEM_RS485_RX_PIN',   'RS485_RX'),
     'rs485_tx': ('SYSTEM_RS485_TX_PIN',   'RS485_TX'),
     'battery':  ('SENSOR_BATTERY_PIN',    'BAT_SENSE'),

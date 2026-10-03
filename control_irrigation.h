@@ -32,7 +32,7 @@
  * No RTC_DATA_ATTR state of our own is needed. `i` is reset to "idle" in setup(), which runs on
  * every boot including a deep-sleep wake - so a cycle interrupted by a sleep is abandoned rather
  * than resumed with stale state, and every valve is closed by Actuator_Digital::setup(). That is
- * the safe outcome, and allowSleep() is there to stop it happening in the first place.
+ * the safe outcome, and okToSleep() is there to stop it happening in the first place.
  *
  * ---------------------------------------------------------------------------------------------
  * Skipping a sector
@@ -152,15 +152,22 @@ class Control_Irrigation : public Control {
     OUTbool*  pump;       // Wire to the pump/load Actuator_Digital
     OUTuint16* active;    // Sector currently running, 1-based; 0 when idle
 
-    /* False while a cycle is running, i.e. "do not sleep now".
+    /* Refuses any sleep while a cycle is running - System_Power asks every module before sleeping
+     * (System_Base::okToSleep), and asks again on the next loop() after a refusal.
      *
-     * Nothing calls this yet - Mitra is building the sleep-management side separately, and this is
-     * the hook it will use. Deep sleep mid-cycle would abandon the cycle (see the note on `i`
-     * above) and, worse, leave a valve open with the watchdog and MQTT down.
+     * Whatever kind of sleep: a deep sleep would abandon the cycle (see the note on `i` above), and
+     * any sleep would leave a valve open with nothing watching the tank, the power interlock, the
+     * watchdog or MQTT. Between cycles any sleep is fine - a start that falls due during a sleep
+     * just happens on waking, as the timer lives in RTC memory.
      * TODO may consider holding GPIO with RTC when asleep, which would allow a cycle to span a
      * sleep rather than having to prevent one.
+     *
+     * Deliberately no `override`: the hook only exists in Frugal-IoT from the 232-lm-sleep branch
+     * on, and without it this must still build against the released library, where it is simply
+     * never called. The cost is that a change to the base signature would quietly stop this
+     * overriding - add `override` back once the released library has okToSleep.
      */
-    bool allowSleep();
+    bool okToSleep(unsigned long ms, uint16_t how);
 
     void setup() override;
     void periodically() override;

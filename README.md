@@ -4,11 +4,15 @@ This project is intended to provide solar-powered irrigation for small farms. A 
 each until its soil reaches a target moisture or a time limit runs out, 
 with tank-level and battery interlocks that stop the whole run.
 
-It is built on top of Frugal-IoT and both the irrigation and MPPT components are inspired by
-[OSPIT](https://github.com/mitra42/ospit) 
-(NodeMCU Lua on the FF-ESP32-OpenMPPT solar charge controller)
+It is built on top of Frugal-IoT and both the irrigation and MPPT components draw part of their
+inpiration from [OSPIT](https://www.apc.org/en/news/meet-ospit-sustainable-energy-and-irrigation-solution-community-networks)
+(Lua on the FF-ESP32-OpenMPPT solar charge controller)
 
-This release supports both the "FF-ESP32-OpenMPPT solar charge controller" that OSPIT runs on, and 
+This release should work in two hardware environments.
+
+a: The "FF-ESP32-OpenMPPT solar charge controller" in which case it will run MPPT 
+This release should work - and do MPPT - on both the "FF-ESP32-OpenMPPT solar charge controller", 
+or work without MPPT on  that OSPIT runs on, and 
 any similar system of sensors, and pumps. 
 
 [Frugal-IoT](https://github.com/mitra42/frugal-iot) brings: WiFi setup from a phone; MQTT; web and phone dashboards; graphing and over-the-air updates.  

@@ -1,6 +1,9 @@
-/* See control_oled_ospit.h - three pages in a carousel, ported from OSPIT's display.lua */
+/* See control_oled_irrigation.h - three pages in a carousel, 
+  based on OSPIT's display.lua, but likely to evolve to a more generic approach
+  This is a good place for customization to provide what you want to see as output. 
+*/
 
-#include "control_oled_ospit.h"
+#include "control_oled_irrigation.h"
 #include "language.h"
 
 #ifdef ACTUATOR_OLED_WANT
@@ -21,7 +24,7 @@ static void printValue(Print* out, INfloat* in, uint8_t width) {
 
 // ---- Page 1: battery ------------------------------------------------------------------
 
-Control_Oled_OspitPower::Control_Oled_OspitPower()
+Control_Oled_IrrigationPower::Control_Oled_IrrigationPower()
   : Control_Oled("oledpower", "Display power", std::vector<IN*>{}),
     battery(new INfloat("oledpower", "battery", "Battery", NAN, 0, 0, 15000, "#008000", true)),
     soc(new INfloat("oledpower", "soc", "Charge", NAN, 0, 0, 100, "#008000", true)),
@@ -34,7 +37,7 @@ Control_Oled_OspitPower::Control_Oled_OspitPower()
   inputs.push_back(mpptstate);
 }
 
-void Control_Oled_OspitPower::act() {
+void Control_Oled_IrrigationPower::act() {
   if (enabled) {
     auto* display = &frugal_iot.oled->display; // auto: the driver is chosen at compile time
     display->clearDisplay();
@@ -74,8 +77,12 @@ void Control_Oled_OspitPower::act() {
 }
 
 // ---- Page 2: sectors and tank ---------------------------------------------------------
+/* This version provides the same data as OSPIT does, 
+  For a more general application, with a variable number of sectors,
+  this probably wants to evolve to one page per sector
+*/
 
-Control_Oled_OspitSoil::Control_Oled_OspitSoil()
+Control_Oled_IrrigationSoil::Control_Oled_IrrigationSoil()
   : Control_Oled("oledsoil", "Display soil", std::vector<IN*>{}),
     moisture1(new INfloat("oledsoil", "moisture1", "Moisture 1", NAN, 0, 0, 100, "#a52a2a", true)),
     moisture2(new INfloat("oledsoil", "moisture2", "Moisture 2", NAN, 0, 0, 100, "#a52a2a", true)),
@@ -90,7 +97,7 @@ Control_Oled_OspitSoil::Control_Oled_OspitSoil()
   inputs.push_back(active);
 }
 
-void Control_Oled_OspitSoil::act() {
+void Control_Oled_IrrigationSoil::act() {
   if (enabled) {
     auto* display = &frugal_iot.oled->display;
     display->clearDisplay();
@@ -120,11 +127,11 @@ void Control_Oled_OspitSoil::act() {
 
 // ---- Page 3: connectivity -------------------------------------------------------------
 
-Control_Oled_OspitNet::Control_Oled_OspitNet()
+Control_Oled_IrrigationNet::Control_Oled_IrrigationNet()
   : Control_Oled("olednet", "Display network", std::vector<IN*>{})
 { }
 
-void Control_Oled_OspitNet::act() {
+void Control_Oled_IrrigationNet::act() {
   if (enabled) {
     auto* display = &frugal_iot.oled->display;
     display->clearDisplay();
@@ -158,9 +165,9 @@ void Control_Oled_OspitNet::act() {
 // ---- Assembly -------------------------------------------------------------------------
 
 Control_Carousel* ospitDisplay() {
-  Control_Oled_OspitPower* page1 = new Control_Oled_OspitPower();
-  Control_Oled_OspitSoil*  page2 = new Control_Oled_OspitSoil();
-  Control_Oled_OspitNet*   page3 = new Control_Oled_OspitNet();
+  Control_Oled_IrrigationPower* page1 = new Control_Oled_IrrigationPower();
+  Control_Oled_IrrigationSoil*  page2 = new Control_Oled_IrrigationSoil();
+  Control_Oled_IrrigationNet*   page3 = new Control_Oled_IrrigationNet();
   frugal_iot.controls->add(page1);
   frugal_iot.controls->add(page2);
   frugal_iot.controls->add(page3);

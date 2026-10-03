@@ -5,9 +5,9 @@
  * way of doing exactly that, and means the pages can also be selected by hand (a button, or
  * publishing to carousel/select) rather than only cycling.
  *
- *   Page 1  Control_Oled_OspitPower    battery
- *   Page 2  Control_Oled_OspitSoil     the sector moistures and the tank level
- *   Page 3  Control_Oled_OspitNet      IP, WiFi, MQTT
+ *   Page 1  Control_Oled_IrrigationPower    battery
+ *   Page 2  Control_Oled_IrrigationSoil     the sector moistures and the tank level
+ *   Page 3  Control_Oled_IrrigationNet      IP, WiFi, MQTT
  *
  * Page 1 is battery only for now. OSPIT's version of it is mostly MPPT - solar open-circuit
  * voltage, tracking voltage, charge state, battery temperature - and none of that exists until
@@ -22,8 +22,8 @@
  * conflict with the RS485 probes; only the SSD1327 SPI panel does, because that needs pins 16/17.
  */
 
-#ifndef CONTROL_OLED_OSPIT_H
-#define CONTROL_OLED_OSPIT_H
+#ifndef CONTROL_OLED_IRRIGATION_H
+#define CONTROL_OLED_IRRIGATION_H
 
 #include "_settings.h"
 
@@ -37,18 +37,18 @@
  * On a board with no charge control the panel and state lines simply read "--", so the page is
  * still worth having; nothing here is conditional.
  */
-class Control_Oled_OspitPower : public Control_Oled {
+class Control_Oled_IrrigationPower : public Control_Oled {
   public:
     INfloat* battery;
     INfloat* soc;    // Percent, from Control_SoC
     INfloat* panel;  // Panel volts in mV, or nothing on a board with no panel sensor
     INtext*  mpptstate; // Control_MPPT's state word - "tracking", "too hot" and so on
-    Control_Oled_OspitPower();
+    Control_Oled_IrrigationPower();
     void act() override;
 };
 
 // Page 2 - what the irrigation actually runs on: one line per sector, plus the tank.
-class Control_Oled_OspitSoil : public Control_Oled {
+class Control_Oled_IrrigationSoil : public Control_Oled {
   public:
     // Three, matching the three sectors. A node with a different number wants a different page -
     // this is an example, and the point is that it is short enough to edit.
@@ -57,14 +57,14 @@ class Control_Oled_OspitSoil : public Control_Oled {
     INfloat* moisture3;
     INfloat* tank;
     INuint16* active; // Which sector is watering right now, 0 for none. OSPIT has no equivalent
-    Control_Oled_OspitSoil();
+    Control_Oled_IrrigationSoil();
     void act() override;
 };
 
 // Page 3 - connectivity, as display.lua's third page
-class Control_Oled_OspitNet : public Control_Oled {
+class Control_Oled_IrrigationNet : public Control_Oled {
   public:
-    Control_Oled_OspitNet();
+    Control_Oled_IrrigationNet();
     void act() override;
 };
 
@@ -76,4 +76,4 @@ class Control_Oled_OspitNet : public Control_Oled {
 Control_Carousel* ospitDisplay();
 
 #endif // ACTUATOR_OLED_WANT
-#endif // CONTROL_OLED_OSPIT_H
+#endif // CONTROL_OLED_IRRIGATION_H

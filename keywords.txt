@@ -5,9 +5,9 @@
 Control_Health	KEYWORD1
 Control_Irrigation	KEYWORD1
 Control_MPPT	KEYWORD1
-Control_Oled_OspitNet	KEYWORD1
-Control_Oled_OspitPower	KEYWORD1
-Control_Oled_OspitSoil	KEYWORD1
+Control_Oled_IrrigationNet	KEYWORD1
+Control_Oled_IrrigationPower	KEYWORD1
+Control_Oled_IrrigationSoil	KEYWORD1
 Control_Sector	KEYWORD1
 Control_SoC	KEYWORD1
 Sensor_Heatsink	KEYWORD1
@@ -18,7 +18,7 @@ Sensor_Tank	KEYWORD1
 #######################################
 
 act	KEYWORD2
-allowSleep	KEYWORD2
+okToSleep	KEYWORD2
 applyStep	KEYWORD2
 blocked	KEYWORD2
 captiveLines	KEYWORD2

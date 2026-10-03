@@ -3,7 +3,7 @@
  * Its own file because it belongs to neither. Control_MPPT needs the charging voltages and
  * Control_SoC needs to know whether to use the lead-acid or the lithium voltage curve, and a board
  * can have the second without the first - a node with a battery but no solar panel still wants to
- * report how full it is. Keeping this inside control_mppt.h, behind OSPIT_MPPT_DAC_PIN, made
+ * report how full it is. Keeping this inside control_mppt.h, behind MPPT_DAC_PIN, made
  * Control_SoC fail to compile on exactly that board.
  */
 

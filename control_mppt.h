@@ -149,7 +149,7 @@
  * sets a step, which is unambiguous, and the node reports the voltage it BELIEVES that asks for.
  *
  * Build flags:
- *   OSPIT_MPPT_DAC_PIN         REQUIRED, or none of this is compiled
+ *   MPPT_DAC_PIN         REQUIRED, or none of this is compiled
  *   CONTROL_MPPT_VMPP_MIN  }   the panel-voltage range this board's hardware can ask for.
  *   CONTROL_MPPT_VMPP_MAX  }   Give BOTH or NEITHER - see the #error below.
  *   CONTROL_MPPT_BOARD_FF_1_0 / _1_1   a known board revision instead of the two above. With none
@@ -179,7 +179,7 @@
 #ifndef CONTROL_MPPT_H
 #define CONTROL_MPPT_H
 
-#ifdef OSPIT_MPPT_DAC_PIN
+#ifdef MPPT_DAC_PIN
 
 #include "control/control.h"
 #include "battery_profile.h"
@@ -348,5 +348,5 @@ class Control_MPPT : public Control {
     uint16_t stepForVmpp(float v) const;
 };
 
-#endif // OSPIT_MPPT_DAC_PIN
+#endif // MPPT_DAC_PIN
 #endif // CONTROL_MPPT_H

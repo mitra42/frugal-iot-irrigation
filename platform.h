@@ -101,15 +101,15 @@
 // the main thing that differs between installations - battery chemistry, panel size, and how much
 // you mind losing each thing. Together they set the ORDER things are given up in as the battery
 // falls: USB first, then irrigation, and the router last. See the note in the .ino.
-// Setting OSPIT_LVD_IRRIGATION_MV to 12100 restores OSPIT's behaviour of gating irrigation on the
+// Setting IRRIGATION_LVD_IRRIGATION_MV to 12100 restores OSPIT's behaviour of gating irrigation on the
 // same threshold as the load.
 // build_flags_lvd =
-#define OSPIT_LVD_LOAD_MV 12100
-#define OSPIT_LVD_LOAD_HYST_MV 200
-#define OSPIT_LVD_USB_MV 13100
-#define OSPIT_LVD_USB_HYST_MV 300
-#define OSPIT_LVD_IRRIGATION_MV 12600
-#define OSPIT_LVD_IRRIGATION_HYST_MV 200
+#define IRRIGATION_LVD_IRRIGATION_MV 12100
+#define IRRIGATION_LVD_LOAD_HYST_MV 200
+#define IRRIGATION_LVD_USB_MV 13100
+#define IRRIGATION_LVD_USB_HYST_MV 300
+#define IRRIGATION_LVD_IRRIGATION_MV 12600
+#define IRRIGATION_LVD_IRRIGATION_HYST_MV 200
 
 // Ask the linker for a map file - scripts/size_report.py reads it.
 // build_flags_map =
@@ -187,49 +187,49 @@
 //     ${common.build_flags}
 #define SYSTEM_OTA_SUFFIX "ff_openmppt"
     // --- irrigation hardware ---
-#define OSPIT_VALVE1_PIN 26
-#define OSPIT_VALVE2_PIN 27
-#define OSPIT_VALVE3_PIN 12
+#define IRRIGATION_VALVE1_PIN 26
+#define IRRIGATION_VALVE2_PIN 27
+#define IRRIGATION_VALVE3_PIN 12
     // Pin 14 can be a pump OR a load switch, not both - see the note in ospit.ino. OSPIT's own
     // default (pump_is_load=true) is the load role; the pump role is chosen here because P2 has no
     // MPPT to own a load output and because it exercises the pump path. To swap, comment out
-    // OSPIT_PUMP_PIN and uncomment OSPIT_LOAD_PIN.
-#define OSPIT_PUMP_PIN 14
-// #define OSPIT_LOAD_PIN 14
+    // IRRIGATION_PUMP_PIN and uncomment IRRIGATION_LOAD_PIN.
+#define IRRIGATION_PUMP_PIN 14
+// #define IRRIGATION_LOAD_PIN 14
     // A USB supply on pin 12 - the SAME PIN as valve 3. OSPIT decides which it is by whether a
     // probe answers on sector 3; here, define one or the other. If you enable this, remove
-    // OSPIT_VALVE3_PIN above and drop sector 3 from the sketch.
-// #define OSPIT_USB_PIN 12
+    // IRRIGATION_VALVE3_PIN above and drop sector 3 from the sketch.
+// #define IRRIGATION_USB_PIN 12
     // The tank gauge. mp2.lua's header comment calls GPIO32 a temperature sense input, but
     // irrigation.lua reads it as the tank - question 7 in HARDWARE-QUESTIONS.md settles it. If it
     // turns out to be the temperature input, comment this out and no tank code is compiled.
-#define OSPIT_TANK_PIN 32
+#define SENSOR_TANK_PIN 32
     // --- RS485 soil probes. Slave ids are set in the .ino and start at 2: address 1 is the
     // factory default and has to stay meaning "not yet provisioned" - see sensor/soilmodbus.h
 #define SENSOR_SOILMODBUS_WANT
 #define SENSOR_SOILMODBUS_AUTOPROVISION
 #define SYSTEM_RS485_RX_PIN 16
 #define SYSTEM_RS485_TX_PIN 17
-#define OSPIT_RS485_UART Serial2
+#define SYSTEM_RS485_UART Serial2
     // --- charge controller instrumentation (P5.1 - measurement only, nothing is driven) ---
     // Solar panel voltage. 1k/27k divider is the 0.035714 ratio in mp2.lua's Vinmeasure(), so 28.
-#define OSPIT_PANEL_PIN 34
-#define OSPIT_PANEL_DIVIDER 28
+#define MPPT_PANEL_PIN 34
+#define MPPT_PANEL_DIVIDER 28
     // The series Schottky D6 drops about 300mV, so the panel is that much higher than the pin says.
     // SET THIS TO 0 if D6 has been replaced by a wire on your board - question 2 in
     // HARDWARE-QUESTIONS.md tells the tester how to look.
-#define OSPIT_PANEL_DIODE_MV 300
+#define MPPT_PANEL_DIODE_MV 300
     // Up to three DS18B20 probes share this pin - air, battery and board temperature. They are told
     // apart by the id burned into each probe, so which is which survives unplugging them.
-#define OSPIT_ONEWIRE_PIN 2
+#define MPPT_ONEWIRE_PIN 2
     // The OTHER way this board can measure its own heat: two diodes read as an analog voltage.
     // LEFT OFF DELIBERATELY - we believe the DS18B20 above does this job, and turning both on would
     // give two different answers to the same question. Question 4 in HARDWARE-QUESTIONS.md asks
     // the tester to look for the diodes; uncomment if they are there and the DS18B20 is not.
-// #define OSPIT_HEATSINK_PIN 35
+// #define SENSOR_HEATSINK_PIN 35
     // --- solar charge control (P5.2 - set by hand, nothing tracks yet) ---
     // DAC channel 1. Channel 2 is GPIO26, which this board uses as valve 1, so there is only one.
-#define OSPIT_MPPT_DAC_PIN 25
+#define MPPT_DAC_PIN 25
     // Which panel-voltage range the charge circuit can ask for. With neither of these set nor a
     // CONTROL_MPPT_BOARD_FF_1_0 / _1_1 flag, the v1.2 figures are used - the most recent board, so
     // a new one needs nothing here. Question 1 in HARDWARE-QUESTIONS.md asks which board it is.
@@ -295,20 +295,20 @@
 //     ${common.build_flags}
 #define SYSTEM_OTA_SUFFIX "s2_mini"
     // --- irrigation hardware ---
-#define OSPIT_VALVE1_PIN 10
-#define OSPIT_VALVE2_PIN 13
-#define OSPIT_VALVE3_PIN 14
+#define IRRIGATION_VALVE1_PIN 10
+#define IRRIGATION_VALVE2_PIN 13
+#define IRRIGATION_VALVE3_PIN 14
     // Unlike the FF board this one has pins to spare, so it carries both roles separately - which
     // also means this env is the one that compiles both paths.
-#define OSPIT_PUMP_PIN 38 // digital-only pin; examples/agri already drives 38 as an output
-#define OSPIT_LOAD_PIN 40 // digital-only, from the wiki's 37-44 set (37 and 39 are UART0)
-#define OSPIT_TANK_PIN 6 // ADC1_CH5
+#define IRRIGATION_PUMP_PIN 38 // digital-only pin; examples/agri already drives 38 as an output
+#define IRRIGATION_LOAD_PIN 40 // digital-only, from the wiki's 37-44 set (37 and 39 are UART0)
+#define SENSOR_TANK_PIN 6 // ADC1_CH5
     // --- RS485 soil probes - slave ids from 2, see the note in the FF env ---
 #define SENSOR_SOILMODBUS_WANT
 #define SENSOR_SOILMODBUS_AUTOPROVISION
 #define SYSTEM_RS485_RX_PIN 16
 #define SYSTEM_RS485_TX_PIN 18
-#define OSPIT_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only - there is no Serial2
+#define SYSTEM_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only - there is no Serial2
 #define SENSOR_BATTERY_PIN 8 // ADC1_CH7 comment out if testing on board with no resistor divider fitted or will auto-deep-sleep
 #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k
 #define SYSTEM_POWER_BAD_READING_MV 9000

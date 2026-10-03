@@ -2,7 +2,7 @@
 
 #include "sensor_heatsink.h"
 
-#ifdef OSPIT_HEATSINK_PIN
+#ifdef SENSOR_HEATSINK_PIN
 
 #include "Frugal-IoT.h"
 
@@ -22,12 +22,12 @@ int Sensor_Heatsink::readInt() {
 }
 
 bool Sensor_Heatsink::validate(int mV) {
-  return mV < OSPIT_HEATSINK_MV_DISCONNECTED; // false publishes "nan" - no sensor, rather than -305C
+  return mV < SENSOR_HEATSINK_MV_DISCONNECTED; // false publishes "nan" - no sensor, rather than -305C
 }
 
 float Sensor_Heatsink::convert(int mV) {
   // Falls as it warms, so the reading is subtracted from the 25 C point, not added to it
-  return 25.0f + ((float)(OSPIT_HEATSINK_MV_AT_25C - mV) / (float)OSPIT_HEATSINK_MV_PER_C);
+  return 25.0f + ((float)(SENSOR_HEATSINK_MV_AT_25C - mV) / (float)SENSOR_HEATSINK_MV_PER_C);
 }
 
-#endif // OSPIT_HEATSINK_PIN
+#endif // SENSOR_HEATSINK_PIN

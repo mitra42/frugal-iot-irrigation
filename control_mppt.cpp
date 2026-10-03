@@ -5,7 +5,7 @@
 #include "control_mppt.h"
 #include "language.h"
 
-#ifdef OSPIT_MPPT_DAC_PIN
+#ifdef MPPT_DAC_PIN
 
 #include "Frugal-IoT.h"
 #include "actuator/analog.h" // for ACTUATOR_ANALOG_STEPS and ACTUATOR_ANALOG_VREF
@@ -404,4 +404,4 @@ void Control_MPPT::periodically() {
   }
 }
 
-#endif // OSPIT_MPPT_DAC_PIN
+#endif // MPPT_DAC_PIN
