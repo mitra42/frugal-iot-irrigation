@@ -7,6 +7,7 @@ with tank-level and battery interlocks that stop the whole run.
 It is built on top of Frugal-IoT and both the irrigation and MPPT components draw part of their
 inpiration from [OSPIT](https://www.apc.org/en/news/meet-ospit-sustainable-energy-and-irrigation-solution-community-networks)
 (Lua on the FF-ESP32-OpenMPPT solar charge controller)
+- [OSPIT_COMPARISON.md](OSPIT_COMPARISON.md) describes what is different and why.
 
 This release should work in two hardware environments.
 

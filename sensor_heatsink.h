@@ -21,17 +21,9 @@
  *
  *     temperature = 25 + (mV_at_25C - mV) / mV_per_C
  *
- * OSPIT computes the same line differently, from raw ADC counts scaled by a hand-calibrated
- * reference voltage and a 6 dB attenuator setting:
- *
- *     V = ((raw / 4095) * (Vref * 0.002)) / 1.06
- *     T = -50 + ((1.273 - V) / 0.0048)
- *
- * which is temperature = 215.2 - 0.2083 x millivolts, i.e. 913 mV at 25 C and 4.8 mV per degree -
- * the defaults below. We do not copy their arithmetic because we do not read raw counts:
- * analogReadMilliVolts() applies the chip's factory calibration and already accounts for the
- * attenuator, so Vref, the 0.002 and the 1.06 have no equivalent here. See the note on linearity
- * in the library's sensor/voltage.h.
+ * The defaults below are OSPIT's line, re-expressed in calibrated millivolts rather than raw counts
+ * (see OSPIT_COMPARISON.md) - analogReadMilliVolts() already accounts for the attenuator. See the
+ * note on linearity in the library's sensor/voltage.h.
  *
  * ---------------------------------------------------------------------------------------------
  * Calibrating it
@@ -65,8 +57,7 @@
 #endif
 #ifndef SENSOR_HEATSINK_MV_DISCONNECTED
   // 2500 mV would be about -305 C, so nothing real can reach it. An input with nothing connected
-  // floats up towards the supply rail; OSPIT treats the same condition as "sensor missing, or
-  // connected the wrong way round".
+  // (or connected the wrong way round) floats up towards the supply rail.
   #define SENSOR_HEATSINK_MV_DISCONNECTED 2500
 #endif
 

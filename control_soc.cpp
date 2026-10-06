@@ -1,6 +1,4 @@
-/* See control_soc.h - why this is a table rather than OSPIT's eight branches, and why the estimate
- * is frozen while charging.
- */
+/* See control_soc.h - why this is a table, and why the estimate is frozen while charging. */
 
 #include "control_soc.h"
 #include "language.h"

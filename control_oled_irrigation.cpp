@@ -12,8 +12,7 @@
 #include <WiFi.h>
 #include <cmath>
 
-// A reading that is not there prints as "--", not as a number that looks real. OSPIT prints its
-// -127 sentinel here, which is honest but asks the reader to know what -127 means.
+// A reading that is not there prints as "--", not as a number that looks real
 static void printValue(Print* out, INfloat* in, uint8_t width) {
   if (in->isValid()) {
     out->print(in->floatValue(), width);
@@ -77,7 +76,7 @@ void Control_Oled_IrrigationPower::act() {
 }
 
 // ---- Page 2: sectors and tank ---------------------------------------------------------
-/* This version provides the same data as OSPIT does, 
+/* This version shows the same data as OSPIT does.
   For a more general application, with a variable number of sectors,
   this probably wants to evolve to one page per sector
 */
@@ -109,8 +108,8 @@ void Control_Oled_IrrigationSoil::act() {
       display->print(irrigationT->Sector);
       display->print(F(" "));
       display->print(i + 1);
-      // A marker beside the sector currently watering - nothing OSPIT shows, but it is the
-      // question anyone standing at the box is actually asking
+      // A marker beside the sector currently watering - the question anyone standing at the box
+      // is actually asking
       display->print((active->value == (i + 1)) ? F(" *") : F("  "));
       display->setCursor(72, i * 10);
       printValue(display, m[i], 0);
@@ -119,7 +118,7 @@ void Control_Oled_IrrigationSoil::act() {
     display->setCursor(0, 40);
     display->print(irrigationT->Tank);
     display->setCursor(72, 40);
-    printValue(display, tank, 0);   // "--" when no sender is fitted, which OSPIT reads as empty
+    printValue(display, tank, 0);   // "--" when no sender is fitted
     display->print(F("%"));
     display->display();
   }

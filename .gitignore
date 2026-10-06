@@ -14,8 +14,8 @@ build/
 
 # Secrets. data/ is uploaded to the device's filesystem and holds WiFi passwords -
 # see data/README.md. Nothing under it belongs in a public repository.
-data/wifi/
-data/frugal_iot/
+data/*
+!data/README.md
 
 # Settings for one checkout, loaded by "extra_configs = *-local.ini" in platformio.ini:
 # platformio-local.ini (the local library, debug flags - see "Building against a local library" in

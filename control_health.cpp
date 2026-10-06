@@ -1,4 +1,4 @@
-/* See control_health.h - the method, and the flaw in OSPIT's version that this fixes. */
+/* See control_health.h - the method, and why irrigation voids the window. */
 
 #include "control_health.h"
 #include "language.h"
@@ -86,10 +86,8 @@ void Control_Health::periodically() {
     struct tm lt;
     localtime_r(&now, &lt);
 
-    /* Anything heavy and intermittent during the window makes the result meaningless, because its
-     * draw is not in `load`. This is the bug in OSPIT: it waters at 03:00 and measures 22:00-04:00,
-     * so every night it irrigates, the battery looks far more worn than it is.
-     */
+    // Anything heavy and intermittent during the window makes the result meaningless, because its
+    // draw is not in `load` - see the header.
     if (measuring && (active->value != 0)) {
       voided = true;
     }

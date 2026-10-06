@@ -6,17 +6,8 @@
  * measured thresholds are for.
  *
  * ---------------------------------------------------------------------------------------------
- * Why this is a simple table where OSPIT has eight branches
- *
- * mp2.lua carries eight overlapping heuristics with hand-tuned constants, most of them attempts to
- * guess the state of charge WHILE CHARGING without a current sensor - reasoning about the ratio of
- * open-circuit to tracking voltage, whether the voltage is still rising, and so on. That is the
- * part that cannot really be done: without knowing the current, charging voltage tells you about
- * the charger, not about the battery.
- *
- * So this does the part that does work. A resting lead-acid battery has a genuinely useful
- * voltage-to-charge relationship, and the table below is the standard one. The rest is handled by
- * not pretending:
+ * A table, not OSPIT's eight heuristics - see OSPIT_COMPARISON.md. Without a current sensor the
+ * charging voltage describes the charger, not the battery, so this only estimates from rest:
  *
  *   - while the panel is above the battery, the battery is being charged and its terminal voltage
  *     is elevated. The estimate is FROZEN rather than tracking it up. `charging` says when.

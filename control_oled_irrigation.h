@@ -1,25 +1,17 @@
-/* The OSPIT status display - a port of display.lua onto Control_Oled.
+/* The status display - three pages, based on OSPIT's display.lua (differences in
+ * OSPIT_COMPARISON.md).
  *
- * OSPIT shows three pages and advances one every time the display timer fires. Here the three
- * pages are three Control_Oled subclasses in a Control_Carousel, which is the library's existing
- * way of doing exactly that, and means the pages can also be selected by hand (a button, or
- * publishing to carousel/select) rather than only cycling.
+ * The pages are three Control_Oled subclasses in a Control_Carousel, so they can also be selected
+ * by hand (a button, or publishing to carousel/select) rather than only cycling.
  *
  *   Page 1  Control_Oled_IrrigationPower    battery
  *   Page 2  Control_Oled_IrrigationSoil     the sector moistures and the tank level
  *   Page 3  Control_Oled_IrrigationNet      IP, WiFi, MQTT
  *
- * Page 1 is battery only for now. OSPIT's version of it is mostly MPPT - solar open-circuit
- * voltage, tracking voltage, charge state, battery temperature - and none of that exists until
- * P4/P5. This is the page that grows then.
+ * A missing reading prints "--", for a sector with no probe and for a tank with no sender.
  *
- * Pages 2 and 3 follow display.lua closely, with two differences worth knowing:
- *   - a sector with no reading prints "--" rather than OSPIT's "-127". Same meaning, less
- *     arithmetic for a person standing in a field.
- *   - the tank prints "--" when no sender is fitted, which OSPIT cannot distinguish from empty.
- *
- * The display is the I2C SSD1306 on pins 21/22, which is what OSPIT's init.lua loads. It does NOT
- * conflict with the RS485 probes; only the SSD1327 SPI panel does, because that needs pins 16/17.
+ * The display is the I2C SSD1306 on pins 21/22. It does NOT conflict with the RS485 probes; only
+ * the SSD1327 SPI panel does, because that needs pins 16/17.
  */
 
 #ifndef CONTROL_OLED_IRRIGATION_H
@@ -56,7 +48,7 @@ class Control_Oled_IrrigationSoil : public Control_Oled {
     INfloat* moisture2;
     INfloat* moisture3;
     INfloat* tank;
-    INuint16* active; // Which sector is watering right now, 0 for none. OSPIT has no equivalent
+    INuint16* active; // Which sector is watering right now, 0 for none
     Control_Oled_IrrigationSoil();
     void act() override;
 };

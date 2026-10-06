@@ -1,7 +1,7 @@
 /* Control_MPPT - solar charge control for the FF-ESP32-OpenMPPT board.
  *
  * Finds the voltage at which the solar panel gives the most power, holds it there, and stops when
- * the battery is full. Ported from OSPIT's mp2.lua.
+ * the battery is full. Ported from OSPIT's mp2.lua - the differences are in OSPIT_COMPARISON.md.
  *
  * ---------------------------------------------------------------------------------------------
  * What the DAC does, and which way round it is
@@ -31,13 +31,9 @@
  *   3. Ask for Voc / CONTROL_MPPT_VOC_RATIO (1.24, i.e. 0.806 x Voc) and hold that until the next
  *      sweep.
  *
- * The cost is that charging stops during the sweep. OSPIT sweeps every 15 seconds, which is
- * affordable there because its sweep takes about a second. Ours cannot: the panel voltage arrives
- * through the normal sensor path, once per wake cycle, so a sweep costs a whole cycle of not
- * charging. Sweeping every cycle would halve the harvest. Instead CONTROL_MPPT_SWEEP_S (default
- * 300) sets how often, and one lost cycle in five minutes is a fraction of a percent. Voc moves
- * with panel temperature over tens of minutes, not seconds, so this loses very little tracking
- * accuracy.
+ * The cost is that charging stops during the sweep - here a whole wake cycle, because the panel
+ * voltage arrives through the normal sensor path. So CONTROL_MPPT_SWEEP_S (default 300) sweeps far
+ * less often than OSPIT does; Voc moves over tens of minutes, so little tracking accuracy is lost.
  *
  * ---------------------------------------------------------------------------------------------
  * The sweep is spread across two wake cycles, not blocking
@@ -74,14 +70,12 @@
  * the battery has fallen CONTROL_MPPT_EXIT_MV below the target - a wide gap, because a load
  * switching on should not be mistaken for the battery discharging.
  *
- * The regulator is proportional and slew-limited rather than the single step OSPIT moves:
+ * The regulator is proportional and slew-limited, because it runs only once a wake cycle:
  *
  *     delta = error / CONTROL_MPPT_REGULATE_MV_PER_STEP, clamped to CONTROL_MPPT_MAX_SLEW
  *
- * because OSPIT regulates every 600 ms against a reading it takes itself, while this runs once a
- * wake cycle against the battery sensor's reading - roughly ten seconds. One step per cycle would
- * take most of an hour to cross the range. If field testing shows it oscillating, lower the gain
- * or the slew; if it is sluggish, raise them. Both are build flags.
+ * If field testing shows it oscillating, lower the gain or the slew; if it is sluggish, raise
+ * them. Both are build flags.
  *
  * CONTROL_MPPT_OVERSHOOT_MV is the backstop that makes the slow loop safe: past that much above
  * the target the controller stops arguing and goes straight to the safe step. Whatever the gain
@@ -106,23 +100,11 @@
  *   and a board that is still charging is still heating.
  *
  *   A PROGRESSIVE BACKOFF from the lower CONTROL_MPPT_DERATE_START_C, which subtracts
- *   CONTROL_MPPT_DERATE_STEP_MV from the target on each cycle still above it. This is OSPIT's
- *   mechanism and it is kept because near the end of charge it works well - the target is already
- *   close to the battery voltage, so a small reduction smoothly reduces current and may settle the
- *   board without ever reaching the hard limit.
- *
- *   Why it cannot be the only mechanism is worth spelling out, because it is not obvious and this
- *   file got it wrong twice. Lowering the target does NOTHING while the battery is below it - in
- *   bulk the target is not used for current control at all, only to decide when to start
- *   regulating. So the backoff only bites once the target has been walked down BELOW the battery's
- *   actual voltage, and everything above that is dead travel. Measured, at a 10s cycle and 100mV
- *   per step: with the battery near full it cuts in about 30s, but with a discharged battery at
- *   12.4V it takes about 180s - and the discharged battery is the one drawing the most current and
- *   making the most heat. The response was slowest exactly when it was needed most. Hence the hard
- *   cut, which has no dead travel at all.
- *
- *   (An even earlier version capped the total backoff, which was worse still: the cap stopped the
- *   target above a discharged battery's voltage, so the protection never engaged at all.)
+ *   CONTROL_MPPT_DERATE_STEP_MV from the target on each cycle still above it. This is OSPIT's only
+ *   mechanism. It is kept because near the end of charge it settles the board gently, but it cannot
+ *   be the only one: lowering the target does nothing while the battery is below it, so with a
+ *   discharged battery - the one making the most heat - it is slowest to act. Do NOT cap the total
+ *   backoff; that stops it ever engaging. Measurements in OSPIT_COMPARISON.md.
  *
  *   CONTROL_MPPT_TARGET_MIN_MV exists only to stop the arithmetic reaching values that mean
  *   nothing; it sits below any usable battery, so it never limits anything.
@@ -138,12 +120,10 @@
  * ---------------------------------------------------------------------------------------------
  * The step-to-volts mapping, which is a guess until someone measures it
  *
- * OSPIT maps its panel-voltage range onto the DAC as
- *     dac = (Vmpp - Vmpp_min) / ((Vmpp_max - Vmpp_min) / 285)
- * Note 285, not 255: on OSPIT's own numbers the top tenth of the range is unreachable. That may be
- * a deliberate correction for a transfer function that is not quite linear, or a mistake - we
- * cannot tell from the code, so it is CONTROL_MPPT_DAC_SPAN here and Part H of TESTING.md is the
- * measurement that settles it.
+ *     Vmpp = VMPP_MIN + step x (VMPP_MAX - VMPP_MIN) / CONTROL_MPPT_DAC_SPAN
+ * The span is OSPIT's 285, not 255, so the top tenth of the range is unreachable - deliberate or a
+ * mistake, we cannot tell (see OSPIT_COMPARISON.md). Part H of TESTING.md is the measurement that
+ * settles it.
  *
  * `step` stays an input and `vmpp` an OUTPUT for the same reason: a person setting this by hand
  * sets a step, which is unambiguous, and the node reports the voltage it BELIEVES that asks for.
@@ -222,10 +202,8 @@
 #ifndef CONTROL_MPPT_IDLE_STEP
   /* What to write when the panel is dark.
    *
-   * 29 is OSPIT's value and we do not know why it chose it. It is a LOW step, i.e. it asks for
-   * maximum current - harmless in the dark because there is none to be had, and it means charging
-   * begins the moment the sun returns rather than waiting for the next sweep. That is the only
-   * explanation we can see; if it turns out to matter, this is the flag to change.
+   * 29 is OSPIT's value, reason unknown. A LOW step asks for maximum current - harmless in the
+   * dark, and charging begins the moment the sun returns rather than at the next sweep.
    */
   #define CONTROL_MPPT_IDLE_STEP 29
 #endif
@@ -267,9 +245,8 @@
   #define CONTROL_MPPT_HOT_LIMIT_C 42
 #endif
 #ifndef CONTROL_MPPT_MAX_C
-  /* The temperature the board must not exceed. OSPIT uses 60 as the point where it STARTS backing
-   * off; here it is the point where charging stops outright, and the gradual backoff begins lower.
-   */
+  // The temperature the board must not exceed - charging stops outright here. (OSPIT only starts
+  // backing off at 60.)
   #define CONTROL_MPPT_MAX_C 60
 #endif
 #ifndef CONTROL_MPPT_DERATE_START_C
@@ -296,8 +273,7 @@
  *
  * Selecting a profile WRITES chargeend, rather than chargeend being read through the profile. So
  * "Custom" needs no special case: it is simply what you have after editing the value, and it
- * persists like any other setting. OSPIT carries an is_custom_profile flag and a parallel set of
- * variables to achieve the same thing.
+ * persists like any other setting.
  *
  * Each row carries the charge-end voltage, the temperature coefficient and the hot-battery cap,
  * and selecting a profile writes all three.

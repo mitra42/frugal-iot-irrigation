@@ -101,19 +101,11 @@ void setup() {
 
   /* ---- Actuators: the valves, and optionally a pump and a load switch ------------------
    *
-   * OSPIT hardware has ONE output (pin 14) with two possible roles, chosen by its `pump_is_load` flag: a
-   * pump the irrigation sequence drives with each valve, or a load output the low-voltage
-   * disconnect opens. 
-   * 
-   * Here they are two independent optional pins, so a board can have either both, or neither:
-   *
+   * Two independent optional pins, so a board can have either, both, or neither:
    *   IRRIGATION_PUMP_PIN  driven by Control_Irrigation whenever irrigation is running
-   *                   (equivalent to OSPIT's pump_is_load = false)
    *   IRRIGATION_LOAD_PIN  switched off by the battery interlock below
-   *                   (equivalent to OSPIT's pump_is_load = true, minus MPPT)
-   *
-   * On the FF board these cannot BOTH be pin 14, which is why platformio.ini defines one of them
-   * there and says what the other choice would look like.
+   * On the FF board both would be pin 14, so platformio.ini defines only one - see
+   * OSPIT_COMPARISON.md for how OSPIT shares that pin.
    */
   frugal_iot.actuators->add(new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
   frugal_iot.actuators->add(new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
@@ -125,8 +117,8 @@ void setup() {
     frugal_iot.actuators->add(new Actuator_Digital("load", "Load", IRRIGATION_LOAD_PIN, DEFAULT_load_on_color));
   #endif
   #ifdef IRRIGATION_USB_PIN
-    // A second switched output, for a USB supply. On the FF board this is the SAME PIN as valve 3
-    // so OSPIT decides which it is by whether a probe answers on sector 3.
+    // A second switched output, for a USB supply. On the FF board this is the SAME PIN as valve 3,
+    // so define one or the other.
     frugal_iot.actuators->add(new Actuator_Digital("usb", "USB", IRRIGATION_USB_PIN, DEFAULT_usb_on_color));
   #endif
 
@@ -209,15 +201,14 @@ void setup() {
    *   Load (router)   11.9 / 12.3   last, because losing communications means losing the ability
    *                                 to find out what went wrong
    *
-   * OSPIT gates irrigation on the same low_voltage_disconnect_state as the load, i.e. both at
-   * 11.9/12.3. 
-   * Shedding the pump first is the deliberate difference: it is the heaviest intermittent load on the system.
+   * Shedding the pump before the router is deliberate - it is the heaviest intermittent load. OSPIT
+   * sheds both at once; see OSPIT_COMPARISON.md.
    *
    * Control_Hysteresis uses a limit with a dead-band so 12.1V +/- 0.2 is 11.9v off, 12.3v on
    */
   #ifdef IRRIGATION_LOAD_PIN
     Control_Hysteresis* chload = new Control_Hysteresis("controlhysteresis-load", "Load interlock",
-      IRRIGATION_LVD_IRRIGATION_MV, 0, 10000, 15000, IRRIGATION_LVD_LOAD_HYST_MV);
+      IRRIGATION_LVD_LOAD_MV, 0, 10000, 15000, IRRIGATION_LVD_LOAD_HYST_MV);
     frugal_iot.controls->add(chload);
     chload->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
     chload->outputs[0]->wireTo(frugal_iot.messages->setPath("load/on"));
@@ -308,8 +299,7 @@ void setup() {
    * State of charge freezes while the panel is above the battery, because a battery on charge
    * reads high and tracking that would just report the charger. Battery health compares the
    * overnight fall in that estimate against the load you tell it about, and refuses to report at
-   * all if irrigation ran during the window (which is the flaw in OSPIT's version, since it
-   * waters at 03:00 inside its own 22:00-04:00 measurement.)
+   * all if irrigation ran during the window.
    */
   Control_SoC* soc = new Control_SoC("soc", "State of Charge");
   frugal_iot.controls->add(soc);
@@ -325,7 +315,7 @@ void setup() {
 
   /* ---- Display ---------------------------------------------------------------------------
    *
-   * Three pages in a carousel, (idea came from OSPIT's display.lua.) It advances on its own; wire a
+   * Three pages in a carousel, based on OSPIT's display.lua. It advances on its own; wire a
    * button to carousel/select/cycle, or publish to it, to step through by hand.
    */
   #ifdef ACTUATOR_OLED_WANT

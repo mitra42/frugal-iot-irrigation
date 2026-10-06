@@ -99,8 +99,8 @@ uint16_t Control_MPPT::safeStep() const {
 }
 
 float Control_MPPT::vmppForStep(uint16_t s) const {
-  // Divided by CONTROL_MPPT_DAC_SPAN (285, not 255) - OSPIT's number, and the reason the top of
-  // the range is unreachable. A prediction to be checked against a meter, not a measurement.
+  // Divided by CONTROL_MPPT_DAC_SPAN (285, not 255) - see the header. A prediction to be checked
+  // against a meter, not a measurement.
   return (float)CONTROL_MPPT_VMPP_MIN
        + ((float)s * ((float)CONTROL_MPPT_VMPP_MAX - (float)CONTROL_MPPT_VMPP_MIN)
           / (float)CONTROL_MPPT_DAC_SPAN);
@@ -167,8 +167,7 @@ void Control_MPPT::dispatch(System_Message &msg) {
 /* Selecting a battery type loads its charge-end voltage.
  *
  * Only when the PROFILE is what changed, which is what profile_applied tracks. Editing chargeend
- * afterwards therefore sticks - and that is all "Custom" means here, so unlike OSPIT there is no
- * separate mode, no is_custom_profile flag, and no parallel set of variables.
+ * afterwards therefore sticks - and that is all "Custom" means here, so it needs no separate mode.
  *
  * `configured` keeps this quiet during setup(): readConfigFromFS() replays stored settings through
  * dispatch(), which calls act(), and the order the files come back in is not defined. Without the
@@ -267,9 +266,8 @@ float Control_MPPT::computeTarget() {
 
 /* Nudge the step so the battery sits at the target.
  *
- * Proportional and slew-limited rather than OSPIT's single step, because this runs once a wake
- * cycle (~10s) against the battery sensor's reading, where OSPIT runs every 600ms against a
- * reading it takes itself. One step per cycle would take most of an hour to cross the range.
+ * Proportional and slew-limited, because this runs only once a wake cycle (~10s) - one step per
+ * cycle would take most of an hour to cross the range.
  *
  * Raising the step asks for a higher panel voltage and so draws LESS current - see the header. So
  * a battery ABOVE the target needs a HIGHER step.
@@ -372,8 +370,7 @@ void Control_MPPT::periodically() {
          * already holds a value measured this cycle.
          */
         if (vp < (vb + (float)CONTROL_MPPT_VOC_MARGIN_MV)) {
-          // Open circuit barely above the battery - there is no useful power here. OSPIT makes
-          // the same test and zeroes its panel readings when it fails.
+          // Open circuit barely above the battery - there is no useful power here
           voc->setInvalid();
           applyStep(CONTROL_MPPT_IDLE_STEP);
           setState("dark");

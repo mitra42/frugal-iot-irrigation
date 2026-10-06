@@ -87,6 +87,7 @@ not.
 | `scripts/*.py` | COPIES of the library's and the demo's scripts - see "Releasing" |
 | `TESTING.md` | commissioning a real board, written for someone who is not a developer |
 | `HARDWARE-QUESTIONS.md` | things only someone holding the board can answer |
+| `OSPIT_COMPARISON.md` | every difference from OSPIT, and what looks wrong in OSPIT. Code comments say only "see OSPIT_COMPARISON.md" - put the detail there |
 
 ## Things that are the way they are on purpose
 

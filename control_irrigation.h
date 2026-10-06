@@ -1,16 +1,16 @@
-/* Sequenced, time-of-day irrigation - a port of OSPIT's irrigation.lua onto Frugal-IoT.
+/* Sequenced, time-of-day irrigation - a port of OSPIT's irrigation.lua onto Frugal-IoT. The
+ * differences are in OSPIT_COMPARISON.md.
  *
  * Two classes:
  *   Control_Sector      one irrigation sector - a moisture probe, a target, and a valve.
  *   Control_Irrigation  the sequencer - owns the clock, the interlocks, the pump, and a list of
  *                       sectors which it runs ONE AT A TIME, in order.
  *
- * What it does, which is what OSPIT does:
+ * What it does:
  *   - once a day, at a configured local hour:minute, start a cycle
  *   - take each sector in turn; open its valve until either the soil reaches its target or the
  *     per-sector maximum time runs out; then close it and move to the next
- *   - skip a sector whose probe is not reporting (OSPIT's -127, our "nan") without touching its
- *     valve at all - see "Skipping a sector" below, this is load-bearing
+ *   - skip a sector whose probe is not reporting ("nan") without touching its valve at all
  *   - abort the whole cycle if the tank runs dry or the battery interlock opens
  *   - when the last sector is done, arm for the same time tomorrow
  *
@@ -37,13 +37,9 @@
  * ---------------------------------------------------------------------------------------------
  * Skipping a sector
  *
- * A sector whose moisture probe publishes "nan" is skipped and its valve is never driven. On
- * OSPIT this is not a nicety - it is how the board is configured. Its third output is either
- * sector 3's valve or a USB supply, and "is probe 3 present?" is the only switch: irrigation.lua
- * skips the sector, and mp2.lua claims the same pin for USB load control, both gated on
- * `shumidity3 == -127`. Here, a sector exists because you constructed one, so the overloading is
- * gone - but the skip remains, because driving a valve you have no feedback from is worse than
- * not watering.
+ * A sector whose moisture probe publishes "nan" is skipped and its valve is never driven, because
+ * driving a valve you have no feedback from is worse than not watering. (In OSPIT the skip was
+ * also how pin 12 was chosen between valve 3 and USB.)
  *
  * ---------------------------------------------------------------------------------------------
  * Pump modes
@@ -93,7 +89,7 @@ class Control_Sector : public Control {
   public:
     Control_Sector(const char* const id, const char* const name);
     INfloat* moisture; // Wire to a soil probe, e.g. soil1/humidity. "nan" here means "skip me"
-    INfloat* target;   // Stop watering at this moisture - OSPIT's i_lvlN
+    INfloat* target;   // Stop watering at this moisture
     /* Set by Control_Irrigation: tank ok AND power ok AND it is this sector's turn.
      *
      * An IN rather than a plain bool so it is visible, loggable and settable: clearing it from
@@ -136,18 +132,17 @@ class Control_Irrigation : public Control {
      */
     Control_Sector* addSector(const char* const id, const char* const name);
 
-    INuint16* hour;       // Local hour to start - OSPIT's i_hr
-    INuint16* minute;     // Local minute to start - OSPIT has no equivalent, it starts on the hour
-    INfloat*  maxminutes; // Longest any one valve may stay open - OSPIT's i_vlv_opn
-    INbool*   enabled;    // Master switch - OSPIT's i_nbld
+    INuint16* hour;       // Local hour to start
+    INuint16* minute;     // Local minute to start
+    INfloat*  maxminutes; // Longest any one valve may stay open
+    INbool*   enabled;    // Master switch
     /* Tank level in %, wired from Sensor_Tank. "nan" means no tank sensor is fitted, and is
-     * deliberately NOT treated as an empty tank - that is the distinction OSPIT cannot make, and
-     * on OSPIT an unplugged sender silently stops all irrigation. See sensor_tank.h.
+     * deliberately NOT treated as an empty tank. See sensor_tank.h.
      */
     INfloat*  tank;
     INfloat*  tankstart;  // Do not BEGIN a cycle below this level
     INfloat*  tankempty;  // ABORT a running cycle below this level
-    INbool*   power;      // True when it is electrically safe to run - OSPIT's low_voltage_disconnect_state
+    INbool*   power;      // True when it is electrically safe to run
     INbool*   solar;      // Input power available. Only consulted by pump mode 3
     OUTbool*  pump;       // Wire to the pump/load Actuator_Digital
     OUTuint16* active;    // Sector currently running, 1-based; 0 when idle
@@ -188,11 +183,10 @@ class Control_Irrigation : public Control {
      * Manual control is allowed to fight the sequencer and win for a while - but when the run
      * that would have closed a valve reaches its end, it closes. That needs forceOff() rather
      * than stop(), and it needs to reach sectors the run skipped, neither of which falls out of
-     * the per-sector path. OSPIT does exactly this in its reset branch.
+     * the per-sector path.
      *
-     * Sectors with no reading are left alone, as OSPIT leaves its `humidities[i] ~= -127` ones:
-     * we promised never to drive a valve we have no feedback from, and that promise holds for
-     * closing as well as opening.
+     * Sectors with no reading are left alone: we promised never to drive a valve we have no
+     * feedback from, and that promise holds for closing as well as opening.
      * TODO manual override needs application-specific thought - "the schedule wins eventually"
      * is one answer, "manual latches until someone clears it" is another.
      */

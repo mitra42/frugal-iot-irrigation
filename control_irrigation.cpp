@@ -107,8 +107,8 @@ Control_Irrigation::Control_Irrigation(const char* const id, const char* const n
     DEFAULT_irrigation_maxminutes_min, DEFAULT_irrigation_maxminutes_max,
     DEFAULT_irrigation_maxminutes_min, DEFAULT_irrigation_maxminutes_max,
     DEFAULT_irrigation_maxminutes_color, false)),
-  // Defaults to OFF, as OSPIT's i_nbld does. Something that opens water valves unattended should
-  // not start doing so merely because it was flashed - see the note in ospit.ino on turning it on.
+  // Defaults to OFF. Something that opens water valves unattended should not start doing so merely
+  // because it was flashed - see the note in frugal-iot-irrigation.ino on turning it on.
   enabled(new INbool(id, "enabled", String(irrigationT->Enabled), false, DEFAULT_irrigation_enabled_color, false)),
   tank(new INfloat(id, "tank", String(irrigationT->TankLevel), NAN, 1,
     DEFAULT_irrigation_tank_min, DEFAULT_irrigation_tank_max,
@@ -163,8 +163,7 @@ bool Control_Irrigation::okToSleep(unsigned long ms, uint16_t how) {
   return !running();
 }
 
-// No tank sensor fitted ("nan") never blocks - that is the distinction OSPIT cannot make, where an
-// unplugged sender reads as an empty tank and silently stops all irrigation. See sensor_tank.h.
+// No tank sensor fitted ("nan") never blocks - see sensor_tank.h.
 bool Control_Irrigation::tankOk() {
   return !tank->isValid() || (tank->floatValue() > tankempty->floatValue());
 }
@@ -189,7 +188,7 @@ void Control_Irrigation::startNext() {
   while (++i < (int8_t)sectors.size()) {
     if (blocked()) {
       // An interlock opened part way through the sequence. Abandon the whole cycle, not just this
-      // sector - which is what OSPIT's "Irrigation Emergency Stop" does.
+      // sector.
       i = (int8_t)sectors.size();
     } else {
       sectors[i]->enable->set(true);
@@ -302,9 +301,8 @@ void Control_Irrigation::periodically() {
      *
      * TODO this writes off the whole day if an interlock happens to be open at the scheduled
      * moment - a tank still refilling at 03:00, or a momentary battery dip - because the next
-     * start computed here is tomorrow. OSPIT instead retries for the rest of the scheduled hour:
-     * its emergency stop clears the active valve but leaves irrigation_done false, so the 6-second
-     * loop re-triggers. Worth adding a retry window here if that turns out to matter in practice.
+     * start computed here is tomorrow. OSPIT retries for the rest of the hour (see
+     * OSPIT_COMPARISON.md); worth adding a retry window if that matters in practice.
      */
     p->timer_set_to(t, (uint32_t)nextStartTime());
   }

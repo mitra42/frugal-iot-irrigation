@@ -1,5 +1,5 @@
 /* See sensor_tank.h for the hardware, the calibration flags, and why "no sender" and "empty tank"
- * are deliberately different answers here when OSPIT conflates them.
+ * are deliberately different answers.
  */
 
 #include "sensor_tank.h"
