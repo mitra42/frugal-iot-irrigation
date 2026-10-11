@@ -46,7 +46,7 @@
 // and edits to the library are picked up with no reinstall.
 // Arduino IDE users install Frugal-IoT from the Library Manager instead.
 // lib_deps =
-//     Frugal-IoT@^2.0.4
+//     Frugal-IoT@^2.0.5
     // ModbusMaster (the RS485 soil probes) is a declared dependency of Frugal-IoT, so
     // lib_ldf_mode = chain pulls it in - it does not need listing here.
 

@@ -18,7 +18,6 @@ Sensor_Tank	KEYWORD1
 #######################################
 
 act	KEYWORD2
-okToSleep	KEYWORD2
 applyStep	KEYWORD2
 blocked	KEYWORD2
 captiveLines	KEYWORD2
@@ -29,6 +28,7 @@ dispatch	KEYWORD2
 forceOff	KEYWORD2
 maxStep	KEYWORD2
 nextStartTime	KEYWORD2
+okToSleep	KEYWORD2
 periodically	KEYWORD2
 readInt	KEYWORD2
 regulate	KEYWORD2
