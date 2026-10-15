@@ -301,8 +301,8 @@ void Control_Irrigation::periodically() {
      *
      * TODO this writes off the whole day if an interlock happens to be open at the scheduled
      * moment - a tank still refilling at 03:00, or a momentary battery dip - because the next
-     * start computed here is tomorrow. OSPIT retries for the rest of the hour (see
-     * OSPIT_COMPARISON.md); worth adding a retry window if that matters in practice.
+     * start computed here is tomorrow. 
+     * Note: OSPIT retries for the rest of the hour (see OSPIT_COMPARISON.md); worth adding a retry window if that matters in practice.
      */
     p->timer_set_to(t, (uint32_t)nextStartTime());
   }
