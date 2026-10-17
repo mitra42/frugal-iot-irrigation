@@ -46,7 +46,7 @@
 // and edits to the library are picked up with no reinstall.
 // Arduino IDE users install Frugal-IoT from the Library Manager instead.
 // lib_deps =
-//     Frugal-IoT@^2.0.5
+//     Frugal-IoT@^2.0.6
     // ModbusMaster (the RS485 soil probes) is a declared dependency of Frugal-IoT, so
     // lib_ldf_mode = chain pulls it in - it does not need listing here.
 
@@ -289,10 +289,84 @@
 #define SENSOR_BATTERY_PIN 8 // ADC1_CH7 comment out if testing on board with no resistor divider fitted or will auto-deep-sleep
 #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k
 #define SYSTEM_POWER_BAD_READING_MV 9000
- #endif // ARDUINO_LOLIN_S2_MINI
+ 
+ // ==== Frugal-IoT Irrigation V0.1 board ==================================================
+// For frugal-iot-irrigation/platformio.ini - paste below the existing envs; uses its [common].
+// Copy variants/frugal_irrigation_v01/ into the project's variants/ folder.
+// Pin map: DECISIONS.md D18 (ESP32-C6-MINI-1U fitted, the BOM default). C3-MINI-1U differences at the end.
+//
+// The four relays are driven through a TCA9534 I2C expander (address 0x20, P0-P3 = K1-K4, HIGH =
+// relay on), not GPIOs - so the valves and pump are Actuator_Digital_Expander rather than
+// Actuator_Digital, selected in the .ino by IRRIGATION_RELAY_TCA9534_ADDRESS being defined.
+// The TCA9534 is on the always-on 3V rail, not 3V3_SW, so it keeps the relays as they were through
+// a deep sleep even though the I2C pull-ups go off with RAIL_EN.
+#endif // ARDUINO_LOLIN_S2_MINI
+
+// ===== [env:frugal_irrigation_v01] -> TODO_ESP32_C6_DEVKITC_1
+#if defined(TODO_ESP32_C6_DEVKITC_1) || defined(FRUGAL_IRRIGATION_V01)
+#define FRUGAL_IOT_BOARD_CONFIGURED
+// platform = ${common.platform_esp32}
+// board = esp32-c6-devkitc-1                ; generic C6; this board's own pins come from the variant
+// board_upload.flash_size = 4MB             ; -H4 module is 4 MB (the DevKitC-1 json says 8 MB)
+// board_upload.maximum_size = 4194304
+// board_build.variants_dir = variants
+// board_build.variant = frugal_irrigation_v01   ; LED_BUILTIN=8 plain LED, SDA=7, SCL=14
+// board_build.partitions = min_spiffs.csv
+// lib_deps =
+//     ${common.lib_deps_oled}
+// build_flags =
+//     ${common.build_flags}
+#define SYSTEM_OTA_SUFFIX "frugal_irrigation_v01"
+#define ARDUINO_FRUGAL_IOT_IRRIGATION_V01 // this board, for code and for scripts/generate_platform_h.py
+#define ARDUINO_USB_MODE 1 // native USB on the USB-C: no USB-UART chip
+#define ARDUINO_USB_CDC_ON_BOOT 1 // Serial = USB
+#define ACTUATOR_LEDBUILTIN_INVERT // status LED D8 on GPIO8 is active LOW
+    // --- I2C (sensor terminal J8, OLED header J9, TCA9534) ---
+#define I2C_SDA 7
+#define I2C_SCL 14
+    // --- switched rails: RAIL_EN (GPIO15) HIGH = 3V3_SW and 5V_SW on; 100k pull-down = off at reset.
+    // Must be on before ANY I2C traffic - the bus pull-ups are on 3V3_SW - and before RS485.
+#define SYSTEM_POWER3v3_PIN 15
+    // --- RS485 (J11: 5V_SW, A, B, GND). Direction is switched in hardware from TX, so no DE/RE pin.
+#define SENSOR_SOILMODBUS_WANT
+#define SENSOR_SOILMODBUS_AUTOPROVISION
+#define SYSTEM_RS485_RX_PIN 0
+#define SYSTEM_RS485_TX_PIN 2
+#define SYSTEM_RS485_UART Serial1 // Serial is USB, Serial0 is the debug UART
+    // --- battery for the LVD interlocks: the 12 V input, V12_SENSE on GPIO1, 560k/100k = x6.6 ---
+#define SENSOR_BATTERY_PIN 1
+#define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.6
+#define SYSTEM_POWER_BAD_READING_MV 9000
+    // The LiPo (if fitted) is read on GPIO3, 1M/1M = x2 - the library has one battery input, so
+    // this one is unused until there is a second (e.g. SENSOR_CELL_PIN=3, divider 2).
+    // --- relays, on the TCA9534 (see top). _BIT is the expander pin, P0-P7 ---
+#define IRRIGATION_RELAY_TCA9534_ADDRESS 0x20
+#define IRRIGATION_VALVE1_BIT 0 // K1
+#define IRRIGATION_VALVE2_BIT 1 // K2
+#define IRRIGATION_VALVE3_BIT 2 // K3
+#define IRRIGATION_PUMP_BIT 3 // K4
+// #define IRRIGATION_RELAY_INVERT true // only for a relay board that is on when its pin is LOW
+    // --- spare inputs ---
+// #define SENSOR_TANK_PIN 6 // GPIO_A terminal J6 (ADC1_CH6) - e.g. the tank gauge
+    //                                        ; GPIO_B terminal J7 = GPIO22 (digital), BTN2 = GPIO19
+    // --- OLED on header J9 (SSD1306 128x64, powered from 3V3_SW) ---
+#define ACTUATOR_OLED_WANT
+#define ACTUATOR_OLED_IS_SSD1306
+#define OLED_WIRE Wire
+#define OLED_SDA 7
+#define OLED_SCL 14
+#define OLED_RST_X -1
+#define ACTUATOR_OLED_WIDTH 128
+#define ACTUATOR_OLED_HEIGHT 64
+//
+// With the ESP32-C3-MINI-1U fitted instead (and R5/R6 fitted, R3/R4 removed - D19):
+//   board = esp32-c3-devkitm-1 (4 MB; drop the two board_upload lines), and in the variant and flags:
+//   I2C_SDA / OLED_SDA = 10, I2C_SCL / OLED_SCL = 5, SYSTEM_POWER3v3_PIN = 6, UART0 TX/RX = 21/20.
+//   No BTN2, GPIO_A or GPIO_B (C6-only pads). The library already inverts the LED for esp32-c3-devkitm-1.
+#endif // TODO_ESP32_C6_DEVKITC_1
 
 #ifndef FRUGAL_IOT_BOARD_CONFIGURED
-  #error "This board has no settings in platform.h. Under Tools > Board, select one of the boards this example supports, or add a section for yours to its platformio.ini and re-run scripts/generate_platform_h.py. Supported here: ESP32 Dev Module / LOLIN S2 Mini"
+  #error "This board has no settings in platform.h. Under Tools > Board, select one of the boards this example supports, or add a section for yours to its platformio.ini and re-run scripts/generate_platform_h.py. Supported here: ESP32 Dev Module / LOLIN S2 Mini / esp32-c6-devkitc-1"
 #endif
 
 #endif // PLATFORM_H

@@ -106,12 +106,30 @@ void setup() {
    *   IRRIGATION_LOAD_PIN  switched off by the battery interlock below
    * On the FF board both would be pin 14, so platformio.ini defines only one - see
    * OSPIT_COMPARISON.md for how OSPIT shares that pin.
+   *
+   * The valves and pump are either on GPIOs (IRRIGATION_VALVE1_PIN...) or on the pins of a TCA9534
+   * I2C expander (IRRIGATION_RELAY_TCA9534_ADDRESS, then IRRIGATION_VALVE1_BIT... for which pin of
+   * it), as on the Frugal-IoT Irrigation V0.1 board. Either way they are the same actuators with
+   * the same ids, so nothing below here - the sectors, the pump wiring, MQTT - can tell which.
    */
-  frugal_iot.actuators->add(new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
-  frugal_iot.actuators->add(new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
-  frugal_iot.actuators->add(new Actuator_Digital("valve3", "Valve 3", IRRIGATION_VALVE3_PIN, DEFAULT_valve_on_color));
-  #ifdef IRRIGATION_PUMP_PIN
-    frugal_iot.actuators->add(new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
+  #ifdef IRRIGATION_RELAY_TCA9534_ADDRESS
+    // IRRIGATION_RELAY_INVERT for a relay board that switches on when its pin is LOW
+    #ifndef IRRIGATION_RELAY_INVERT
+      #define IRRIGATION_RELAY_INVERT false
+    #endif
+    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve1", "Valve 1", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE1_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve2", "Valve 2", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE2_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve3", "Valve 3", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE3_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    #ifdef IRRIGATION_PUMP_BIT
+      frugal_iot.actuators->add(new Actuator_Digital_Expander("pump", "Pump", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_PUMP_BIT, DEFAULT_pump_on_color, IRRIGATION_RELAY_INVERT));
+    #endif
+  #else
+    frugal_iot.actuators->add(new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
+    frugal_iot.actuators->add(new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
+    frugal_iot.actuators->add(new Actuator_Digital("valve3", "Valve 3", IRRIGATION_VALVE3_PIN, DEFAULT_valve_on_color));
+    #ifdef IRRIGATION_PUMP_PIN
+      frugal_iot.actuators->add(new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
+    #endif
   #endif
   #ifdef IRRIGATION_LOAD_PIN
     frugal_iot.actuators->add(new Actuator_Digital("load", "Load", IRRIGATION_LOAD_PIN, DEFAULT_load_on_color));
@@ -236,7 +254,7 @@ void setup() {
   #ifdef SENSOR_TANK_PIN
     irr->tank->wireTo(frugal_iot.messages->path("tank/tank"));
   #endif
-  #ifdef IRRIGATION_PUMP_PIN
+  #if defined(IRRIGATION_PUMP_PIN) || defined(IRRIGATION_PUMP_BIT)
     irr->pump->wireTo(frugal_iot.messages->setPath("pump/on"));
   #endif
   chirr->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation/power"));

@@ -1,5 +1,7 @@
 /* Heatsink temperature from a pair of forward-biased diodes on an ADC pin.
  *
+ * This class was built to enable support of the FF-OpenMPPT used by OSPIT
+ * 
  * The FF-OpenMPPT board measures how hot its own heatsink is, so that the charge voltage can be
  * reduced before anything is damaged. There appear to be two ways it does this depending on the
  * board, and this class is one of them:

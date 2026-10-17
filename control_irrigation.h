@@ -1,5 +1,7 @@
-/* Sequenced, time-of-day irrigation - a port of OSPIT's irrigation.lua onto Frugal-IoT. The
- * differences are in OSPIT_COMPARISON.md.
+/* Sequenced, time-of-day irrigation -
+ * 
+ * Note, influenced by OSPIT - and for some parts there is a one:one relationship 
+ * the differences are in OSPIT_COMPARISOM.md along with some bugs/weaknesses found.
  *
  * Two classes:
  *   Control_Sector      one irrigation sector - a moisture probe, a target, and a valve.
