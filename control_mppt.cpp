@@ -25,50 +25,35 @@ static const Battery_Chemistry BATTERY_PROFILES[] = {
 
 Control_MPPT::Control_MPPT(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
-  step(new INuint16(id, "step", String(irrigationT->DacStep), 0,
-    DEFAULT_mppt_step_min, DEFAULT_mppt_step_max,
-    DEFAULT_mppt_step_min, DEFAULT_mppt_step_max, DEFAULT_mppt_step_color, false)),
+  step(new INuint16(id, "step", String(irrigationT->DacStep), 0, IO_DEFAULTS(mppt_step), false)),
   // OFF until someone has been through TESTING.md - see "Safety" in the header
   automatic(new INbool(id, "automatic", String(irrigationT->Automatic), false, DEFAULT_mppt_automatic_color, false)),
   profile(new INuint16(id, "profile", String(irrigationT->BatteryType), BATTERY_AGM,
-    DEFAULT_mppt_profile_min, DEFAULT_mppt_profile_max,
-    DEFAULT_mppt_profile_min, DEFAULT_mppt_profile_max, DEFAULT_mppt_profile_color, false)),
+    IO_DEFAULTS(mppt_profile), false)),
   chargeend(new INfloat(id, "chargeend", String(irrigationT->ChargeEnd), BATTERY_PROFILES[BATTERY_AGM].chargeend_mv, 0,
-    DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max,
-    DEFAULT_mppt_chargeend_min, DEFAULT_mppt_chargeend_max, DEFAULT_mppt_chargeend_color, false)),
+    IO_DEFAULTS(mppt_chargeend), false)),
   tempcoeff(new INfloat(id, "tempcoeff", String(irrigationT->TemperatureCoefficient), BATTERY_PROFILES[BATTERY_AGM].tempcoeff_mv_per_c, 0,
-    DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max,
-    DEFAULT_mppt_tempcoeff_min, DEFAULT_mppt_tempcoeff_max, DEFAULT_mppt_tempcoeff_color, false)),
+    IO_DEFAULTS(mppt_tempcoeff), false)),
   hotcharge(new INfloat(id, "hotcharge", String(irrigationT->HotBattery), BATTERY_PROFILES[BATTERY_AGM].hotcharge_mv, 0,
-    DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max,
-    DEFAULT_mppt_hotcharge_min, DEFAULT_mppt_hotcharge_max, DEFAULT_mppt_hotcharge_color, false)),
+    IO_DEFAULTS(mppt_hotcharge), false)),
   /* NAN, so a node with nothing wired to these reads as "no reading" and stays safe - rather than
    * believing the panel and the battery are both sitting at zero volts, which would look like a
    * flat battery in the dark and is exactly the state we least want to guess about.
    */
-  panel(new INfloat(id, "panel", String(irrigationT->Panel), NAN, 0,
-    DEFAULT_mppt_panel_min, DEFAULT_mppt_panel_max,
-    DEFAULT_mppt_panel_min, DEFAULT_mppt_panel_max, DEFAULT_mppt_panel_color, true)),
-  battery(new INfloat(id, "battery", String(irrigationT->Battery), NAN, 0,
-    DEFAULT_mppt_battery_min, DEFAULT_mppt_battery_max,
-    DEFAULT_mppt_battery_min, DEFAULT_mppt_battery_max, DEFAULT_mppt_battery_color, true)),
+  panel(new INfloat(id, "panel", String(irrigationT->Panel), NAN, 0, IO_DEFAULTS(mppt_panel), true)),
+  battery(new INfloat(id, "battery", String(irrigationT->Battery), NAN, 0, IO_DEFAULTS(mppt_battery), true)),
   /* NAN, so an unwired temperature simply means "no correction" rather than "0 degrees", which
    * would subtract 25 x the coefficient and undercharge the battery by most of a volt.
    */
   batttemp(new INfloat(id, "batttemp", String(irrigationT->BatteryTemperature), NAN, 1,
-    DEFAULT_mppt_batttemp_min, DEFAULT_mppt_batttemp_max,
-    DEFAULT_mppt_batttemp_min, DEFAULT_mppt_batttemp_max, DEFAULT_mppt_batttemp_color, true)),
+    IO_DEFAULTS(mppt_batttemp), true)),
   heatsink(new INfloat(id, "heatsink", String(irrigationT->HeatsinkTemperature), NAN, 1,
-    DEFAULT_mppt_heatsink_min, DEFAULT_mppt_heatsink_max,
-    DEFAULT_mppt_heatsink_min, DEFAULT_mppt_heatsink_max, DEFAULT_mppt_heatsink_color, true)),
-  target(new OUTfloat(id, "target", String(irrigationT->Target), NAN, 0,
-    DEFAULT_mppt_target_min, DEFAULT_mppt_target_max, DEFAULT_mppt_target_color, false)),
-  vmpp(new OUTfloat(id, "vmpp", String(irrigationT->PanelTarget), NAN, 2,
-    DEFAULT_mppt_vmpp_min, DEFAULT_mppt_vmpp_max, DEFAULT_mppt_vmpp_color, false)),
-  voc(new OUTfloat(id, "voc", String(irrigationT->OpenCircuit), NAN, 0,
-    DEFAULT_mppt_voc_min, DEFAULT_mppt_voc_max, DEFAULT_mppt_voc_color, false)),
+    IO_DEFAULTS(mppt_heatsink), true)),
+  target(new OUTfloat(id, "target", String(irrigationT->Target), NAN, 0, IO_DEFAULTS(mppt_target), false)),
+  vmpp(new OUTfloat(id, "vmpp", String(irrigationT->PanelTarget), NAN, 2, IO_DEFAULTS(mppt_vmpp), false)),
+  voc(new OUTfloat(id, "voc", String(irrigationT->OpenCircuit), NAN, 0, IO_DEFAULTS(mppt_voc), false)),
   dacvolts(new OUTfloat(id, "dacvolts", String(irrigationT->DacVolts), 0, 3,
-    DEFAULT_mppt_dacvolts_min, DEFAULT_mppt_dacvolts_max, DEFAULT_mppt_dacvolts_color, true)),
+    IO_DEFAULTS(mppt_dacvolts), true)),
   state(new OUTtext(id, "state", String(irrigationT->State), "starting", DEFAULT_mppt_state_color, false))
 {
   inputs.push_back(step);

@@ -25,19 +25,13 @@ static const SoCPoint SOC_LIFEPO4[] = {
 
 Control_SoC::Control_SoC(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
-  battery(new INfloat(id, "battery", String(irrigationT->Battery), NAN, 0,
-    DEFAULT_soc_battery_min, DEFAULT_soc_battery_max,
-    DEFAULT_soc_battery_min, DEFAULT_soc_battery_max, DEFAULT_soc_battery_color, true)),
+  battery(new INfloat(id, "battery", String(irrigationT->Battery), NAN, 0, IO_DEFAULTS(soc_battery), true)),
   // NAN means no panel is wired, which is read as "this node never charges" rather than as a panel
   // sitting at zero volts - the latter would look like darkness and freeze nothing
-  panel(new INfloat(id, "panel", String(irrigationT->Panel), NAN, 0,
-    DEFAULT_soc_panel_min, DEFAULT_soc_panel_max,
-    DEFAULT_soc_panel_min, DEFAULT_soc_panel_max, DEFAULT_soc_panel_color, true)),
+  panel(new INfloat(id, "panel", String(irrigationT->Panel), NAN, 0, IO_DEFAULTS(soc_panel), true)),
   profile(new INuint16(id, "profile", String(irrigationT->BatteryType), BATTERY_AGM,
-    DEFAULT_soc_profile_min, DEFAULT_soc_profile_max,
-    DEFAULT_soc_profile_min, DEFAULT_soc_profile_max, DEFAULT_soc_profile_color, false)),
-  soc(new OUTfloat(id, "soc", String(irrigationT->Charge), NAN, 0,
-    DEFAULT_soc_soc_min, DEFAULT_soc_soc_max, DEFAULT_soc_soc_color, false)),
+    IO_DEFAULTS(soc_profile), false)),
+  soc(new OUTfloat(id, "soc", String(irrigationT->Charge), NAN, 0, IO_DEFAULTS(soc_soc), false)),
   charging(new OUTbool(id, "charging", String(irrigationT->Charging), false, DEFAULT_soc_charging_color, false))
 {
   inputs.push_back(battery);

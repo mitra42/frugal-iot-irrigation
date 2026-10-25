@@ -35,9 +35,11 @@ application uses come from the schema in `frugal-iot-server` via
 
 ## The library
 
-`platformio.ini` depends on the library's `ospit-p1` branch from GitHub, so a fresh clone builds
-with nothing set up. That is the committed default because the person most likely to hit it first
-is a tester, not us.
+`platformio.ini` depends on the released library from the PlatformIO registry (`Frugal-IoT@^x.y.z`,
+bumped by `scripts/release.zsh`), so a fresh clone builds with nothing set up. That is the committed
+default because the person most likely to hit it first is a tester, not us. The flip side: code
+here that uses something new in the library does not build from a fresh clone until that library
+version is released and the pin is bumped.
 
 ### Building against a local library
 
@@ -131,7 +133,7 @@ add a topic:
 3. Regenerate `defaults.h` **from a scratch merge of `schema-irrigation` + `modbus-soil` +
    `schema-analog`**, because the firmware uses all three. Generating from one branch silently
    drops the others' macros. Compare the sorted SETS of macro names before and after, not the diff.
-4. Copy it to `lib/Frugal-IoT/src/defaults.h` and commit it there, on `ospit-p1`.
+4. Copy it to `lib/Frugal-IoT/src/defaults.h` and commit it there, on `main`.
 
 Module ids and schema keys: the client matches a module id **exactly**, then falls back to the
 longest schema key that is a prefix, provided the remainder is all digits or starts with a

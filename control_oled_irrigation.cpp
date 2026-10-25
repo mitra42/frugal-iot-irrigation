@@ -87,7 +87,7 @@ Control_Oled_IrrigationSoil::Control_Oled_IrrigationSoil()
     moisture2(new INfloat("oledsoil", "moisture2", "Moisture 2", NAN, 0, 0, 100, "#a52a2a", true)),
     moisture3(new INfloat("oledsoil", "moisture3", "Moisture 3", NAN, 0, 0, 100, "#a52a2a", true)),
     tank(new INfloat("oledsoil", "tank", "Tank", NAN, 0, 0, 100, "#0000ff", true)),
-    active(new INuint16("oledsoil", "active", "Active", 0, 0, 16, 0, 16, "#000000", true))
+    active(new INuint16("oledsoil", "active", "Active", 0, 0, 16, "#000000", true))
 {
   inputs.push_back(moisture1);
   inputs.push_back(moisture2);
