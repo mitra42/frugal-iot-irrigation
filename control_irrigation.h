@@ -76,10 +76,10 @@
 class Control_Sector : public Control {
   public:
     Control_Sector(const char* const id, const char* const name);
-    INfloat* moisture; // Wire to a soil probe, e.g. soil1/humidity. "nan" here means "skip me"
-    INfloat* target;   // Stop watering at this moisture
-    INbool*  enable;
-    OUTbool* valve;    // Wire to an Actuator_Digital, e.g. setPath("valve1/on")
+    INfloat* moisture; // Wire to a soil probe, e.g. soil1/humidity. "nan" here means "skip me" /*SUB*/
+    INfloat* target;   // Stop watering at this moisture /*SUB*/
+    INbool*  enable;  // Set by Control_Irrigation: when it is this sector's turn.; UX controllable to immediately cancel and close valve. /*BASE*/
+    OUTbool* valve;    // Wire to an Actuator_Digital, e.g. setPath("valve1/on") /*BASE*/
 
     /* Begin watering this sector, if it should be watered at all.
      *
@@ -87,47 +87,47 @@ class Control_Sector : public Control {
      * the soil is already at or above target, or when enable is false. True means the valve has
      * been opened and the caller should arm the maximum-duration timer.
      */
-    bool start();
+    bool start(); /*SUB*/
     /* True while this sector should keep watering. Called once per cycle by the sequencer, which
      * stops the sector when this returns false OR the maximum time expires.
      */
-    bool step();
-    void stop(); // Close the valve and drop enable. Safe to call when not running.
+    bool step(); /*SUB*/
+    void stop(); // Close the valve and drop enable. Safe to call when not running. /*BASE*/
     /* Push "closed" onto the valve whether or not this control believes it is already closed.
      *
      * stop() goes through OUTbool::set(), which only sends on a change - so a valve opened by
      * hand from the portal, which never touched this OUT, would be left open. See closeAll().
      */
-    void forceOff();
+    void forceOff(); /*BASE*/
   protected:
-    void act() override;
+    void act() override; /*BASE*/
 };
 
 class Control_Irrigation : public Control {
   public:
-    Control_Irrigation(const char* const id, const char* const name);
-    std::vector<Control_Sector*> sectors;
+    Control_Irrigation(const char* const id, const char* const name); /*SPLIT*/
+    std::vector<Control_Sector*> sectors; /*BASE*/
     /* Create a sector, add it to this sequencer AND to frugal_iot.controls.
      *
      * Sectors run in the order they are added. Returns the sector so the sketch can wire its
      * moisture input and valve output.
      */
-    Control_Sector* addSector(const char* const id, const char* const name);
+    Control_Sector* addSector(const char* const id, const char* const name); /*BASE*/
 
-    INuint16* hour;       // Local hour to start
-    INuint16* minute;     // Local minute to start
-    INfloat*  maxminutes; // Longest any one valve may stay open
-    INbool*   enabled;    // Master switch
+    INuint16* hour;       // Local hour to start  /*BASE*/
+    INuint16* minute;     // Local minute to start /*BASE*/
+    INfloat*  maxminutes; // Longest any one valve may stay open /*BASE*/
+    INbool*   enabled;    // Master switch /*BASE*/
     /* Tank level in %, wired from Sensor_Tank. "nan" means no tank sensor is fitted, and is
      * deliberately NOT treated as an empty tank. See sensor_tank.h.
      */
-    INfloat*  tank;
-    INfloat*  tankstart;  // Do not BEGIN a cycle below this level
-    INfloat*  tankempty;  // ABORT a running cycle below this level
-    INbool*   power;      // True when it is electrically safe to run
-    INbool*   solar;      // Input power available. Only consulted by pump mode 3
-    OUTbool*  pump;       // Wire to the pump/load Actuator_Digital
-    OUTuint16* active;    // Sector currently running, 1-based; 0 when idle
+    INfloat*  tank; /*SUB*/
+    INfloat*  tankstart;  // Do not BEGIN a cycle below this level /*BLOCKER*/
+    INfloat*  tankempty;  // ABORT a running cycle below this level /*BLOCKER*/
+    INbool*   power;      // True when it is electrically safe to run /*BLOCKER*/
+    INbool*   solar;      // Input power available. Only consulted by pump mode 3 /*BLOCKER*/
+    OUTbool*  pump;       // Wire to the pump/load Actuator_Digital  /*BASE*/
+    OUTuint16* active;    // Sector currently running, 1-based; 0 when idle  /*BASE*/
 
     /* Refuses any sleep while a cycle is running - System_Power asks every module before sleeping
      * (System_Base::okToSleep), and asks again on the next loop() after a refusal.
@@ -139,22 +139,22 @@ class Control_Irrigation : public Control {
      * TODO may consider holding GPIO with RTC when asleep, which would allow a cycle to span a
      * sleep rather than having to prevent one.
      */
-    bool okToSleep(unsigned long ms, uint16_t how);
+    bool okToSleep(unsigned long ms, uint16_t how) override; /*BASE*/
 
-    void setup() override;
-    void periodically() override;
+    void setup() override; /*BASE*/
+    void periodically() override; /*BASE*/
   protected:
-    uint8_t t;  // Sleep-safe timer slot - see "The main loop" above. Claimed in the constructor.
-    int8_t  i;  // Sector being watered; >= sectors.size() means idle. Set to idle in setup().
-    bool running() { return i < (int8_t)sectors.size(); }
+    uint8_t t;  // Sleep-safe timer slot - see "The main loop" above. Claimed in the constructor. /*BASE*/
+    int8_t  i;  // Sector being watered; >= sectors.size() means idle. Set to idle in setup(). /*BASE*/
+    bool running() { return i < (int8_t)sectors.size(); } /*BASE*/
     /* True when a running cycle must stop right now: master switch off, power interlock open, or
      * the tank has fallen to the empty threshold. Checked every cycle AND before each sector, so
      * it aborts the sequence rather than merely the current sector.
      */
-    bool blocked();
-    bool tankOk();      // Tank is fitted and above the empty threshold, or no tank is fitted
-    bool tankCanStart(); // As tankOk, but against the higher "enough to bother starting" threshold
-    void startNext();   // Advance i to the next sector that will run; leaves it idle if none will
+    bool blocked(); /*BASE but calls BLOCKERs*/
+    bool tankOk();      // Tank is fitted and above the empty threshold, or no tank is fitted /*BLOCKER*/
+    bool tankCanStart(); // As tankOk, but against the higher "enough to bother starting" threshold /*BLOCKER*/
+    void startNext();   // Advance i to the next sector that will run; leaves it idle if none will /*BASE*/
     /* Close every sector's valve at the end of a cycle, whoever opened it.
      *
      * Manual control is allowed to fight the sequencer and win for a while - but when the run
@@ -167,10 +167,10 @@ class Control_Irrigation : public Control {
      * TODO manual override needs application-specific thought - "the schedule wins eventually"
      * is one answer, "manual latches until someone clears it" is another.
      */
-    void closeAll();
-    time_t nextStartTime(); // Absolute epoch of the next hour:minute, always in the future
-    void setPump();
-    void act() override;
+    void closeAll(); /*BASE*/
+    time_t nextStartTime(); // Absolute epoch of the next hour:minute, always in the future  /*BASE*/
+    void setPump(); /*SUB*/
+    void act() override;  /*BASE*/
 };
 
 #endif // CONTROL_IRRIGATION_H
