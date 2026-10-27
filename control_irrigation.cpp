@@ -5,22 +5,14 @@
 #include "control_irrigation.h"
 #include "language.h"
 #include "Frugal-IoT.h"
-#include <cmath> // for NAN
 
 // ================= Control_Sector =================================================
 
 Control_Sector::Control_Sector(const char* const id, const char* const name)
 : Control(id, name, std::vector<IN*>{}, std::vector<OUT*>{}),
-  // Starts as "no reading", so a sector whose moisture input is never wired is skipped rather
-  // than watered on the strength of a default of zero.
-  moisture(new INfloat(id, "moisture", String(irrigationT->Moisture), NAN, 1,
-    IO_DEFAULTS(sector_moisture), true)),
-  target(new INfloat(id, "target", String(irrigationT->Target), 80, 1, IO_DEFAULTS(sector_target), true)),
   enable(new INbool(id, "enable", String(irrigationT->Enable), false, DEFAULT_sector_enable_color, false)),
   valve(new OUTbool(id, "valve", String(irrigationT->Valve), false, DEFAULT_sector_valve_color, true))
 {
-  inputs.push_back(moisture);
-  inputs.push_back(target);
   inputs.push_back(enable);
   outputs.push_back(valve);
 }
@@ -31,9 +23,10 @@ Control_Sector::Control_Sector(const char* const id, const char* const name)
  * sequencer moving on, or a person clearing it from the portal. Raising it does NOT open the
  * valve; only start() does, so the sequencer stays in charge of when watering begins.
  *
- * Nothing here reacts to `moisture` reaching `target`. That is deliberate - the decision to stop
- * belongs to the sequencer, which also has to arm the next sector, and having two places able to
- * close the valve would make "why did it stop?" much harder to answer.
+ * Nothing here reacts to the sector being satisfied (e.g. `moisture` reaching `target` in
+ * Control_Sector_Moisture). That is deliberate - the decision to stop belongs to the sequencer,
+ * which also has to arm the next sector, and having two places able to close the valve would make
+ * "why did it stop?" much harder to answer. Subclasses report it through step() instead.
  */
 void Control_Sector::act() {
   if (!enable->value && valve->value) {
@@ -43,35 +36,11 @@ void Control_Sector::act() {
 
 bool Control_Sector::start() {
   bool started = false;
-  // isValid() false means the probe published "nan" - no reading at all. Skip without touching
-  // the valve; see "Skipping a sector" in the header.
-  if (enable->value && moisture->isValid() && (moisture->floatValue() < target->floatValue())) {
+  if (enable->value) {
     valve->set(true);
     started = true;
   }
   return started;
-}
-
-bool Control_Sector::step() {
-  bool keepGoing;
-  if (!moisture->isValid()) {
-    /* The reading disappeared part way through watering.
-     *
-     * Keep the valve open and let the maximum-duration timer end the sector, rather than closing
-     * up immediately. A probe that misses a poll or two on a shared RS485 bus is a great deal more
-     * common than a probe that has really gone, and stopping on every dropped reading would
-     * under-water the sector every time. The timeout still bounds how much water this can cost.
-     *
-     * TODO revisit once there is field experience. The alternative - stop and advance - is safer
-     * if probes turn out to fail outright more often than they glitch, and this is the one line
-     * to change. Note start() takes the opposite view for the same condition, on purpose: opening
-     * a valve with no feedback at all is a worse bet than continuing one already open.
-     */
-    keepGoing = true;
-  } else {
-    keepGoing = moisture->floatValue() < target->floatValue();
-  }
-  return keepGoing;
 }
 
 void Control_Sector::stop() {
@@ -102,15 +71,6 @@ Control_Irrigation::Control_Irrigation(const char* const id, const char* const n
   // Defaults to OFF. Something that opens water valves unattended should not start doing so merely
   // because it was flashed - see the note in frugal-iot-irrigation.ino on turning it on.
   enabled(new INbool(id, "enabled", String(irrigationT->Enabled), false, DEFAULT_irrigation_enabled_color, false)),
-  tank(new INfloat(id, "tank", String(irrigationT->TankLevel), NAN, 1, IO_DEFAULTS(irrigation_tank), true)),
-  tankstart(new INfloat(id, "tankstart", String(irrigationT->TankLevelToStart), 25, 1,
-    IO_DEFAULTS(irrigation_tankstart), false)),
-  tankempty(new INfloat(id, "tankempty", String(irrigationT->TankLevelToStop), 5, 1,
-    IO_DEFAULTS(irrigation_tankempty), false)),
-  // Both interlocks default TRUE, so a node with nothing wired to them still irrigates. Wiring
-  // one in can only ever stop irrigation, never enable it, which is the right way round.
-  power(new INbool(id, "power", String(irrigationT->PowerOk), true, DEFAULT_irrigation_power_color, true)),
-  solar(new INbool(id, "solar", String(irrigationT->InputPower), true, DEFAULT_irrigation_solar_color, true)),
   pump(new OUTbool(id, "pump", String(irrigationT->Pump), false, DEFAULT_irrigation_pump_color, true)),
   active(new OUTuint16(id, "active", String(irrigationT->ActiveSector), 0,
     IO_DEFAULTS(irrigation_active), false))
@@ -119,22 +79,21 @@ Control_Irrigation::Control_Irrigation(const char* const id, const char* const n
   inputs.push_back(minute);
   inputs.push_back(maxminutes);
   inputs.push_back(enabled);
-  inputs.push_back(tank);
-  inputs.push_back(tankstart);
-  inputs.push_back(tankempty);
-  inputs.push_back(power);
-  inputs.push_back(solar);
   outputs.push_back(pump);
   outputs.push_back(active);
 }
 
-Control_Sector* Control_Irrigation::addSector(const char* const id, const char* const name) {
-  Control_Sector* s = new Control_Sector(id, name);
+void Control_Irrigation::registerSector(Control_Sector* s) {
   sectors.push_back(s);
   // Also a control in its own right, so it gets dispatch(), discover() and a captive-portal
   // section like anything else. Same arrangement as Control_Carousel's children - see gps.ino.
   frugal_iot.controls->add(s);
-  return s;
+}
+
+void Control_Irrigation::registerBlocker(Control_Blocker* b) {
+  blockers.push_back(b);
+  b->owner = this;
+  frugal_iot.controls->add(b);
 }
 
 void Control_Irrigation::setup() {
@@ -149,22 +108,30 @@ bool Control_Irrigation::okToSleep(unsigned long ms, uint16_t how) {
   return !running();
 }
 
-// No tank sensor fitted ("nan") never blocks - see sensor_tank.h.
-bool Control_Irrigation::tankOk() {
-  return !tank->isValid() || (tank->floatValue() > tankempty->floatValue());
-}
-
-bool Control_Irrigation::tankCanStart() {
-  return !tank->isValid() || (tank->floatValue() >= tankstart->floatValue());
-}
-
+// Deliberately loops rather than returning early - see CLAUDE.md "Coding preferences".
 bool Control_Irrigation::blocked() {
-  return !enabled->value || !power->value || !tankOk();
+  bool stop = !enabled->value;
+  for (Control_Blocker* b : blockers) {
+    if (b->stopIrrigation()) {
+      stop = true;
+    }
+  }
+  return stop;
+}
+
+bool Control_Irrigation::canStart() {
+  bool ok = !blocked();
+  for (Control_Blocker* b : blockers) {
+    if (!b->okToIrrigate()) {
+      ok = false;
+    }
+  }
+  return ok;
 }
 
 void Control_Irrigation::closeAll() {
   for (Control_Sector* s : sectors) {
-    if (s->moisture->isValid()) {
+    if (s->available()) {
       s->forceOff();
     }
   }
@@ -195,53 +162,52 @@ time_t Control_Irrigation::nextStartTime() {
      * Computing a start time from an unset clock would produce a 1970 date, which is long past,
      * so the timer would fire at once and irrigate at boot. Come back and look again shortly
      * instead. sleepSafeSecs() is the same clock the timer compares against, so this is right
-     * whatever epoch the device currently believes in.
+     * whatever epoch the device currently believes in. Only to look - inStartWindow() is what
+     * stops this expiring into a run.
      */
     next = (time_t)(frugal_iot.powercontroller->sleepSafeSecs() + CONTROL_IRRIGATION_NOTIME_RETRY_S);
   } else {
     const time_t now = frugal_iot.time->now();
-    struct tm lt;
-    localtime_r(&now, &lt);
-    lt.tm_hour = (int)hour->value;
-    lt.tm_min = (int)minute->value;
-    lt.tm_sec = 0;
-    lt.tm_isdst = -1; // Let mktime decide, rather than inheriting today's flag
-    next = mktime(&lt);
+    next = slotOn(now, 0);
     if (next <= (now + CONTROL_IRRIGATION_START_MARGIN_S)) {
-      // Today's slot has been and gone - the normal case just after a cycle finishes. Increment
-      // the day and let mktime re-normalise, rather than adding 86400: a day that is not 24 hours
-      // long still has to land on the same wall-clock time.
-      lt.tm_mday += 1;
-      lt.tm_hour = (int)hour->value;
-      lt.tm_min = (int)minute->value;
-      lt.tm_sec = 0;
-      lt.tm_isdst = -1;
-      next = mktime(&lt);
+      // Today's slot has been and gone - the normal case just after a cycle finishes.
+      next = slotOn(now, 1);
     }
   }
   return next;
 }
 
-void Control_Irrigation::setPump() {
-  bool on;
-  #if CONTROL_IRRIGATION_PUMP_MODE == 1
-    // Tank feeds the sectors; the pump pressurises them while a valve is open.
-    on = running() && tankOk();
-  #elif CONTROL_IRRIGATION_PUMP_MODE == 2
-    // Pump fills a header tank - run whenever it is below the "enough to start" level. Never run
-    // when no tank sensor is fitted: with no level to work from, running a pump is the unsafe guess.
-    on = tank->isValid() && !tankCanStart();
-  #elif CONTROL_IRRIGATION_PUMP_MODE == 3
-    // As mode 2, but only while there is input power to spare, e.g. wired from a hysteresis
-    // control on the solar input voltage.
-    on = tank->isValid() && !tankCanStart() && solar->value;
-  #else
-    #error CONTROL_IRRIGATION_PUMP_MODE must be 1, 2 or 3 - see control_irrigation.h
-  #endif
-  pump->set(on);
+time_t Control_Irrigation::slotOn(time_t now, int days) {
+  struct tm lt;
+  localtime_r(&now, &lt);
+  // Move the day and let mktime re-normalise, rather than adding multiples of 86400: a day that
+  // is not 24 hours long still has to land on the same wall-clock time.
+  lt.tm_mday += days;
+  lt.tm_hour = (int)hour->value;
+  lt.tm_min = (int)minute->value;
+  lt.tm_sec = 0;
+  lt.tm_isdst = -1; // Let mktime decide, rather than inheriting today's flag
+  return mktime(&lt);
 }
 
-/* An input changed.
+bool Control_Irrigation::inStartWindow() {
+  bool inWindow = false;
+  if (frugal_iot.time && frugal_iot.time->isTimeSet()) {
+    const time_t now = frugal_iot.time->now();
+    time_t last = slotOn(now, 0);
+    if (last > now) {
+      last = slotOn(now, -1); // Today's slot is still to come, so the most recent was yesterday's
+    }
+    inWindow = (now - last) < CONTROL_IRRIGATION_START_WINDOW_S;
+  }
+  return inWindow;
+}
+
+void Control_Irrigation::setPump() {
+  pump->set(running() && !blocked());
+}
+
+/* An input changed - ours, or a blocker's, which calls this through Control_Blocker::owner.
  *
  * Acting here as well as in periodically() is what makes the interlocks quick: a battery that has
  * just dropped below its threshold closes the valve now rather than up to one wake-cycle later.
@@ -269,7 +235,7 @@ void Control_Irrigation::periodically() {
       startNext();
       cycleEnded = !running();
     }
-  } else if (p->timer_expired(t) && !blocked() && tankCanStart()) {
+  } else if (p->timer_expired(t) && inStartWindow() && canStart()) {
     i = -1; // startNext() pre-increments, so this starts the search at sector 0
     startNext();
     cycleEnded = !running(); // A cycle was due and attempted, but no sector wanted water

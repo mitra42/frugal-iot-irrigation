@@ -2,13 +2,19 @@
 # Datatypes (KEYWORD1)
 #######################################
 
+Control_Blocker	KEYWORD1
+Control_Blocker_Power	KEYWORD1
+Control_Blocker_Solar	KEYWORD1
+Control_Blocker_Tank	KEYWORD1
 Control_Health	KEYWORD1
 Control_Irrigation	KEYWORD1
+Control_Irrigation_Example	KEYWORD1
 Control_MPPT	KEYWORD1
 Control_Oled_IrrigationNet	KEYWORD1
 Control_Oled_IrrigationPower	KEYWORD1
 Control_Oled_IrrigationSoil	KEYWORD1
 Control_Sector	KEYWORD1
+Control_Sector_Moisture	KEYWORD1
 Control_SoC	KEYWORD1
 Sensor_Heatsink	KEYWORD1
 Sensor_Tank	KEYWORD1
@@ -19,18 +25,26 @@ Sensor_Tank	KEYWORD1
 
 act	KEYWORD2
 applyStep	KEYWORD2
+available	KEYWORD2
 blocked	KEYWORD2
+canStart	KEYWORD2
 captiveLines	KEYWORD2
 closeAll	KEYWORD2
 computeTarget	KEYWORD2
 convert	KEYWORD2
 dispatch	KEYWORD2
+fitted	KEYWORD2
 forceOff	KEYWORD2
+inStartWindow	KEYWORD2
 maxStep	KEYWORD2
+needsFilling	KEYWORD2
 nextStartTime	KEYWORD2
+okToIrrigate	KEYWORD2
 okToSleep	KEYWORD2
 periodically	KEYWORD2
 readInt	KEYWORD2
+registerBlocker	KEYWORD2
+registerSector	KEYWORD2
 regulate	KEYWORD2
 running	KEYWORD2
 safeStep	KEYWORD2
@@ -38,15 +52,15 @@ setPump	KEYWORD2
 setState	KEYWORD2
 setup	KEYWORD2
 setupIrrigationLanguage	KEYWORD2
+slotOn	KEYWORD2
 socForVoltage	KEYWORD2
 start	KEYWORD2
 startNext	KEYWORD2
 step	KEYWORD2
 stepForVmpp	KEYWORD2
 stop	KEYWORD2
+stopIrrigation	KEYWORD2
 syncIrrigationLanguage	KEYWORD2
-tankCanStart	KEYWORD2
-tankOk	KEYWORD2
 updateAdvice	KEYWORD2
 updateDerate	KEYWORD2
 validate	KEYWORD2

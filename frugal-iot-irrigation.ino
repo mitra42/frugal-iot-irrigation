@@ -53,7 +53,8 @@
  */
 
 #include "Frugal-IoT.h"
-#include "control_irrigation.h"
+#include "control_irrigation_example.h"
+#include "control_sector_moisture.h"
 #include "sensor_tank.h"
 #include "control_oled_irrigation.h"
 #include "sensor_heatsink.h"
@@ -249,27 +250,30 @@ void setup() {
 
 
   // ---- Irrigation ------------------------------------------------------------------------
-  Control_Irrigation* irr = new Control_Irrigation("irrigation", "Irrigation");
+  // Composes its own blockers - irrigation-tank and irrigation-power - which are wired here.
+  Control_Irrigation_Example* irr = new Control_Irrigation_Example("irrigation", "Irrigation");
   frugal_iot.controls->add(irr);
   #ifdef SENSOR_TANK_PIN
-    irr->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+    irr->tankBlocker->tank->wireTo(frugal_iot.messages->path("tank/tank"));
   #endif
   #if defined(IRRIGATION_PUMP_PIN) || defined(IRRIGATION_PUMP_BIT)
     irr->pump->wireTo(frugal_iot.messages->setPath("pump/on"));
   #endif
-  chirr->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation/power"));
+  chirr->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation-power/power"));
 
-  // Sectors run in the order they are added. addSector() registers each one as a control in its
-  // own right, so each gets its own portal section, MQTT topics and discovery.
-  Control_Sector* s1 = irr->addSector("sector1", "Sector 1");
+  /* Sectors run in the order they are added. addSector() registers each one as a control in its
+   * own right, so each gets its own portal section, MQTT topics and discovery. Each can be a
+   * different Control_Sector subclass - these are all moisture-driven, as OSPIT's were.
+   */
+  Control_Sector_Moisture* s1 = irr->addSector(new Control_Sector_Moisture("sector1", "Sector 1"));
   s1->moisture->wireTo(frugal_iot.messages->path("soil1/humidity"));
   s1->valve->wireTo(frugal_iot.messages->setPath("valve1/on"));
 
-  Control_Sector* s2 = irr->addSector("sector2", "Sector 2");
+  Control_Sector_Moisture* s2 = irr->addSector(new Control_Sector_Moisture("sector2", "Sector 2"));
   s2->moisture->wireTo(frugal_iot.messages->path("soil2/humidity"));
   s2->valve->wireTo(frugal_iot.messages->setPath("valve2/on"));
 
-  Control_Sector* s3 = irr->addSector("sector3", "Sector 3");
+  Control_Sector_Moisture* s3 = irr->addSector(new Control_Sector_Moisture("sector3", "Sector 3"));
   s3->moisture->wireTo(frugal_iot.messages->path("soil3/humidity"));
   s3->valve->wireTo(frugal_iot.messages->setPath("valve3/on"));
 

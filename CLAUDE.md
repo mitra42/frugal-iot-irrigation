@@ -66,7 +66,7 @@ downloaded dependencies. It fails in a very confusing way.
 
 Use the symlink when a change needs both repos. **A change that is generally useful belongs in the
 library, not here** — ask which branch it should go on rather than growing a private copy. The
-split so far: `Control_Irrigation`, `Control_Sector`, `Sensor_Tank` and the OLED pages are here
+split so far: `Control_Irrigation`, `Control_Sector`, the blockers, `Sensor_Tank` and the OLED pages are here
 because they are expected to be re-coded for the next application; `Sensor_SoilModbus`,
 `System_RS485`, `Actuator_Analog` and the `IN`/`OUT` setters are in the library because they are
 not.
@@ -76,7 +76,10 @@ not.
 | File | What |
 |---|---|
 | `frugal-iot-irrigation.ino` | wiring: which sensors, which actuators, what is connected to what |
-| `control_irrigation.{h,cpp}` | `Control_Irrigation` (the sequencer) and `Control_Sector` |
+| `control_irrigation.{h,cpp}` | base classes: `Control_Irrigation` (the sequencer) and `Control_Sector` (a valve, run until the timer ends it) |
+| `control_irrigation_example.{h,cpp}` | `Control_Irrigation_Example` - composes the tank and power blockers, and the pump modes |
+| `control_sector_moisture.{h,cpp}` | `Control_Sector_Moisture` - waters until the soil reaches a target |
+| `control_blocker.{h,cpp}` | `Control_Blocker` and its tank, power and solar subclasses - what can stop a run |
 | `sensor_tank.{h,cpp}` | resistive float sender as a percentage |
 | `control_oled_irrigation.{h,cpp}` | three display pages in a carousel |
 | `sensor_heatsink.{h,cpp}` | heatsink temperature from a diode pair, if the board has one |
@@ -93,6 +96,10 @@ not.
 
 ## Things that are the way they are on purpose
 
+- **A blocker's inputs are its own, but a change still reaches the sequencer at once** -
+  `Control_Blocker::act()` calls its owner's `act()`, so a battery dropping closes the valve now
+  rather than on the next `periodically()`. A blocker added without `addBlocker()` must have
+  `owner` set by hand, as the mode-3 solar blocker does.
 - **A sector with no reading is skipped and its valve is never driven.** In OSPIT this was the
   board's configuration mechanism — its third output was a valve or a USB supply depending on
   whether probe 3 answered. Here a sector exists because you constructed one, but the skip stays.

@@ -13,7 +13,7 @@ OSPIT's main files, for reference:
 
 | OSPIT file | What it does | Here |
 |---|---|---|
-| `irrigation.lua` | the sequencer and the tank gauge | `control_irrigation.*`, `sensor_tank.*` |
+| `irrigation.lua` | the sequencer and the tank gauge | `control_irrigation*.*`, `control_sector_moisture.*`, `control_blocker.*`, `sensor_tank.*` |
 | `mp2.lua` | MPPT, charge limit, state of charge, battery health, low-voltage disconnect, USB disconnect | `control_mppt.*`, `control_soc.*`, `control_health.*`, the `Control_Hysteresis` interlocks in the `.ino` |
 | `display.lua` | three status pages | `control_oled_irrigation.*` |
 | `is.lua` | timers, GPIO setup | the library's `System_Power` and `Actuator_Digital` |
@@ -78,7 +78,7 @@ Future versions will add functionality here, for example so that a sector might 
 | `i_vlv_opn` | `irrigation/maxminutes` | |
 | `i_nbld` | `irrigation/enabled` | off by default in both |
 | `i_lvl1..4` | `sectorN/target` | |
-| `low_voltage_disconnect_state` | `irrigation/power` | see [Battery interlocks](#battery-interlocks) |
+| `low_voltage_disconnect_state` | `irrigation-power/power` | see [Battery interlocks](#battery-interlocks) |
 | `i_tanksens` | — | here, a missing tank sensor is detected rather than configured |
 | — | `irrigation/active` | which sector is running; OSPIT has no equivalent |
 
@@ -109,6 +109,11 @@ false, so its 6-second loop starts again for the rest of the scheduled hour. Her
 blocked at the scheduled moment (a tank still refilling at 03:00, a momentary battery dip) is
 written off until the next day. There is a TODO in `Control_Irrigation::periodically()` to add a
 retry window if that matters in practice.
+
+That is not the same thing as the start window (`CONTROL_IRRIGATION_START_WINDOW_S`, an hour). The
+window only lets a run that has not happened yet today begin late - after a late wake, or a clock
+set a few minutes after the slot. Outside it, a node that has just powered up waits for tomorrow
+rather than watering at boot.
 
 ### Battery interlocks
 
