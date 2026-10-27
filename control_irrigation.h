@@ -17,24 +17,12 @@
  *   - when the last sector is done, arm for the same time tomorrow
  *
  * ---------------------------------------------------------------------------------------------
- * The main loop, and why the timer does two jobs
- *
- * A single sleep-safe timer slot is used for both halves of the job:
- *   while a cycle is running - the maximum time the CURRENT sector's valve may stay open
- *   while idle               - the absolute time the NEXT cycle should start
- *
- * That works because the two are never needed at once, and it means the whole schedule survives
- * deep sleep for free: the timer array lives in RTC_DATA_ATTR (system/power.cpp).
- *
- * The idle branch re-arms from a freshly computed nextStartTime() on every pass, so it is
- * self-correcting: System_Time::set() shifts armed timers to preserve their INTERVAL, which is
- * right for OTA and the watchdog but would slide a wall-clock appointment, and this undoes that
- * on the next cycle. See System_Power::timer_set_to().
- *
- * No RTC_DATA_ATTR state of our own is needed. `i` is reset to "idle" in setup(), which runs on
- * every boot including a deep-sleep wake - so a cycle interrupted by a sleep is abandoned rather
- * than resumed with stale state, and every valve is closed by Actuator_Digital::setup(). That is
- * the safe outcome, and okToSleep() is there to stop it happening in the first place.
+ * A single, sleep-safe timer controls either when the next cycle starts, 
+ * or the maximum time the current sector's valve should stay open.
+ * 
+ * No RTC_DATA_ATTR state of our own (other than the timer) is needed. `i` is reset to "idle" in setup(), which runs on
+ * every boot including a deep-sleep wake. 
+ * okToSleep() prevents sleeping mid-cycle.
  *
  * ---------------------------------------------------------------------------------------------
  * Skipping a sector
@@ -83,21 +71,13 @@
 
 /* One irrigation sector: a moisture probe, the moisture it is aiming for, and a valve.
  *
- * Registered in frugal_iot.controls in its own right (so it gets dispatch(), discover() and the
- * captive portal like any other control) AND held in Control_Irrigation::sectors, which is the
- * same arrangement Control_Carousel uses for its child controls - see examples/gps/gps.ino.
+ * Registered in frugal_iot.controls (so receives dispatch etc) AND held in Control_Irrigation::sectors
  */
 class Control_Sector : public Control {
   public:
     Control_Sector(const char* const id, const char* const name);
     INfloat* moisture; // Wire to a soil probe, e.g. soil1/humidity. "nan" here means "skip me"
     INfloat* target;   // Stop watering at this moisture
-    /* Set by Control_Irrigation: tank ok AND power ok AND it is this sector's turn.
-     *
-     * An IN rather than a plain bool so it is visible, loggable and settable: clearing it from
-     * the UX or over MQTT closes the valve immediately (see act()), which makes it a usable
-     * per-sector interlock as well as internal state.
-     */
     INbool*  enable;
     OUTbool* valve;    // Wire to an Actuator_Digital, e.g. setPath("valve1/on")
 
@@ -158,11 +138,6 @@ class Control_Irrigation : public Control {
      * just happens on waking, as the timer lives in RTC memory.
      * TODO may consider holding GPIO with RTC when asleep, which would allow a cycle to span a
      * sleep rather than having to prevent one.
-     *
-     * Deliberately no `override`: the hook only exists in Frugal-IoT from the 232-lm-sleep branch
-     * on, and without it this must still build against the released library, where it is simply
-     * never called. The cost is that a change to the base signature would quietly stop this
-     * overriding - add `override` back once the released library has okToSleep.
      */
     bool okToSleep(unsigned long ms, uint16_t how);
 
