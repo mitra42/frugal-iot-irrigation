@@ -154,51 +154,28 @@ void Control_Irrigation::startNext() {
   }
 }
 
-time_t Control_Irrigation::nextStartTime() {
-  time_t next;
-  if (!frugal_iot.time || !frugal_iot.time->isTimeSet()) {
-    /* No clock yet - NTP has not answered and nobody has set it from the portal.
-     *
-     * Computing a start time from an unset clock would produce a 1970 date, which is long past,
-     * so the timer would fire at once and irrigate at boot. Come back and look again shortly
-     * instead. sleepSafeSecs() is the same clock the timer compares against, so this is right
-     * whatever epoch the device currently believes in. Only to look - inStartWindow() is what
-     * stops this expiring into a run.
-     */
-    next = (time_t)(frugal_iot.powercontroller->sleepSafeSecs() + CONTROL_IRRIGATION_NOTIME_RETRY_S);
-  } else {
-    const time_t now = frugal_iot.time->now();
-    next = slotOn(now, 0);
-    if (next <= (now + CONTROL_IRRIGATION_START_MARGIN_S)) {
-      // Today's slot has been and gone - the normal case just after a cycle finishes.
-      next = slotOn(now, 1);
-    }
-  }
-  return next;
+void Control_Irrigation::armNext() {
+  // 0 with no clock - or no System_Time at all - which reads as expired, so periodically() looks
+  // again on every pass until the clock is set, and inStartWindow() keeps that from being a run.
+  const time_t next = frugal_iot.time
+    ? frugal_iot.time->getNextDaytime((uint8_t)hour->value, (uint8_t)minute->value)
+    : 0;
+  frugal_iot.powercontroller->timer_set_to(t, (uint32_t)next);
 }
 
-time_t Control_Irrigation::slotOn(time_t now, int days) {
-  struct tm lt;
-  localtime_r(&now, &lt);
-  // Move the day and let mktime re-normalise, rather than adding multiples of 86400: a day that
-  // is not 24 hours long still has to land on the same wall-clock time.
-  lt.tm_mday += days;
-  lt.tm_hour = (int)hour->value;
-  lt.tm_min = (int)minute->value;
-  lt.tm_sec = 0;
-  lt.tm_isdst = -1; // Let mktime decide, rather than inheriting today's flag
-  return mktime(&lt);
-}
-
+// Wall-clock arithmetic rather than epochs, so it needs no "yesterday's slot" calculation.
 bool Control_Irrigation::inStartWindow() {
   bool inWindow = false;
   if (frugal_iot.time && frugal_iot.time->isTimeSet()) {
     const time_t now = frugal_iot.time->now();
-    time_t last = slotOn(now, 0);
-    if (last > now) {
-      last = slotOn(now, -1); // Today's slot is still to come, so the most recent was yesterday's
+    struct tm lt;
+    localtime_r(&now, &lt);
+    int32_t since = ((int32_t)lt.tm_hour * 3600 + lt.tm_min * 60 + lt.tm_sec)
+      - ((int32_t)hour->value * 3600 + (int32_t)minute->value * 60);
+    if (since < 0) {
+      since += 86400; // The slot is later today, so the most recent one was yesterday's
     }
-    inWindow = (now - last) < CONTROL_IRRIGATION_START_WINDOW_S;
+    inWindow = since < CONTROL_IRRIGATION_START_WINDOW_S;
   }
   return inWindow;
 }
@@ -214,18 +191,34 @@ void Control_Irrigation::setPump() {
  * The abort path is the same one startNext() takes, so there is only one behaviour to reason about.
  */
 void Control_Irrigation::act() {
+  System_Power* p = frugal_iot.powercontroller;
   if (running() && blocked()) {
     sectors[i]->stop();
     i = (int8_t)sectors.size();
     closeAll(); // An interlock aborting a run closes everything, not just the sector that was open
     active->set(0);
+    armNext(); // Otherwise the timer still holds this sector's maximum, which is not a start time
+  } else if (!running() && !p->timer_expired(t)) {
+    /* Idle and armed: recompute, which is how a change to hour or minute takes effect.
+     *
+     * Not when the timer has expired. That is periodically()'s to deal with, and re-arming here
+     * would throw a start away: a deep-sleep wake AT the start time replays the persisted inputs
+     * through dispatch() before the first periodically(), and so does any tank or battery reading
+     * that happens to arrive in the few seconds between the start time and the next pass.
+     */
+    armNext();
   }
   setPump();
 }
 
+/* The timer is re-armed only when it has done its job - a cycle ending, or an idle expiry that did
+ * not start one - and on an input change (see act()). Not on every pass: a time computed just
+ * before the start would already be tomorrow's, and the run would never happen.
+ */
 void Control_Irrigation::periodically() {
   System_Power* p = frugal_iot.powercontroller;
   bool cycleEnded = false;
+  bool rearm = false;
   if (running()) {
     // Three ways a sector's turn ends: its time ran out, an interlock opened, or the soil reached
     // target. stop() closes the valve in all three; startNext() then finds the next sector that
@@ -235,28 +228,30 @@ void Control_Irrigation::periodically() {
       startNext();
       cycleEnded = !running();
     }
-  } else if (p->timer_expired(t) && inStartWindow() && canStart()) {
-    i = -1; // startNext() pre-increments, so this starts the search at sector 0
-    startNext();
-    cycleEnded = !running(); // A cycle was due and attempted, but no sector wanted water
+  } else if (p->timer_expired(t)) {
+    /* Expired is "time to look", not "time to run" - see inStartWindow() in the header for the
+     * other reasons a timer can be expired.
+     *
+     * TODO this writes off the whole day if an interlock happens to be open at the scheduled
+     * moment - a tank still refilling at 03:00, or a momentary battery dip - because what is
+     * armed next is tomorrow. OSPIT retries for the rest of the hour (see OSPIT_COMPARISON.md);
+     * worth adding if that matters in practice.
+     */
+    if (inStartWindow() && canStart()) {
+      i = -1; // startNext() pre-increments, so this starts the search at sector 0
+      startNext();
+      cycleEnded = !running(); // A cycle was due and attempted, but no sector wanted water
+    } else {
+      rearm = true;
+    }
   }
   if (cycleEnded) {
     // Once per cycle, not once per pass - so this is a handful of messages a day, not a stream
     closeAll();
+    rearm = true;
   }
-  if (!running()) {
-    /* Re-arm for the next run, every pass while idle.
-     *
-     * Doing it unconditionally is what makes this self-correcting: System_Time::set() shifts armed
-     * timers to preserve their interval, which would slide a wall-clock appointment, and this
-     * overwrites that with a freshly computed absolute time. Cheap, and no state to get wrong.
-     *
-     * TODO this writes off the whole day if an interlock happens to be open at the scheduled
-     * moment - a tank still refilling at 03:00, or a momentary battery dip - because the next
-     * start computed here is tomorrow. 
-     * Note: OSPIT retries for the rest of the hour (see OSPIT_COMPARISON.md); worth adding a retry window if that matters in practice.
-     */
-    p->timer_set_to(t, (uint32_t)nextStartTime());
+  if (rearm) {
+    armNext();
   }
   active->set(running() ? (uint16_t)(i + 1) : 0);
   setPump();

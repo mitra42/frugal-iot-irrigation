@@ -29,6 +29,11 @@
  * A single, sleep-safe timer controls either when the next cycle starts,
  * or the maximum time the current sector's valve should stay open.
  *
+ * The start is an absolute epoch from System_Time::getNextDaytime(), armed once per cycle rather
+ * than recomputed every pass - an epoch for the right wall-clock time is already right across a
+ * daylight-saving change. A small clock correction through System_Time::set() shifts it by the
+ * same few seconds; a large one would move the start, which is accepted as unlikely.
+ *
  * No RTC_DATA_ATTR state of our own (other than the timer) is needed. `i` is reset to "idle" in setup(), which runs on
  * every boot including a deep-sleep wake.
  * okToSleep() prevents sleeping mid-cycle.
@@ -49,22 +54,6 @@
 #include "control_blocker.h"
 #include <vector>
 #include <ctime>
-
-/* How far ahead of "now" the next start must be, in seconds.
- *
- * A cycle only begins once now >= the scheduled time, so it always ends at or after it, and the
- * next occurrence naturally lands tomorrow. This margin covers the case where the clock steps
- * BACKWARDS mid-cycle, which would otherwise leave today's slot still in the future and run a
- * second cycle straight away.
- */
-#ifndef CONTROL_IRRIGATION_START_MARGIN_S
-  #define CONTROL_IRRIGATION_START_MARGIN_S 300
-#endif
-
-// How long to wait before looking again when the clock has not been set yet - see nextStartTime()
-#ifndef CONTROL_IRRIGATION_NOTIME_RETRY_S
-  #define CONTROL_IRRIGATION_NOTIME_RETRY_S 60
-#endif
 
 /* How late after hour:minute a run may still begin, in seconds - see inStartWindow().
  *
@@ -182,17 +171,17 @@ class Control_Irrigation : public Control {
      * is one answer, "manual latches until someone clears it" is another.
      */
     void closeAll();
-    time_t nextStartTime(); // Absolute epoch of the next hour:minute, always in the future
-    // Epoch of hour:minute, local time, on the day `days` away from the one `now` falls in
-    time_t slotOn(time_t now, int days);
+    // Arm the timer for the next hour:minute - see periodically() for when, and why not more often
+    void armNext();
     /* True when the clock is set and the most recent hour:minute was less than
      * CONTROL_IRRIGATION_START_WINDOW_S ago.
      *
-     * An expired timer is NOT enough on its own to start a run, because it expires for two
-     * reasons that are not a scheduled start: a slot that has never been armed reads 0, so it is
-     * already expired after a cold boot (RTC memory cleared); and with no clock the timer is only
-     * a "look again in a minute". Starting on either would water at power-up, and then every
-     * minute until NTP answered. So the timer says WHEN to look, and this says whether it is time.
+     * An expired timer is NOT enough on its own to start a run, because it expires for reasons
+     * that are not a scheduled start: a slot that has never been armed reads 0, so it is already
+     * expired after a cold boot (RTC memory cleared) and stays so until the clock is set; and an
+     * NTP step clamps a timer that looks too far ahead to "now" (System_Power::timers_clampFuture).
+     * Starting on either would water at power-up. So the timer says WHEN to look, and this says
+     * whether it is time.
      */
     bool inStartWindow();
     /* Drive the pump. The base runs it while a sector is watering and nothing says stop - the tank

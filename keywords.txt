@@ -25,6 +25,7 @@ Sensor_Tank	KEYWORD1
 
 act	KEYWORD2
 applyStep	KEYWORD2
+armNext	KEYWORD2
 available	KEYWORD2
 blocked	KEYWORD2
 canStart	KEYWORD2
@@ -38,7 +39,6 @@ forceOff	KEYWORD2
 inStartWindow	KEYWORD2
 maxStep	KEYWORD2
 needsFilling	KEYWORD2
-nextStartTime	KEYWORD2
 okToIrrigate	KEYWORD2
 okToSleep	KEYWORD2
 periodically	KEYWORD2
@@ -52,7 +52,6 @@ setPump	KEYWORD2
 setState	KEYWORD2
 setup	KEYWORD2
 setupIrrigationLanguage	KEYWORD2
-slotOn	KEYWORD2
 socForVoltage	KEYWORD2
 start	KEYWORD2
 startNext	KEYWORD2
