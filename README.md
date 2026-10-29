@@ -1,20 +1,25 @@
 # Frugal-IoT Irrigation
 
-This project is intended to provide solar-powered irrigation for small farms. A set of sectors is watered one at a time, once a day,
-each until its soil reaches a target moisture or a time limit runs out, 
-with tank-level and battery interlocks that stop the whole run.
+This project is intended to provide solar-powered irrigation for small farms. A set of sectors is watered one at a time, once a day. 
+
+The default version waters each sector until its soil reaches a target moisture or a time limit runs out, but it can be 
+subclased for more complex per-sector requirements. 
+
+There are tank-level and battery interlocks that stop the whole run, and this also can be customized. 
 
 It is built on top of Frugal-IoT and both the irrigation and MPPT components draw part of their
-inpiration from [OSPIT](https://www.apc.org/en/news/meet-ospit-sustainable-energy-and-irrigation-solution-community-networks)
+inspiration from [OSPIT](https://www.apc.org/en/news/meet-ospit-sustainable-energy-and-irrigation-solution-community-networks)
 (Lua on the FF-ESP32-OpenMPPT solar charge controller)
 - [OSPIT_COMPARISON.md](OSPIT_COMPARISON.md) describes what is different and why.
 
-This release should work in two hardware environments.
+This release should work in four hardware environments.
 
-a: The "FF-ESP32-OpenMPPT solar charge controller" in which case it will run MPPT 
-This release should work - and do MPPT - on both the "FF-ESP32-OpenMPPT solar charge controller", 
-or work without MPPT on  that OSPIT runs on, and 
-any similar system of sensors, and pumps. 
+* The "FF-ESP32-OpenMPPT solar charge controller" in which case it will run MPPT 
+* Our custom board in `hardware` with onboard relays and RS485. 
+* A simple off the shelf dev board with hardwired sensors, just edit board definitions in 
+  platformio.ini and `wiring` in frugal-iot-irrigation.ino
+* A distributed sensor environment, just change the `wiring` in frugal-iot-irrigation.ino 
+  to point at the distributed sensors
 
 [Frugal-IoT](https://github.com/mitra42/frugal-iot) brings: WiFi setup from a phone; MQTT; web and phone dashboards; graphing and over-the-air updates.  
 
@@ -23,8 +28,8 @@ Any of the other features of Frugal-IoT can be easily added to your sketch inclu
 ## What it does today
 
 - **Up to N irrigation sectors**, run strictly in order, one valve open at a time.
-- **Soil moisture per sector** from RS485/Modbus probes sharing one bus, or from simple analog
-  capacitive soil sensors.
+- **Soil moisture per sector** from RS485/Modbus probes sharing one bus, or from simple
+  analog capacitive soil sensors.
 - Anomaly handling - for instance, a sector whose probe is **not reporting is skipped**
 - **Tank level** from a float sender, with two thresholds: one to begin a run, a lower one to
   abort it. "No tank sensor fitted" is kept distinct from "tank empty".
@@ -48,19 +53,22 @@ look at and confirm.
 
 ## Hardware
 
-Two boards are supported out of the box. See `platformio.ini` for the full pin list.
+Three boards are supported out of the box. See `platformio.ini` for the full pin list.
 
 | Board | Notes |
 |---|---|
 | **FF-ESP32-OpenMPPT** | the solar charge controller OSPIT runs on. Pin assignments are OSPIT's own |
-| **Lolin S2 Mini** | the same application on a plain dev board, no charging hardware. [docs/hardware/s2_mini](docs/hardware/s2_mini/) is a full reference design - schematic, wiring diagram and BOM |
+| **Frugal IoT Irrigation v0.1** | a custom board with Relays, RS485 and battery charging |
+| **Lolin S2 Mini** | the same application on a plain dev board, no charging hardware.|
 | other | Setting up support for most other boards is trivial, look in the [Frugal-IoT/examples/all](https://github.com/mitra42/frugal-iot/blob/main/examples/all/platformio.ini) for example configuration for many popular boards or [add a new issue](https://github.com/mitra42/frugal-iot-irrigation/issues/new) in this repo.
+
+The `FF-ESP32-OpenMPTT` board has the needed functionality, but is going to be a significantly more expensive solution than the `Frugal IoT Irrigation v0.1` paired, if neccessary, with an off-the-shelf MPPT controller.
 
 You will also need: 12 V valves and a driver for them, one Modbus soil probe per sector, an RS485
 transceiver, and optionally a tank float sender and a pump.
 
-For the Lolin S2 Mini there is now a worked hardware design in [docs/hardware/s2_mini](docs/hardware/s2_mini/) at BOM cost about $9/controller + ~$22/sector, detailed explanation of choices in 
-[README](docs/hardware/s2_mini/README.md). 
+The hardware in `hardware` is available as a full set of Gerber and fabrication files, they are designed for use at SLCPCB but could be adapted to any manufacturer (and we would
+be happy to add files for other manufacturers). Note this hardware has (as of Oct 2026) yet to be built and tested. 
 
 ## Building
 
@@ -95,11 +103,7 @@ see "Building against a local library" in [CLAUDE.md](CLAUDE.md).
    the start time while you are there.
 
 `TESTING.md` walks through commissioning a real board step by step, including calibrating the tank
-and the battery. `HARDWARE-QUESTIONS.md` is a list of things we need someone with the hardware to
-look at.
-
-[docs/bom.md](docs/bom.md) lists the hardware the original OSPIT system is built from - the board,
-the sensors, the valves, the pump - with a source for every line.
+and the battery. `HARDWARE-QUESTIONS.md` is a list of things we need someone with the OSPIT hardware to look at.
 
 Because not everyone has sun, a multimeter and a fortnight, `docs/` holds three ready-made plans —
 [bench](docs/plan-bench.md), [sunny half-day](docs/plan-sunny-session.md),
