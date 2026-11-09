@@ -113,32 +113,36 @@ void setup() {
    * it), as on the Frugal-IoT Irrigation V0.1 board. Either way they are the same actuators with
    * the same ids, so nothing below here - the sectors, the pump wiring, MQTT - can tell which.
    */
+  Actuator_Digital *valve1, *valve2, *valve3; // Kept so the sectors below can be wired to them
+  Actuator_Digital* pump = nullptr;            // Stays nullptr on a board with no pump
   #ifdef IRRIGATION_RELAY_TCA9534_ADDRESS
     // IRRIGATION_RELAY_INVERT for a relay board that switches on when its pin is LOW
     #ifndef IRRIGATION_RELAY_INVERT
       #define IRRIGATION_RELAY_INVERT false
     #endif
-    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve1", "Valve 1", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE1_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
-    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve2", "Valve 2", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE2_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
-    frugal_iot.actuators->add(new Actuator_Digital_Expander("valve3", "Valve 3", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE3_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    frugal_iot.actuators->add(valve1 = new Actuator_Digital_Expander("valve1", "Valve 1", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE1_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    frugal_iot.actuators->add(valve2 = new Actuator_Digital_Expander("valve2", "Valve 2", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE2_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
+    frugal_iot.actuators->add(valve3 = new Actuator_Digital_Expander("valve3", "Valve 3", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE3_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
     #ifdef IRRIGATION_PUMP_BIT
-      frugal_iot.actuators->add(new Actuator_Digital_Expander("pump", "Pump", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_PUMP_BIT, DEFAULT_pump_on_color, IRRIGATION_RELAY_INVERT));
+      frugal_iot.actuators->add(pump = new Actuator_Digital_Expander("pump", "Pump", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_PUMP_BIT, DEFAULT_pump_on_color, IRRIGATION_RELAY_INVERT));
     #endif
   #else
-    frugal_iot.actuators->add(new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
-    frugal_iot.actuators->add(new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
-    frugal_iot.actuators->add(new Actuator_Digital("valve3", "Valve 3", IRRIGATION_VALVE3_PIN, DEFAULT_valve_on_color));
+    frugal_iot.actuators->add(valve1 = new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
+    frugal_iot.actuators->add(valve2 = new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
+    frugal_iot.actuators->add(valve3 = new Actuator_Digital("valve3", "Valve 3", IRRIGATION_VALVE3_PIN, DEFAULT_valve_on_color));
     #ifdef IRRIGATION_PUMP_PIN
-      frugal_iot.actuators->add(new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
+      frugal_iot.actuators->add(pump = new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
     #endif
   #endif
   #ifdef IRRIGATION_LOAD_PIN
-    frugal_iot.actuators->add(new Actuator_Digital("load", "Load", IRRIGATION_LOAD_PIN, DEFAULT_load_on_color));
+    Actuator_Digital* load = new Actuator_Digital("load", "Load", IRRIGATION_LOAD_PIN, DEFAULT_load_on_color);
+    frugal_iot.actuators->add(load);
   #endif
   #ifdef IRRIGATION_USB_PIN
     // A second switched output, for a USB supply. On the FF board this is the SAME PIN as valve 3,
     // so define one or the other.
-    frugal_iot.actuators->add(new Actuator_Digital("usb", "USB", IRRIGATION_USB_PIN, DEFAULT_usb_on_color));
+    Actuator_Digital* usb = new Actuator_Digital("usb", "USB", IRRIGATION_USB_PIN, DEFAULT_usb_on_color);
+    frugal_iot.actuators->add(usb);
   #endif
 
   // ---- Sensors -------------------------------------------------------------------------
@@ -151,15 +155,19 @@ void setup() {
    * few cycles, plug in sector 3's, and so on IN ORDER.
    */
   System_RS485* rs485 = new System_RS485(&SYSTEM_RS485_UART);
-  frugal_iot.sensors->add(new Sensor_SoilModbus("soil1", "Sector 1 probe", 2, rs485, true));
-  frugal_iot.sensors->add(new Sensor_SoilModbus("soil2", "Sector 2 probe", 3, rs485, true));
-  frugal_iot.sensors->add(new Sensor_SoilModbus("soil3", "Sector 3 probe", 4, rs485, true));
+  Sensor_SoilModbus* soil1 = new Sensor_SoilModbus("soil1", "Sector 1 probe", 2, rs485, true);
+  frugal_iot.sensors->add(soil1);
+  Sensor_SoilModbus* soil2 = new Sensor_SoilModbus("soil2", "Sector 2 probe", 3, rs485, true);
+  frugal_iot.sensors->add(soil2);
+  Sensor_SoilModbus* soil3 = new Sensor_SoilModbus("soil3", "Sector 3 probe", 4, rs485, true);
+  frugal_iot.sensors->add(soil3);
 
   // Resistive float sender in the tank. Publishes "nan" if no sender is fitted, which is NOT
   // treated as an empty tank - see sensor_tank.h.
   // TO-DO implement alternative ultrasonic sensor
   #ifdef SENSOR_TANK_PIN
-    frugal_iot.sensors->add(new Sensor_Tank("tank", "Water tank", SENSOR_TANK_PIN, true));
+    Sensor_Tank* tank = new Sensor_Tank("tank", "Water tank", SENSOR_TANK_PIN, true);
+    frugal_iot.sensors->add(tank);
   #endif
 
   /* ---- Charge controller instrumentation (P5.1) -------------------------------------------
@@ -179,15 +187,17 @@ void setup() {
      * On a FF board, set MPPT_PANEL_DIODE_MV to 0 if D6 has been replaced by a wire 
      * - see question 2 in HARDWARE-QUESTIONS.md.
      */
-    frugal_iot.sensors->add(new Sensor_Voltage("panel", "Solar Panel", MPPT_PANEL_PIN,
+    Sensor_Voltage* panel = new Sensor_Voltage("panel", "Solar Panel", MPPT_PANEL_PIN,
       MPPT_PANEL_DIVIDER, DEFAULT_panel_panel_min, DEFAULT_panel_panel_max,
-      -(MPPT_PANEL_DIODE_MV / MPPT_PANEL_DIVIDER), DEFAULT_panel_panel_color, true));
+      -(MPPT_PANEL_DIODE_MV / MPPT_PANEL_DIVIDER), DEFAULT_panel_panel_color, true);
+    frugal_iot.sensors->add(panel);
   #endif
 
   #ifdef SENSOR_HEATSINK_PIN
     // The diode-pair heatsink sensor. Most boards seem to use a DS18B20 for this instead, in which
     // case leave SENSOR_HEATSINK_PIN undefined and the class is not compiled at all.
-    frugal_iot.sensors->add(new Sensor_Heatsink("heatsink", "Heatsink", SENSOR_HEATSINK_PIN, true));
+    Sensor_Heatsink* heatsink = new Sensor_Heatsink("heatsink", "Heatsink", SENSOR_HEATSINK_PIN, true);
+    frugal_iot.sensors->add(heatsink);
   #endif
 
   #ifdef MPPT_ONEWIRE_PIN
@@ -202,8 +212,10 @@ void setup() {
      * airtemp, battery_temperature and heatsink_temperature.
      */
     frugal_iot.sensors->add(new Sensor_DS18B20("airtemp", "Air Temperature", MPPT_ONEWIRE_PIN, true));
-    frugal_iot.sensors->add(new Sensor_DS18B20("batttemp", "Battery Temperature", MPPT_ONEWIRE_PIN, true));
-    frugal_iot.sensors->add(new Sensor_DS18B20("pcbtemp", "Board Temperature", MPPT_ONEWIRE_PIN, true));
+    Sensor_DS18B20* batttemp = new Sensor_DS18B20("batttemp", "Battery Temperature", MPPT_ONEWIRE_PIN, true);
+    frugal_iot.sensors->add(batttemp);
+    Sensor_DS18B20* pcbtemp = new Sensor_DS18B20("pcbtemp", "Board Temperature", MPPT_ONEWIRE_PIN, true);
+    frugal_iot.sensors->add(pcbtemp);
   #endif
 
   /* ---- Battery interlocks ----------------------------------------------------------------
@@ -229,16 +241,14 @@ void setup() {
     Control_Hysteresis* chload = new Control_Hysteresis("controlhysteresis-load", "Load interlock",
       IRRIGATION_LVD_LOAD_MV, 0, 10000, 15000, IRRIGATION_LVD_LOAD_HYST_MV);
     frugal_iot.controls->add(chload);
-    chload->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
-    chload->outputs[0]->wireTo(frugal_iot.messages->setPath("load/on"));
+    chload->wireFrom(frugal_iot.battery)->wireTo(load); // battery "now" -> "out" -> load "on"
   #endif
 
   #ifdef IRRIGATION_USB_PIN
     Control_Hysteresis* chusb = new Control_Hysteresis("controlhysteresis-usb", "USB interlock",
       IRRIGATION_LVD_USB_MV, 0, 10000, 15000, IRRIGATION_LVD_USB_HYST_MV);
     frugal_iot.controls->add(chusb);
-    chusb->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
-    chusb->outputs[0]->wireTo(frugal_iot.messages->setPath("usb/on"));
+    chusb->wireFrom(frugal_iot.battery)->wireTo(usb);
   #endif
 
   // Not conditional: irrigation is the point of this node, so it always has an interlock of its
@@ -246,7 +256,7 @@ void setup() {
   Control_Hysteresis* chirr = new Control_Hysteresis("controlhysteresis-irrig", "Irrigation interlock",
     IRRIGATION_LVD_IRRIGATION_MV, 0, 10000, 15000, IRRIGATION_LVD_IRRIGATION_HYST_MV);
   frugal_iot.controls->add(chirr);
-  chirr->inputs[0]->wireTo(frugal_iot.messages->path("battery/battery"));
+  chirr->wireFrom(frugal_iot.battery);
 
 
   // ---- Irrigation ------------------------------------------------------------------------
@@ -254,28 +264,28 @@ void setup() {
   Control_Irrigation_Example* irr = new Control_Irrigation_Example("irrigation", "Irrigation");
   frugal_iot.controls->add(irr);
   #ifdef SENSOR_TANK_PIN
-    irr->tankBlocker->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+    irr->tankBlocker->tank->wireFrom(tank);
   #endif
   #if defined(IRRIGATION_PUMP_PIN) || defined(IRRIGATION_PUMP_BIT)
-    irr->pump->wireTo(frugal_iot.messages->setPath("pump/on"));
+    irr->pump->wireTo(pump);
   #endif
-  chirr->outputs[0]->wireTo(frugal_iot.messages->setPath("irrigation-power/power"));
+  chirr->wireTo(irr->powerBlocker->power);
 
   /* Sectors run in the order they are added. addSector() registers each one as a control in its
    * own right, so each gets its own portal section, MQTT topics and discovery. Each can be a
    * different Control_Sector subclass - these are all moisture-driven, as OSPIT's were.
    */
   Control_Sector_Moisture* s1 = irr->addSector(new Control_Sector_Moisture("sector1", "Sector 1"));
-  s1->moisture->wireTo(frugal_iot.messages->path("soil1/humidity"));
-  s1->valve->wireTo(frugal_iot.messages->setPath("valve1/on"));
+  s1->moisture->wireFrom(soil1->humidity);
+  s1->valve->wireTo(valve1);
 
   Control_Sector_Moisture* s2 = irr->addSector(new Control_Sector_Moisture("sector2", "Sector 2"));
-  s2->moisture->wireTo(frugal_iot.messages->path("soil2/humidity"));
-  s2->valve->wireTo(frugal_iot.messages->setPath("valve2/on"));
+  s2->moisture->wireFrom(soil2->humidity);
+  s2->valve->wireTo(valve2);
 
   Control_Sector_Moisture* s3 = irr->addSector(new Control_Sector_Moisture("sector3", "Sector 3"));
-  s3->moisture->wireTo(frugal_iot.messages->path("soil3/humidity"));
-  s3->valve->wireTo(frugal_iot.messages->setPath("valve3/on"));
+  s3->moisture->wireFrom(soil3->humidity);
+  s3->valve->wireTo(valve3);
 
   #ifdef MPPT_DAC_PIN
     /* ---- Solar charge control ---------------------------------------------------------------
@@ -289,26 +299,27 @@ void setup() {
      * have been checked against a meter. Either way it starts at the step that charges LEAST,
      * because the DAC is an inverse throttle and the safe fallback is the top of the range.
      */
-    frugal_iot.actuators->add(new Actuator_Analog("analog", "Charge DAC", MPPT_DAC_PIN));
+    Actuator_Analog* dac = new Actuator_Analog("analog", "Charge DAC", MPPT_DAC_PIN);
+    frugal_iot.actuators->add(dac);
     Control_MPPT* mppt = new Control_MPPT("mppt", "Charge Control");
     frugal_iot.controls->add(mppt);
-    mppt->dacvolts->wireTo(frugal_iot.messages->setPath("analog/volts"));
+    mppt->dacvolts->wireTo(dac);
     #ifdef MPPT_PANEL_PIN
-      mppt->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+      mppt->panel->wireFrom(panel);
     #endif
-    mppt->battery->wireTo(frugal_iot.messages->path("battery/battery"));
+    mppt->battery->wireFrom(frugal_iot.battery);
     #ifdef MPPT_ONEWIRE_PIN
-      mppt->batttemp->wireTo(frugal_iot.messages->path("batttemp/batttemp"));
+      mppt->batttemp->wireFrom(batttemp);
       /* The heatsink reading comes from whichever sensor this board actually has: a DS18B20
        * on the 1-Wire bus, or the diode pair on an ADC pin. Both write the same meaning, and
        * only one is ever compiled - see question 4 in HARDWARE-QUESTIONS.md.
        */
       #ifndef SENSOR_HEATSINK_PIN
-        mppt->heatsink->wireTo(frugal_iot.messages->path("pcbtemp/pcbtemp"));
+        mppt->heatsink->wireFrom(pcbtemp);
       #endif
     #endif
     #ifdef SENSOR_HEATSINK_PIN
-      mppt->heatsink->wireTo(frugal_iot.messages->path("heatsink/heatsink"));
+      mppt->heatsink->wireFrom(heatsink);
     #endif
   #endif
 
@@ -325,15 +336,15 @@ void setup() {
    */
   Control_SoC* soc = new Control_SoC("soc", "State of Charge");
   frugal_iot.controls->add(soc);
-  soc->battery->wireTo(frugal_iot.messages->path("battery/battery"));
+  soc->battery->wireFrom(frugal_iot.battery);
   #ifdef MPPT_PANEL_PIN
-    soc->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+    soc->panel->wireFrom(panel);
   #endif
 
   Control_Health* bh = new Control_Health("batteryhealth", "Battery Health");
   frugal_iot.controls->add(bh);
-  bh->soc->wireTo(frugal_iot.messages->path("soc/soc"));
-  bh->active->wireTo(frugal_iot.messages->path("irrigation/active"));
+  bh->soc->wireFrom(soc->soc);
+  bh->active->wireFrom(irr->active);
 
   /* ---- Display ---------------------------------------------------------------------------
    *
@@ -344,22 +355,22 @@ void setup() {
     Control_Carousel* display = ospitDisplay();
     (void)display; // Nothing else to wire to it here - a button would go to carousel/select/cycle
     Control_Oled_IrrigationPower* powerPage = (Control_Oled_IrrigationPower*)display->controls[0];
-    powerPage->battery->wireTo(frugal_iot.messages->path("battery/battery"));
-    powerPage->soc->wireTo(frugal_iot.messages->path("soc/soc"));
+    powerPage->battery->wireFrom(frugal_iot.battery);
+    powerPage->soc->wireFrom(soc->soc);
     #ifdef MPPT_PANEL_PIN
-      powerPage->panel->wireTo(frugal_iot.messages->path("panel/panel"));
+      powerPage->panel->wireFrom(panel);
     #endif
     #ifdef MPPT_DAC_PIN
-      powerPage->mpptstate->wireTo(frugal_iot.messages->path("mppt/state"));
+      powerPage->mpptstate->wireFrom(mppt->state);
     #endif
     Control_Oled_IrrigationSoil* soilPage = (Control_Oled_IrrigationSoil*)display->controls[1];
-    soilPage->moisture1->wireTo(frugal_iot.messages->path("soil1/humidity"));
-    soilPage->moisture2->wireTo(frugal_iot.messages->path("soil2/humidity"));
-    soilPage->moisture3->wireTo(frugal_iot.messages->path("soil3/humidity"));
+    soilPage->moisture1->wireFrom(soil1->humidity);
+    soilPage->moisture2->wireFrom(soil2->humidity);
+    soilPage->moisture3->wireFrom(soil3->humidity);
     #ifdef SENSOR_TANK_PIN
-      soilPage->tank->wireTo(frugal_iot.messages->path("tank/tank"));
+      soilPage->tank->wireFrom(tank);
     #endif
-    soilPage->active->wireTo(frugal_iot.messages->path("irrigation/active"));
+    soilPage->active->wireFrom(irr->active);
   #endif
   // Want NTP time (or set from browser)
   frugal_iot.system->add(frugal_iot.time = new System_Time());

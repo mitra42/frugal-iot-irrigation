@@ -77,7 +77,7 @@ class Control_Sector : public Control {
   public:
     Control_Sector(const char* const id, const char* const name);
     INbool*  enable;  // Set by Control_Irrigation: when it is this sector's turn.; UX controllable to immediately cancel and close valve.
-    OUTbool* valve;   // Wire to an Actuator_Digital, e.g. setPath("valve1/on")
+    OUTbool* valve;   // Wire to an Actuator_Digital, e.g. s1->valve->wireTo(valve1)
 
     /* False when this sector has no feedback to work from, so must be neither opened nor closed
      * - see "Skipping a sector". Always true in the base, which has no feedback to lose.
