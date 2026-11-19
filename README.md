@@ -78,6 +78,7 @@ be happy to add files for other manufacturers). Note this hardware has (as of Oc
 pio run --environment ff_openmppt          # compile
 pio run --target upload -e ff_openmppt     # flash
 pio run --target uploadfs -e ff_openmppt   # upload data/ (WiFi passwords etc)
+pio device monitor -e ff_openmppt          # watch it start
 ```
 
 The Frugal-IoT library is fetched automatically, so a fresh clone needs nothing set up. 
@@ -86,14 +87,33 @@ see "Building against a local library" in [CLAUDE.md](CLAUDE.md).
 
 ### Arduino IDE
 
-1. Install **Frugal-IoT** from Library Manager (or clone it into your `libraries/` folder).
-2. Install the ESP32 board support package.
+1. **Tools > Manage Libraries**, install **Frugal-IoT**, and choose **Install All** when it asks about dependencies.
+2. **Tools > Board > Boards Manager**, and install **esp32** by Espressif Systems.
 3. Open `frugal-iot-irrigation.ino` - the whole repository folder is the sketch folder.
-4. Under **Tools > Board**, pick the board you have. `platform.h` supplies the right pins for it;
-   if your board has no section there, compiling stops with a message telling you so.
+4. **Tools > Board**: the row for your hardware below. **Tools > Port**: your board.
+5. **Sketch > Show Sketch Folder**, rename `min_spiffs.csv` to `partitions.csv`, and choose
+   **Tools > Partition Scheme > No OTA (2MB APP/2MB SPIFFS)** - OTA still works, as `partitions.csv` sets the real layout.
+6. **Upload** (→), then **Tools > Serial Monitor** at 115200 baud.
+
+| Tools > Board | configuration |
+| --- | --- |
+| ESP32 Dev Module | `ff_openmppt` |
+| LOLIN S2 Mini | `s2_mini` |
+| - | `frugal_irrigation_v01` - PlatformIO only, it uses its own board variant |
 
 `platform.h` is generated from `platformio.ini`. If you change pins there, re-run
 `scripts/generate_platform_h.bash`, or the two toolchains will disagree.
+
+### Enrolment secret and debug messages
+
+Optional files, made from the Frugal-IoT library's
+[templates](https://github.com/mitra42/frugal-iot/tree/main/templates) - each says how. Never commit them.
+
+* `platformio-secrets-local.ini`, or `platform-secrets-local.h` for Arduino IDE - the enrolment
+  secret, so the node joins your organization without an administrator approving it.
+* `platformio-local.ini` - debug flags and serial port.
+
+More in [Getting Started](https://github.com/mitra42/frugal-iot/wiki/Getting-Started#next-steps).
 
 ## First run
 
