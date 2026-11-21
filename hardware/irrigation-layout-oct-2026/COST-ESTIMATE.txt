@@ -9,28 +9,28 @@ Columns (part table):
 
 Refs                       Value                  LCSC       Type    /brd buy@10    $@10 buy@100   $@100
 C1,C4,C5,C10,C13,C14,C18,C 100nF                  C14663     Basic      9    105    0.59     915    5.12
-C2,C3,C22                  10uF 25V               C13585     Basic      3     34    4.16     304   26.75
-C6,C7                      22uF                   C12891     Basic      2     24    2.46     204   16.85
+C2,C3,C22                  10uF 25V               C13585     Basic      3     34    4.17     304   26.81
+C6,C7                      22uF                   C12891     Basic      2     24    2.47     204   16.89
 C8,C9,C11,C12,C16,C17      10uF                   C19702     Basic      6     70    1.17     610    7.20
 C15,C19                    1uF                    C15849     Basic      2     30    0.28     210    1.93
-D1,D4,D7,D10,D12,D14,D16,D SS34                   C8678      Basic     11    118    4.05    1108   27.04
+D1,D4,D7,D10,D12,D14,D16,D SS34                   C8678      Basic     11    118    4.06    1108   27.04
 D2                         SS54                   C22452     Basic      1     14    0.62     104    3.74
-D3                         SMAJ15A                C19077535  PrefExt    1     14    0.52     104    3.88
-D5,D11,D13,D15,D17,D19,D21 KT-0603R               C2286      Basic      9    100    0.76     910    6.92
+D3                         SMAJ15A                C19077535  PrefExt    1     14    0.52     104    3.89
+D5,D11,D13,D15,D17,D19,D21 KT-0603R               C2286      Basic      9    100    0.77     910    7.01
 D6,D8                      KT-0805G               C2297      Basic      2     30    0.49     210    3.44
-D9                         PSM712-LF-T7           C32677     Basic      1     11    3.72     101   26.94
-F1                         SMD1812P300TF/16       C702820    Ext        1     12    2.37     102   15.61
-J1                         TYPE-C-31-M-12         C165948    Ext        1     10    1.86     100   14.73
-J2,J11,J12,J13,J14,J15,J16 KF128-5.08-2P          C474952    Ext        9     90   13.54     900   97.74
-J4                         S2B-PH-K-S             C157932    Ext        1     10    1.72     100   13.80
-J6,J7                      XY308-2.54-2P          C557685    Ext        2     20    4.95     200   34.44
-J8,J10                     XY308-2.54-4P          C915913    Ext        2     20    7.77     200   57.46
-J9                         PZ254V-11-04P          C492403    Ext        1     11    0.31     101    2.84
-L1                         SWPA5040S4R7NT         C305174    Ext        1     15    1.12     105    6.39
-Q1                         FS8205A                C908265    Ext        1     14    1.00     104    6.06
-Q2,Q3,Q5                   AO3401A                C15127     Basic      3     34    2.78     304   16.93
+D9                         PSM712-LF-T7           C32677     Basic      1     11    3.73     101   27.01
+F1                         SMD1812P300TF/16       C702820    Ext        1     12    2.37     102   15.64
+J1                         TYPE-C-31-M-12         C165948    Ext        1     10    1.87     100   14.76
+J2,J11,J12,J13,J14,J15,J16 KF128-5.08-2P          C474952    Ext        9     90   13.56     900   97.92
+J4                         S2B-PH-K-S             C157932    Ext        1     10    1.72     100   13.83
+J6,J7                      XY308-2.54-2P          C557685    Ext        2     20    4.96     200   34.52
+J8,J10                     XY308-2.54-4P          C915913    Ext        2     20    7.79     200   57.60
+J9                         PZ254V-11-04P          C492403    Ext        1     11    0.31     101    2.85
+L1                         SWPA5040S4R7NT         C305174    Ext        1     15    1.12     105    6.42
+Q1                         FS8205A                C908265    Ext        1     14    1.00     104    6.08
+Q2,Q3,Q5                   AO3401A                C15127     Basic      3     34    2.79     304   16.96
 Q4,Q6,Q7                   2N7002                 C8545      Basic      3     38    0.59     308    4.80
-Q8-Q15                     AO3400A                C20917     Basic      8     84    5.28     804   38.11
+Q8-Q15                     AO3400A                C20917     Basic      8     84    5.29     804   38.19
 R1,R2                      5.1k                   C23186     Basic      2     30    0.04     210    0.32
 R3,R4                      0R                     C21189     Basic      2     30    0.06     210    0.44
 R7                         560k                   C23203     PrefExt    1     20    0.03     110    0.17
@@ -42,15 +42,15 @@ R17,R18                    1M                     C22935     Basic      2     30
 R22-R25,R27,R34,R35        10k                    C25804     Basic      7     80    0.14     710    1.21
 R36,R37                    680R                   C23228     Basic      2     30    0.06     210    0.44
 R38                        120R                   C22787     Basic      1     20    0.04     110    0.21
-SW1,SW2,SW3                TS-1187A-B-A-B         C318884    Basic      3     38    0.80     308    5.08
-U1                         USBLC6-2SC6            C7519      Ext        1     12    1.87     102   12.13
-U2                         AP63205WU-7            C2071056   Ext        1     10    3.66     100   27.43
-U3                         TP4056                 C16581     PrefExt    1     10    1.83     100   14.45
-U4                         DW01A                  C351410    Ext        1     14    0.74     104    5.52
-U5                         AP2112K-3.3            C51118     Ext        1     10    1.66     100   12.85
-U6                         ESP32-C6-MINI-1U-H4    C20627095  Ext        1     10   37.39     100  325.95
-U7                         TCA9534PWR             C783615    Ext        1     10    7.59     100   58.93
-U8                         SP3485EN-L/TR          C8963      Basic      1     10    2.34     100   15.14
+SW1,SW2,SW3                TS-1187A-B-A-B         C318884    Basic      3     38    0.81     308    5.11
+U1                         USBLC6-2SC6            C7519      Ext        1     12    1.87     102   12.16
+U2                         AP63205WU-7            C2071056   Ext        1     10    3.67     100   27.49
+U3                         TP4056                 C16581     PrefExt    1     10    1.83     100   14.48
+U4                         DW01A                  C351410    Ext        1     14    0.74     104    5.53
+U5                         AP2112K-3.3            C51118     Ext        1     10    1.67     100   12.88
+U6                         ESP32-C6-MINI-1U-H4    C20627095  Ext        1     10   37.48     100  326.73
+U7                         TCA9534PWR             C783615    Ext        1     10    7.61     100   59.07
+U8                         SP3485EN-L/TR          C8963      Basic      1     10    2.34     100   15.17
 
 Per board: 373 SMT joints, 36 through-hole joints, 43 part numbers (15 Extended with fee).
 
@@ -61,10 +61,10 @@ Through-hole joints (manual)                       $9.48                  $62.62
 Feeder loading                                    $46.05                  $46.05
 X-ray (module)                                    $16.40                  $49.00
 Fixture + packing                                  $0.00                   $0.00
-Components                                       $121.31                 $925.90
-Bare PCB (JLCPCB quote 15 Oct 2026)                   $5.00                  $69.90
-TOTAL (excl. shipping)                           $214.37                $1231.52
-Per board                                         $21.44                  $12.32
+Components                                       $121.59                 $927.97
+Bare PCB (see notes)                               $5.00                  $56.47
+TOTAL (excl. shipping)                           $214.66                $1220.16
+Per board                                         $21.47                  $12.20
 
 Same, per board:
 Setup + stencil + confirm                          $1.02                   $0.18
@@ -73,17 +73,18 @@ Through-hole joints (manual)                       $0.95                   $0.63
 Feeder loading                                     $4.60                   $0.46
 X-ray (module)                                     $1.64                   $0.49
 Fixture + packing                                  $0.00                   $0.00
-Components                                        $12.13                   $9.26
-Bare PCB (JLCPCB quote 15 Oct 2026)                   $0.50                   $0.70
-Per board                                         $21.44                  $12.32
+Components                                        $12.16                   $9.28
+Bare PCB (see notes)                               $0.50                   $0.56
+Per board                                         $21.47                  $12.20
 
 Notes:
   * Bare PCB from JLCPCB's instant quote for the real gerbers (15 Oct 2026): A$7.18 / 10, A$100.31 / 100,
     converted at JLCPCB's displayed 1.435 AUD/USD. The 10-board price is JLCPCB's 'Special Offer' prototype
     price, so per board it is cheaper ($0.50) than at 100 ($0.70: engineering A$11.48 + film A$3.16 +
     board A$85.67). Every other line falls per board at 100.
-  * Bare PCB is STILL the 100 x 80 mm relay board's quote. Without relays the board can shrink (Phase 2,
-    layout); re-quote from the new gerbers then.
+  * Bare PCB for the 100 x 62 mm valve board (D80) is ESTIMATED from that 100 x 80 mm quote, not re-quoted:
+    the 10-board prototype price is the same for any board inside 100 x 100; at 100 the board line is scaled
+    by area, A$85.67 x 62/80 = A$66.39, giving A$81.03 = $56.47. Re-quote from fabrication/gerbers.zip.
   * Shipping not included: DHL to Australia quoted A$30.47 (10) / A$70.86 (100) for bare boards only;
     assembled boards weigh more. Tax and import duty not included.
   * Prices fetched live from JLCPCB on 21 Nov 2026. EIGHT valve channels, all fitted. For comparison at the

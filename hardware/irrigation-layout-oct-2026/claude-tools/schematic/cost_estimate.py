@@ -18,7 +18,11 @@ XRAY_REFS = ('U6',)  # LGA module (pads under body)
 COLUMNS = [(10, ECON), (100, ECON_PANEL)]
 # Bare PCB, JLCPCB instant quote 15 Oct 2026 for gerbers.zip (2-layer FR-4 100x80 mm, 1.6 mm, HASL, green),
 # shown in AUD and converted at JLCPCB's own displayed rate (US$30 coupon = A$43.05 -> 1.435 AUD/USD).
-PCB_QUOTE = {10: 7.18 / 1.435, 100: 100.31 / 1.435}
+# The valve board (Phase 2, D80) is 100 x 62 mm. Not re-quoted: at 10 pcs both sizes are inside JLCPCB's
+# <=100 x 100 prototype price, so that stays; at 100 pcs only the board line of the quote (A$85.67 of A$100.31;
+# the rest is engineering A$11.48 + film A$3.16) is scaled by area, 62/80. An ESTIMATE until re-quoted.
+AREA = 62 / 80
+PCB_QUOTE = {10: 7.18 / 1.435, 100: (11.48 + 3.16 + 85.67 * AREA) / 1.435}
 SHIP_PCB_ONLY = {10: 30.47 / 1.435, 100: 70.86 / 1.435}   # DHL to Australia, bare boards only
 
 def fixture_fee(n):
@@ -72,7 +76,7 @@ def estimate(n, F):
         'X-ray (module)': xr_n * xr_rate,
         'Fixture + packing': (fixture_fee(n) if F['fixture'] is None else F['fixture']) + F['packing'],
         'Components': parts,
-        'Bare PCB (JLCPCB quote 15 Oct 2026)': PCB_QUOTE.get(n, 0.0),
+        'Bare PCB (see notes)': PCB_QUOTE.get(n, 0.0),
     }
     return fees
 
@@ -90,8 +94,9 @@ NOTES = """Notes:
     converted at JLCPCB's displayed 1.435 AUD/USD. The 10-board price is JLCPCB's 'Special Offer' prototype
     price, so per board it is cheaper ($0.50) than at 100 ($0.70: engineering A$11.48 + film A$3.16 +
     board A$85.67). Every other line falls per board at 100.
-  * Bare PCB is STILL the 100 x 80 mm relay board's quote. Without relays the board can shrink (Phase 2,
-    layout); re-quote from the new gerbers then.
+  * Bare PCB for the 100 x 62 mm valve board (D80) is ESTIMATED from that 100 x 80 mm quote, not re-quoted:
+    the 10-board prototype price is the same for any board inside 100 x 100; at 100 the board line is scaled
+    by area, A$85.67 x 62/80 = A$66.39, giving A$81.03 = $56.47. Re-quote from fabrication/gerbers.zip.
   * Shipping not included: DHL to Australia quoted A$30.47 (10) / A$70.86 (100) for bare boards only;
     assembled boards weigh more. Tax and import duty not included.
   * Prices fetched live from JLCPCB on 21 Nov 2026. EIGHT valve channels, all fitted. For comparison at the

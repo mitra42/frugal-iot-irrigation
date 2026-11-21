@@ -23,15 +23,20 @@ routing — use them only for a full re-layout.
   BOM, render; raw outputs go to `out/fab/`, which is scratch) → `python3 jlc_files.py` (JLCPCB BOM/CPL +
   gerbers.zip in `../../fabrication/`).
   `renders.sh` makes the 3D/copper views used for `PCB-LAYOUT.pdf`.
-- Full re-layout: `pipeline.sh [--sch] 80` (fpmeasure → place → build_pcb → netclasses → DRC);
-  `preview.py` draws the placement by block. Placement anchors and block regions are in `place.py`;
-  `blocks.json` maps refs to schematic blocks.
-- Routing: `prep_route.py` (GND fan-out + exposed-pad vias, DSN) → `dsn_prep.py` → `route/dsn_classes.py`
-  → `route/escape.py` (pad-escape check) → Freerouting 2.1.0 via `route/Route.java` (Java 21; download
-  freerouting-2.1.0.jar from github.com/freerouting/freerouting releases) → `route/check_ses.py`
-  → `post_route.sh` (import, pours, stitching, island vias, stub removal, GND rescue, refdes placement, DRC).
-- One-offs: `mkfp_module.py` (project footprint for the -1U module), `addtext.py` (board title),
-  `netclasses.py` (net classes and rules into the .kicad_pro).
+- Full re-layout (valve board, D79–D86):
+  1. `pipeline.sh [--sch] 62` — fpmeasure → `place.py 62` → build_pcb → netclasses → DRC. `place.py` holds the
+     anchors (valve columns, J2/F1/D2, buck, module, terminals) and fails on any courtyard overlap; `look.sh`
+     renders the board to `out/look.png` (`preview.py` needs matplotlib).
+  2. `preroute.sh` — build_pcb, net classes, `valve_route.py` (the 1–2 mm valve and +12V copper, D82),
+     `prep_route.py` (GND fan-out, DSN), `copper_snap.py save`, `dsn_prep.py`, `route/dsn_classes.py`.
+  3. Routing, local: `FR=<dir with freerouting-2.1.0.jar and Route.class> route/loop_local.sh out/board_r.dsn r 8 25`
+     (Java 21+; compile `route/Route.java` against the jar). Rounds restart from the last result (`route/merge.py`).
+  4. `real_unrouted.sh <x.ses>` — import, restore the fixed copper the .ses drops, DRC, list what is still open.
+     Freerouting's own count is not reliable; use this. Leaves the imported board in place.
+  5. `post_route.sh --no-import` — pours, stitching, island vias, stub removal, refdes placement, DRC. Then
+     `addtext.py "Frugal-IoT Irrigation V0.2"`, `fab.sh`, `jlc_files.py`, `renders.sh`.
+- One-offs: `mkfp_module.py` (project footprint for the -1U module), `mkfp_kf128.py` (KF128 terminal footprint,
+  D79), `netclasses.py` (net classes and rules into the .kicad_pro).
 
 ## notes/
 `original-handoff-from-chat.md` — the original request from the 14 Oct chat session.

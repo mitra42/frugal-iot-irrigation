@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run on the Mac: DRC with schematic parity + renders of the board.
 CLI=/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
-D=/Users/mitra/Claude/frugal-layout/irrigation-layout-oct-2026/esp32_io_board
+D="$(cd "$(dirname "$0")/../../esp32_io_board" && pwd)"
 O=$D/../claude-tools/layout/out; mkdir -p $O
 cd $D
 $CLI pcb drc --format json --schematic-parity --severity-all -o $O/drc.json esp32_io_board.kicad_pcb > $O/drc.log 2>&1

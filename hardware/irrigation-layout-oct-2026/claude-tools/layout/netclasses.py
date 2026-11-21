@@ -10,14 +10,20 @@ def cls(name, clr, w, via=0.6, drill=0.3, dpw=0.2, dpg=0.25, prio=0):
 d['net_settings'] = {
     "classes": [cls('Default', 0.2, 0.25, prio=2147483647), cls('Power', 0.2, 0.6, via=0.8, drill=0.4, prio=1),
                 cls('PowerFine', 0.2, 0.3, via=0.6, drill=0.3, prio=1),
-                cls('Relay', 0.6, 2.0, via=1.2, drill=0.6, prio=0), cls('USB', 0.15, 0.25, dpw=0.25, dpg=0.15, prio=2)],
+                cls('Valve', 0.3, 1.0, via=1.0, drill=0.5, prio=0), cls('USB', 0.15, 0.25, dpw=0.25, dpg=0.15, prio=2)],
     "meta": {"version": 4},
     "net_colors": None,
     "netclass_assignments": None,
-    "netclass_patterns": [{"netclass": "Relay", "pattern": "/K*_*"}] +
-        [{"netclass": "Power", "pattern": n} for n in ['GND', '+12V', '/12V_IN', '/5V_BUCK', 'Net-(U2-SW)', '+5V',
-                                                         'Net-(D7-K)', 'VBAT', '/CELL_NEG', 'Net-(Q1A-D)']] +
-        [{"netclass": "PowerFine", "pattern": n} for n in ['+3V3', '+3V3_SW', '+5V_SW', 'VBUS']] +
+    # Valve: the 3 A input path (12V_IN, 12V_FUSED = D2 anode) and each valve output (VALVEn has no label in
+    # the schematic, so it is named after its flyback diode's anode: D10, D12 ... D24). 1 mm carries 2 A on 1 oz
+    # outer copper with ~10 C rise. +12V stays Power (0.6 mm) so the router can reach the buck's 0.95 mm-pitch pins;
+    # its 3 A path (D2 -> bus -> every terminal) is drawn 2 mm by valve_route.py (D82).
+    "netclass_patterns": [{"netclass": "Valve", "pattern": n} for n in
+                          ['/12V_IN', 'Net-(D2-A)'] + [f'Net-(D{10 + 2 * i}-A)' for i in range(8)]] +
+        [{"netclass": "Power", "pattern": n} for n in ['GND', '+12V', '/5V_BUCK', 'Net-(U2-SW)']] +
+        # sub-1 A rails, 0.4 mm in the router (route/dsn_classes.py, D83)
+        [{"netclass": "PowerFine", "pattern": n} for n in ['+3V3', '+3V3_SW', '+5V_SW', 'VBUS', '+5V', 'VBAT',
+                                                             '/CELL_NEG', 'Net-(Q1A-D)', 'Net-(D7-K)']] +
         [{"netclass": "USB", "pattern": "/USB_*"}]}
 bd = d.setdefault('board', {}).setdefault('design_settings', {})
 bd.setdefault('rules', {}).update({"min_clearance": 0.15, "min_track_width": 0.15, "min_via_diameter": 0.5,

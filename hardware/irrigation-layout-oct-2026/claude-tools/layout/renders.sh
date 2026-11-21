@@ -1,6 +1,6 @@
 #!/bin/bash
 CLI=/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
-D=/Users/mitra/Claude/frugal-layout/irrigation-layout-oct-2026/esp32_io_board
+D="$(cd "$(dirname "$0")/../../esp32_io_board" && pwd)"
 O=$D/../claude-tools/layout/out; mkdir -p $O; rm -f $O/renders.done
 cd $D
 $CLI pcb render --side top --width 2400 --height 2000 --quality high --floor -o $O/render_top.png esp32_io_board.kicad_pcb > $O/renders.log 2>&1

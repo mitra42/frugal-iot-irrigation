@@ -10,6 +10,9 @@ edge = b.GetBoardEdgesBoundingBox(); EX0, EY0, EX1, EY1 = tomm(edge.GetX()), tom
 obst = []        # (x0,y0,x1,y1) of non-GND copper pads (both layers matter for vias)
 gpads = []       # SMD GND pads: (ref, num, x, y, w, h, fx, fy, nGNDinFP)
 ep = []          # exposed pads to fill with vias: (ref, num, x, y, w, h)
+# GND pads that valve_route.py already wired to its own vias need no fan-out
+gends = [(tomm(p.x), tomm(p.y)) for t in b.GetTracks() if t.GetNetname() == 'GND' and t.GetClass() != 'PCB_VIA'
+         for p in (t.GetStart(), t.GetEnd())]
 for f in b.GetFootprints():
     fc = f.GetPosition(); fx, fy = tomm(fc.x), tomm(fc.y)
     ref = f.GetReference()
@@ -23,8 +26,13 @@ for f in b.GetFootprints():
             w, h = box[2] - box[0], box[3] - box[1]
             if (ref == 'U6' and p.GetNumber() == '49') or (ref == 'U3' and p.GetNumber() == '9'):
                 ep.append((ref, p.GetNumber(), tomm(pc.x), tomm(pc.y), w, h))
+            elif any(box[0] <= x <= box[2] and box[1] <= y <= box[3] for x, y in gends):
+                continue
             else:
                 gpads.append((ref, p.GetNumber(), tomm(pc.x), tomm(pc.y), w, h, fx, fy, len(gl)))
+for t in b.GetTracks():                      # pre-drawn copper (valve_route.py) is an obstacle as well
+    if t.GetNetname() == 'GND': continue
+    bb = t.GetBoundingBox(); obst.append((tomm(bb.GetX()), tomm(bb.GetY()), tomm(bb.GetRight()), tomm(bb.GetBottom())))
 VIA_D, VIA_DR, CLR, TRK = 0.6, 0.3, 0.2, 0.4
 vias = []; tracks = []; skipped = []
 def near_box(x, y, box, m):

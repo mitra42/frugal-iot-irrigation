@@ -10,7 +10,7 @@ def part(prefix, lib, value, fp, nets, block, dnp=False, lcsc='', mpn='', rot=No
 R06 = 'Resistor_SMD:R_0603_1608Metric'; C06 = 'Capacitor_SMD:C_0603_1608Metric'
 C12 = 'Capacitor_SMD:C_1206_3216Metric'; LED06 = 'LED_SMD:LED_0603_1608Metric'; LED08 = 'LED_SMD:LED_0805_2012Metric'
 SMA = 'Diode_SMD:D_SMA'; SOT23 = 'Package_TO_SOT_SMD:SOT-23'
-TB508 = 'TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-{n}-5.08_1x0{n}_P5.08mm_Horizontal'
+TB508 = 'irrigation:TerminalBlock_KF128-5.08-2P'   # project footprint, KF128 drawing (D79); was Phoenix MKDS-1,5-2-5.08
 TB254 = 'TerminalBlock:TerminalBlock_Xinya_XY308-2.54-{n}P_1x0{n}_P2.54mm_Horizontal'
 HDR = 'Connector_PinHeader_2.54mm:PinHeader_1x0{n}_P2.54mm_Vertical'
 BTN = 'Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A'

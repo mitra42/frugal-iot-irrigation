@@ -328,25 +328,6 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.6,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "Relay",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 2.0,
-        "tuning_profile": "",
-        "via_diameter": 1.2,
-        "via_drill": 0.6,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
         "clearance": 0.15,
         "diff_pair_gap": 0.15,
         "diff_pair_via_gap": 0.25,
@@ -363,6 +344,25 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.3,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "Valve",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 1.0,
+        "tuning_profile": "",
+        "via_diameter": 1.0,
+        "via_drill": 0.5,
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -372,8 +372,44 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "Relay",
-        "pattern": "/K*_*"
+        "netclass": "Valve",
+        "pattern": "/12V_IN"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D2-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D10-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D12-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D14-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D16-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D18-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D20-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D22-A)"
+      },
+      {
+        "netclass": "Valve",
+        "pattern": "Net-(D24-A)"
       },
       {
         "netclass": "Power",
@@ -385,35 +421,11 @@
       },
       {
         "netclass": "Power",
-        "pattern": "/12V_IN"
-      },
-      {
-        "netclass": "Power",
         "pattern": "/5V_BUCK"
       },
       {
         "netclass": "Power",
         "pattern": "Net-(U2-SW)"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+5V"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "Net-(D7-K)"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "VBAT"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "/CELL_NEG"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "Net-(Q1A-D)"
       },
       {
         "netclass": "PowerFine",
@@ -430,6 +442,26 @@
       {
         "netclass": "PowerFine",
         "pattern": "VBUS"
+      },
+      {
+        "netclass": "PowerFine",
+        "pattern": "+5V"
+      },
+      {
+        "netclass": "PowerFine",
+        "pattern": "VBAT"
+      },
+      {
+        "netclass": "PowerFine",
+        "pattern": "/CELL_NEG"
+      },
+      {
+        "netclass": "PowerFine",
+        "pattern": "Net-(Q1A-D)"
+      },
+      {
+        "netclass": "PowerFine",
+        "pattern": "Net-(D7-K)"
       },
       {
         "netclass": "USB",

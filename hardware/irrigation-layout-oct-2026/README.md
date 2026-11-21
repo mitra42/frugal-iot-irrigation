@@ -1,8 +1,9 @@
-# Frugal-IoT Irrigation V0.1 — valve-driver variant (branch `uln2803`)
+# Frugal-IoT Irrigation V0.2 — valve-driver board (branch `uln2803`)
 
-> **This branch replaces the four relays with four MOSFETs driving 12 V DC solenoid valves directly**
-> (DECISIONS D67–D76; a ULN2803A was tried first and dropped, D70). Eight valve outputs, D75. Phase 1 — schematic, BOM and cost — is done. **The PCB, PCB-LAYOUT.pdf and
-> `fabrication/` are still the relay board** until Phase 2 re-lays it out; do not order from them.
+> **This branch replaces the V0.1 board's four relays with MOSFETs driving 12 V DC solenoid valves directly**
+> (DECISIONS D67–D78; a ULN2803A was tried first and dropped, D70). Eight valve outputs, D75. Phase 1 (schematic,
+> BOM, cost) and Phase 2 (layout, D79–D86) are done: the PCB, PCB-LAYOUT.pdf and `fabrication/` are the valve
+> board, laid out, routed and DRC clean (21 Nov 2026), **for review — not yet ordered or built**.
 
 An ESP32 I/O board for irrigation and similar field control: eight 12 V DC valve outputs, RS485 (Modbus), I2C sensors,
 two spare GPIOs, and power from 12 V, USB or a single LiPo cell. Designed Oct 2026 for assembly by JLCPCB.
@@ -10,10 +11,13 @@ This folder is for review: comments and suggested changes welcome — see "Point
 
 ## The board
 
-- 100 × 80 mm, 2 layers, 1.6 mm FR-4, 4 × M3 corner holes.
-- (Relay layout — Phase 2 will change this.) Relays and their screw terminals along one long edge; field connectors (12 V in, RS485, I2C, GPIOs, OLED)
-  along the other; USB-C on the right short edge, LiPo connector on the left.
-- Surface-mount parts on the top side, assembled by JLCPCB; relays and terminals are through-hole
+- 100 × 62 mm (the relay board was 100 × 80), 2 layers, 1.6 mm FR-4, 4 × M3 corner holes.
+- The eight valve terminals (5.08 mm, butted into one 81 mm row) along the bottom long edge, each channel's MOSFET,
+  flyback diode and LED in a column straight above its terminal; 12 V in on the left edge beside them; field
+  connectors (RS485, I2C, GPIOs, OLED) along the top edge; USB-C on the right short edge, LiPo connector on the left.
+- The valve current has its own copper (D82): 2 mm from the 12 V terminal through the fuse and diode, a 2 mm
+  +12V bus on the bottom layer along the terminal row, and 1 mm from each MOSFET straight down to its terminal.
+- Surface-mount parts on the top side, assembled by JLCPCB; terminals and headers are through-hole
   (JLCPCB hand-solders them, or you can).
 
 ## Power
@@ -56,8 +60,8 @@ This folder is for review: comments and suggested changes welcome — see "Point
 
 ## Firmware notes
 
-- Turn on RAIL_EN before any I2C traffic (relay changes included) or RS485; the expander itself is always
-  powered and keeps the relays as set while the rail is off.
+- Turn on RAIL_EN before any I2C traffic (valve changes included) or RS485; the expander itself is always
+  powered and keeps the valves as set while the rail is off.
 - Valve outputs: TCA9534 P0–P7 high = valve 1–8 on (P0–P3 as on the relay board, so no firmware change for those). Terminals J11–J18; RS485 is now J10.
 - GPIO map (module pad → use) is in DECISIONS.md, D18.
 
@@ -76,11 +80,12 @@ Items that are deliberately "proposed" rather than final — opinions especially
 7. Small bulk capacitance on 3V3_SW to limit inrush (D33).
 8. Before ordering: check part rotations in JLCPCB's assembly preview (see fabrication/README.md).
 
-## Cost (JLCPCB, Oct 2026)
+## Cost (JLCPCB, Nov 2026)
 
-About **$21.44 per board for 10**, **$12.32 per board for 100**, assembled, before shipping, with all eight
-valve channels fitted and the input fuse (JLCPCB prices of 21 Nov 2026; the four-relay design is $22.04 / $12.63
-at the same prices). Still priced on the 100 × 80 mm board.
+About **$21.47 per board for 10**, **$12.20 per board for 100**, assembled, before shipping, with all eight
+valve channels fitted and the input fuse (JLCPCB prices of 21 Nov 2026; the four-relay design is $22.04 / $12.63).
+The bare PCB for the 100 × 62 mm board is estimated from the 100 × 80 mm quote, not yet re-quoted (D86): the
+smaller board saves nothing at 10 and about $0.13 per board at 100.
 Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 
 ## What's in this folder
@@ -92,7 +97,7 @@ Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 | `PCB-LAYOUT.pdf` | 3D views and both copper layers |
 | `BOM.csv` | Bill of materials with LCSC (JLCPCB) part numbers |
 | `COST-ESTIMATE.txt` | JLCPCB cost for 10 and 100 boards |
-| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D77) |
+| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D86) |
 | `esp32_io_board/` | KiCad 10 project (schematic, PCB, project libraries) |
 | `fabrication/` | Files to order from JLCPCB — see its README |
 | `firmware/` | PlatformIO env for frugal-iot-irrigation + board variant (pins_arduino.h) |
