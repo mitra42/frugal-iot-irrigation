@@ -1,4 +1,4 @@
-// Frugal-IoT Irrigation V0.1 - ESP32-C6-MINI-1U module (DECISIONS D18).
+// Frugal-IoT Irrigation V0.2 - ESP32-C6-MINI-1U module (hardware/irrigation-layout-oct-2026 DECISIONS D18).
 // Based on arduino-esp32 variants/esp32c6. Differences: LED_BUILTIN is a plain LED on GPIO8,
 // active LOW (to +3V3 through 1k) - not the DevKit's RGB LED; SDA/SCL are this board's I2C pins.
 #ifndef Pins_Arduino_h

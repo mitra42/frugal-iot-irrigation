@@ -1,0 +1,63 @@
+Columns (part table):
+  Type    Basic   = JLCPCB Basic part, permanently on a machine feeder: no feeder fee (Economic).
+          PrefExt = 'Preferred Extended': Extended, but exempt from the feeder fee on Economic PCBA.
+          Ext     = Extended: $3.07 feeder-loading fee once per part number per order (Economic).
+  /brd    quantity per board.
+  buy@N   quantity JLCPCB buys for N boards = max(/brd x N + JLCPCB's attrition allowance for that part,
+          JLCPCB's minimum order for that part). E.g. a 0603 resistor at 10 boards: 1 x 10 + 10 = 20.
+  $@N     buy@N x unit price at that quantity's price tier.
+
+Refs                       Value                  LCSC       Type    /brd buy@10    $@10 buy@100   $@100
+C1                         10uF 25V               C13585     Basic      1     14    1.72     104   10.39
+C2                         100nF                  C14663     Basic      1     25    0.14     115    0.64
+D1                         SS54                   C22452     Basic      1     14    0.62     104    3.74
+D2                         SMAJ15A                C19077535  PrefExt    1     14    0.52     104    3.89
+D3,D5,D7,D9,D11,D13,D15,D1 SS34                   C8678      Basic      8     88    3.03     808   19.72
+D4,D6,D8,D10,D12,D14,D16,D KT-0603R               C2286      Basic      8     90    0.69     810    6.24
+F1                         SMD1812P300TF/16       C702820    Ext        1     12    2.37     102   15.64
+J1                         XY308-2.54-5P          C915914    Ext        1     10    5.12     100   39.93
+J2,J4,J5,J6,J7,J8,J9,J10,J KF128-5.08-2P          C474952    Ext        9     90   13.56     900   97.92
+J3                         PZ254V-11-04P          C492403    Ext        1     11    0.31     101    2.85
+Q1-Q8                      AO3400A                C20917     Basic      8     84    5.29     804   38.19
+R1                         560k                   C23203     PrefExt    1     20    0.03     110    0.17
+R2,R3,R5,R7,R9,R11,R13,R15 100k                   C25803     Basic      9    100    0.29     910    2.64
+R4,R6,R8,R10,R12,R14,R16,R 4.7k                   C23162     Basic      8     90    0.25     810    2.27
+U1                         TCA9534PWR             C783615    Ext        1     10    7.61     100   59.07
+
+Per board: 118 SMT joints, 27 through-hole joints, 15 part numbers (5 Extended with fee).
+
+                                             10 Economic 100 Economic, panelised
+Setup + stencil + confirm                         $10.16                  $18.37
+SMT joints                                         $1.89                  $18.88
+Through-hole joints (manual)                       $8.01                  $47.86
+Feeder loading                                    $15.35                  $15.35
+X-ray (module)                                     $0.00                   $0.00
+Fixture + packing                                  $0.00                   $0.00
+Components                                        $41.56                 $303.29
+Bare PCB (see notes)                               $5.00                  $41.54
+TOTAL (excl. shipping)                            $81.97                 $445.29
+Per board                                          $8.20                   $4.45
+
+Same, per board:
+Setup + stencil + confirm                          $1.02                   $0.18
+SMT joints                                         $0.19                   $0.19
+Through-hole joints (manual)                       $0.80                   $0.48
+Feeder loading                                     $1.53                   $0.15
+X-ray (module)                                     $0.00                   $0.00
+Fixture + packing                                  $0.00                   $0.00
+Components                                         $4.16                   $3.03
+Bare PCB (see notes)                               $0.50                   $0.42
+Per board                                          $8.20                   $4.45
+
+Notes:
+  * Bare PCB (100 x 42 mm) ESTIMATED from the irrigation board's quote, not quoted: A$7.18 / 10 (JLCPCB's
+    prototype price, any board within 100 x 100), and at 100 the board line A$85.67 x 42/80 plus engineering
+    A$11.48 and film A$3.16 = A$59.62 = $41.55. Re-quote from fabrication/gerbers.zip.
+  * Shipping, tax and import duty not included.
+  * Eight valve channels, all fitted; each of channels 5-8 can be left off (its six parts) to save ~$0.29 / board
+    at 10 and ~$0.21 at 100, as on the irrigation board.
+  * The host board is NOT included: frugal-iot-hw-sensor V0.2 is $11.51 / $7.16 per board, frugal-iot-hw-lora V0.3
+    $17.31 / $11.58 (their own COST-ESTIMATE.txt). See DECISIONS D7 for the comparison with the irrigation board.
+  * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is in the 100 column.
+
+Extended (fee-bearing on Economic): C702820 C915914 C474952 C492403 C783615

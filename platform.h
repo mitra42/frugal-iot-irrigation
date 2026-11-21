@@ -71,8 +71,11 @@
   #define ACTUATOR_OLED_HEIGHT 64
 #endif // ARDUINO_ESP32_DEV
 
-// [env:s2_mini] - Tools > Board: LOLIN S2 Mini
-#if defined(ARDUINO_LOLIN_S2_MINI) || defined(S2_MINI)
+#if (defined(S2_MINI) + defined(S2_MINI_DAUGHTER)) > 1
+  #error "S2_MINI, S2_MINI_DAUGHTER are alternative settings for one board - define at most one"
+#endif
+// [env:s2_mini] - Tools > Board: LOLIN S2 Mini. The default of 2 for this board
+#if (defined(ARDUINO_LOLIN_S2_MINI) && !defined(S2_MINI_DAUGHTER)) || defined(S2_MINI)
   #define FRUGAL_IOT_BOARD_CONFIGURED
   #define SYSTEM_OTA_SUFFIX "s2_mini"
   #define IRRIGATION_VALVE1_PIN 10
@@ -88,11 +91,43 @@
   #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.641 // 220k/39k
 #endif // ARDUINO_LOLIN_S2_MINI
 
-// [env:frugal_irrigation_v01] - Tools > Board: esp32-c6-devkitc-1
-#if defined(TODO_ESP32_C6_DEVKITC_1) || defined(FRUGAL_IRRIGATION_V01)
+// [env:s2_mini_daughter] - Tools > Board: LOLIN S2 Mini, then -DS2_MINI_DAUGHTER in a build_opt.h beside the .ino (see README.md)
+#if defined(S2_MINI_DAUGHTER)
   #define FRUGAL_IOT_BOARD_CONFIGURED
-  #define SYSTEM_OTA_SUFFIX "frugal_irrigation_v01"
-  #define ARDUINO_FRUGAL_IOT_IRRIGATION_V01 // this board, for code and for scripts/generate_platform_h.py
+  #define SYSTEM_OTA_SUFFIX "s2_mini_daughter"
+  #define I2C_SDA 16
+  #define I2C_SCL 18
+  #define IRRIGATION_RELAY_TCA9534_ADDRESS 0x20
+  #define IRRIGATION_VALVE1_BIT 0 // daughter J4
+  #define IRRIGATION_VALVE2_BIT 1 // daughter J5
+  #define IRRIGATION_VALVE3_BIT 2 // daughter J6
+  #define IRRIGATION_PUMP_BIT 3 // daughter J7
+  // #define IRRIGATION_VALVE4_BIT 4 // daughter J8
+  // #define IRRIGATION_VALVE5_BIT 5 // daughter J9
+  // #define IRRIGATION_VALVE6_BIT 6 // daughter J10
+  // #define IRRIGATION_VALVE7_BIT 7 // daughter J11
+  #define IRRIGATION_LOAD_PIN 40 // digital-only, as the plain s2_mini env
+  #define SENSOR_TANK_PIN 6 // ADC1_CH5
+  #define SYSTEM_RS485_RX_PIN 33
+  #define SYSTEM_RS485_TX_PIN 35
+  #define SYSTEM_RS485_UART Serial1 // The S2 has Serial0 and Serial1 only
+  #define SENSOR_BATTERY_PIN 3
+  #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.6
+  #define ACTUATOR_OLED_WANT
+  #define ACTUATOR_OLED_IS_SSD1306
+  #define OLED_WIRE Wire
+  #define OLED_SDA 16
+  #define OLED_SCL 18
+  #define OLED_RST_X -1
+  #define ACTUATOR_OLED_WIDTH 128
+  #define ACTUATOR_OLED_HEIGHT 64
+#endif // S2_MINI_DAUGHTER
+
+// [env:frugal_irrigation_v02] - Tools > Board: esp32-c6-devkitc-1
+#if defined(TODO_ESP32_C6_DEVKITC_1) || defined(FRUGAL_IRRIGATION_V02)
+  #define FRUGAL_IOT_BOARD_CONFIGURED
+  #define SYSTEM_OTA_SUFFIX "frugal_irrigation_v02"
+  #define ARDUINO_FRUGAL_IOT_IRRIGATION_V02 // this board, for code and for scripts/generate_platform_h.py
   #define ARDUINO_USB_MODE 1 // native USB on the USB-C: no USB-UART chip
   #if !ARDUINO_USB_CDC_ON_BOOT // Serial = USB
     #error "Set Tools > USB CDC On Boot > Enabled - this board has no USB-serial chip, so without it the Serial Monitor stays empty"
@@ -111,7 +146,10 @@
   #define IRRIGATION_VALVE2_BIT 1 // J12
   #define IRRIGATION_VALVE3_BIT 2 // J13
   #define IRRIGATION_PUMP_BIT 3 // J14
-  // #define IRRIGATION_RELAY_INVERT true // only for a relay board that is on when its pin is LOW
+  // #define IRRIGATION_VALVE4_BIT 4 // J15
+  // #define IRRIGATION_VALVE5_BIT 5 // J16
+  // #define IRRIGATION_VALVE6_BIT 6 // J17
+  // #define IRRIGATION_VALVE7_BIT 7 // J18
   // #define SENSOR_TANK_PIN 6 // GPIO_A terminal J6 (ADC1_CH6) - e.g. the tank gauge
   #define ACTUATOR_OLED_WANT
   #define ACTUATOR_OLED_IS_SSD1306
@@ -123,6 +161,44 @@
   #define ACTUATOR_OLED_HEIGHT 64
 #endif // TODO_ESP32_C6_DEVKITC_1
 
+// [env:sensor_v02_daughter] - Tools > Board: ESP32C3 Dev Module
+#if defined(ARDUINO_ESP32C3_DEV) || defined(SENSOR_V02_DAUGHTER)
+  #define FRUGAL_IOT_BOARD_CONFIGURED
+  #define SYSTEM_OTA_SUFFIX "sensor_v02_daughter"
+  #define ARDUINO_FRUGAL_IOT_V02 // the sensor board, for code and for scripts/generate_platform_h.py
+  #define ARDUINO_USB_MODE 1 // native USB on the USB-C: no USB-UART chip
+  #if !ARDUINO_USB_CDC_ON_BOOT // Serial = USB
+    #error "Set Tools > USB CDC On Boot > Enabled - this board has no USB-serial chip, so without it the Serial Monitor stays empty"
+  #endif
+  #define I2C_SDA 6
+  #define I2C_SCL 7
+  #define SYSTEM_POWER0_PIN 5
+  #define IRRIGATION_RELAY_TCA9534_ADDRESS 0x20
+  #define IRRIGATION_VALVE1_BIT 0 // daughter J4
+  #define IRRIGATION_VALVE2_BIT 1 // daughter J5
+  #define IRRIGATION_VALVE3_BIT 2 // daughter J6
+  #define IRRIGATION_PUMP_BIT 3 // daughter J7
+  // #define IRRIGATION_VALVE4_BIT 4 // daughter J8
+  // #define IRRIGATION_VALVE5_BIT 5 // daughter J9
+  // #define IRRIGATION_VALVE6_BIT 6 // daughter J10
+  // #define IRRIGATION_VALVE7_BIT 7 // daughter J11
+  #define SYSTEM_RS485_RX_PIN 20
+  #define SYSTEM_RS485_TX_PIN 21
+  #define SYSTEM_RS485_DE_PIN 10 // HIGH = transmit; RE is tied to DE
+  #define SYSTEM_RS485_UART Serial1
+  #define SENSOR_BATTERY_PIN 1
+  #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.6
+  // #define SENSOR_TANK_PIN 0
+  #define ACTUATOR_OLED_WANT
+  #define ACTUATOR_OLED_IS_SSD1306
+  #define OLED_WIRE Wire
+  #define OLED_SDA 6
+  #define OLED_SCL 7
+  #define OLED_RST_X -1
+  #define ACTUATOR_OLED_WIDTH 128
+  #define ACTUATOR_OLED_HEIGHT 64
+#endif // ARDUINO_ESP32C3_DEV
+
 // Your enrolment secret, if you made platform-secrets-local.h (see README.md). Never commit it.
 #if __has_include("platform-secrets-local.h")
   #include "platform-secrets-local.h"
@@ -130,7 +206,7 @@
 #define FRUGAL_IOT_SECRETS_CHECKED // Tells _settings.h not to include it again
 
 #ifndef FRUGAL_IOT_BOARD_CONFIGURED
-  #error "This board has no settings in platform.h. Under Tools > Board, select one of the boards this example supports, or add a section for yours to its platformio.ini and re-run scripts/generate_platform_h.py. Supported here: ESP32 Dev Module / LOLIN S2 Mini / esp32-c6-devkitc-1"
+  #error "This board has no settings in platform.h. Under Tools > Board, select one of the boards this example supports, or add a section for yours to its platformio.ini and re-run scripts/generate_platform_h.py. Supported here: ESP32 Dev Module / LOLIN S2 Mini / esp32-c6-devkitc-1 / ESP32C3 Dev Module"
 #endif
 
 #endif // PLATFORM_H

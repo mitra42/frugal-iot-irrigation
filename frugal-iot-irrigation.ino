@@ -25,8 +25,9 @@
  *    - irrigation, soil probes, tank gauge, valves, pump          YES
  *    - MPPT solar charge control                                  YES
  *
- *  Two boards are supported, see platformio.ini: `ff_openmppt` (the OSPIT version of the Freifunk board)
- *  and `s2_mini` (the same application on a plain dev board with no charge-controller hardware). 
+ *  The boards supported are in platformio.ini, and listed with wiring in README.md: the OSPIT version of
+ *  the Freifunk board, a plain S2 Mini dev board (on its own, or driving the irrigation daughter board),
+ *  the Frugal-IoT Irrigation V0.2 board, and the Frugal-IoT sensor board driving the daughter board.
  * 
  *  Adding other ESP32 boards should be as simple as copying their platformio.ini from one of the 
  *  examples in [frugal-iot](https;//github.com/mitra42/frugal-iot)
@@ -66,6 +67,57 @@
 // Change the parameters here to match your ...
 // organization, project, device name, description
 System_Frugal frugal_iot(SYSTEM_FRUGAL_ORG, SYSTEM_FRUGAL_PROJECT, "irrigation", "Irrigation Controller");
+
+/* ---- How many sectors ---------------------------------------------------------------------
+ *
+ * Sectors 1-3 always exist. Sectors 4-7 each exist if the board defines a valve for them -
+ * IRRIGATION_VALVE4_BIT (an expander pin) or IRRIGATION_VALVE4_PIN (a GPIO), and so on - so a board
+ * with eight driver channels can run seven sectors and the pump just by uncommenting lines in
+ * platformio.ini. Each extra sector gets its own soil probe at the next Modbus slave id.
+ * The OLED's soil page still shows sectors 1-3 only.
+ */
+#if defined(IRRIGATION_VALVE4_BIT) || defined(IRRIGATION_VALVE4_PIN)
+  #define IRRIGATION_SECTOR4
+#endif
+#if defined(IRRIGATION_VALVE5_BIT) || defined(IRRIGATION_VALVE5_PIN)
+  #define IRRIGATION_SECTOR5
+#endif
+#if defined(IRRIGATION_VALVE6_BIT) || defined(IRRIGATION_VALVE6_PIN)
+  #define IRRIGATION_SECTOR6
+#endif
+#if defined(IRRIGATION_VALVE7_BIT) || defined(IRRIGATION_VALVE7_PIN)
+  #define IRRIGATION_SECTOR7
+#endif
+
+/* A valve is a pin of a TCA9534 I2C expander (IRRIGATION_RELAY_TCA9534_ADDRESS, then IRRIGATION_VALVEn_BIT
+ * for which pin of it), as on the Irrigation V0.2 board and the daughter board, or a GPIO
+ * (IRRIGATION_VALVEn_PIN). Either way the same actuator with the same id, so nothing that wires to it -
+ * the sectors, MQTT - can tell which. N is a literal 1-7.
+ */
+#ifdef IRRIGATION_RELAY_TCA9534_ADDRESS
+  // IRRIGATION_RELAY_INVERT for a relay board that switches on when its pin is LOW
+  #ifndef IRRIGATION_RELAY_INVERT
+    #define IRRIGATION_RELAY_INVERT false
+  #endif
+  #define IRRIGATION_VALVE(id, name, N) new Actuator_Digital_Expander(id, name, IRRIGATION_RELAY_TCA9534_ADDRESS, \
+    IRRIGATION_VALVE##N##_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT)
+#else
+  #define IRRIGATION_VALVE(id, name, N) new Actuator_Digital(id, name, IRRIGATION_VALVE##N##_PIN, DEFAULT_valve_on_color)
+#endif
+
+/* One sector beyond the first three: its probe, at Modbus slave id `slave`, and the sector, wired to the
+ * probe and to its valve. Sectors run in the order they are added.
+ */
+#if defined(IRRIGATION_SECTOR4) || defined(IRRIGATION_SECTOR5) || defined(IRRIGATION_SECTOR6) || defined(IRRIGATION_SECTOR7)
+static void addExtraSector(Control_Irrigation_Example* irr, System_RS485* rs485, Actuator_Digital* valve,
+    const char* soilId, const char* soilName, uint8_t slave, const char* sectorId, const char* sectorName) {
+  Sensor_SoilModbus* soil = new Sensor_SoilModbus(soilId, soilName, slave, rs485, true);
+  frugal_iot.sensors->add(soil);
+  Control_Sector_Moisture* s = irr->addSector(new Control_Sector_Moisture(sectorId, sectorName));
+  s->moisture->wireFrom(soil->humidity);
+  s->valve->wireTo(valve);
+}
+#endif
 
 void setup() {
   setupIrrigationLanguage();
@@ -109,30 +161,31 @@ void setup() {
    * OSPIT_COMPARISON.md for how OSPIT shares that pin.
    *
    * The valves and pump are either on GPIOs (IRRIGATION_VALVE1_PIN...) or on the pins of a TCA9534
-   * I2C expander (IRRIGATION_RELAY_TCA9534_ADDRESS, then IRRIGATION_VALVE1_BIT... for which pin of
-   * it), as on the Frugal-IoT Irrigation V0.1 board. Either way they are the same actuators with
-   * the same ids, so nothing below here - the sectors, the pump wiring, MQTT - can tell which.
+   * I2C expander (IRRIGATION_RELAY_TCA9534_ADDRESS, then IRRIGATION_VALVE1_BIT...) - see
+   * IRRIGATION_VALVE() at the top.
    */
   Actuator_Digital *valve1, *valve2, *valve3; // Kept so the sectors below can be wired to them
   Actuator_Digital* pump = nullptr;            // Stays nullptr on a board with no pump
-  #ifdef IRRIGATION_RELAY_TCA9534_ADDRESS
-    // IRRIGATION_RELAY_INVERT for a relay board that switches on when its pin is LOW
-    #ifndef IRRIGATION_RELAY_INVERT
-      #define IRRIGATION_RELAY_INVERT false
-    #endif
-    frugal_iot.actuators->add(valve1 = new Actuator_Digital_Expander("valve1", "Valve 1", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE1_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
-    frugal_iot.actuators->add(valve2 = new Actuator_Digital_Expander("valve2", "Valve 2", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE2_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
-    frugal_iot.actuators->add(valve3 = new Actuator_Digital_Expander("valve3", "Valve 3", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_VALVE3_BIT, DEFAULT_valve_on_color, IRRIGATION_RELAY_INVERT));
-    #ifdef IRRIGATION_PUMP_BIT
-      frugal_iot.actuators->add(pump = new Actuator_Digital_Expander("pump", "Pump", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_PUMP_BIT, DEFAULT_pump_on_color, IRRIGATION_RELAY_INVERT));
-    #endif
-  #else
-    frugal_iot.actuators->add(valve1 = new Actuator_Digital("valve1", "Valve 1", IRRIGATION_VALVE1_PIN, DEFAULT_valve_on_color));
-    frugal_iot.actuators->add(valve2 = new Actuator_Digital("valve2", "Valve 2", IRRIGATION_VALVE2_PIN, DEFAULT_valve_on_color));
-    frugal_iot.actuators->add(valve3 = new Actuator_Digital("valve3", "Valve 3", IRRIGATION_VALVE3_PIN, DEFAULT_valve_on_color));
-    #ifdef IRRIGATION_PUMP_PIN
-      frugal_iot.actuators->add(pump = new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
-    #endif
+  frugal_iot.actuators->add(valve1 = IRRIGATION_VALVE("valve1", "Valve 1", 1));
+  frugal_iot.actuators->add(valve2 = IRRIGATION_VALVE("valve2", "Valve 2", 2));
+  frugal_iot.actuators->add(valve3 = IRRIGATION_VALVE("valve3", "Valve 3", 3));
+  #ifdef IRRIGATION_SECTOR4
+    Actuator_Digital* valve4; frugal_iot.actuators->add(valve4 = IRRIGATION_VALVE("valve4", "Valve 4", 4));
+  #endif
+  #ifdef IRRIGATION_SECTOR5
+    Actuator_Digital* valve5; frugal_iot.actuators->add(valve5 = IRRIGATION_VALVE("valve5", "Valve 5", 5));
+  #endif
+  #ifdef IRRIGATION_SECTOR6
+    Actuator_Digital* valve6; frugal_iot.actuators->add(valve6 = IRRIGATION_VALVE("valve6", "Valve 6", 6));
+  #endif
+  #ifdef IRRIGATION_SECTOR7
+    Actuator_Digital* valve7; frugal_iot.actuators->add(valve7 = IRRIGATION_VALVE("valve7", "Valve 7", 7));
+  #endif
+  #ifdef IRRIGATION_PUMP_BIT
+    frugal_iot.actuators->add(pump = new Actuator_Digital_Expander("pump", "Pump", IRRIGATION_RELAY_TCA9534_ADDRESS, IRRIGATION_PUMP_BIT, DEFAULT_pump_on_color, IRRIGATION_RELAY_INVERT));
+  #endif
+  #ifdef IRRIGATION_PUMP_PIN
+    frugal_iot.actuators->add(pump = new Actuator_Digital("pump", "Pump", IRRIGATION_PUMP_PIN, DEFAULT_pump_on_color));
   #endif
   #ifdef IRRIGATION_LOAD_PIN
     Actuator_Digital* load = new Actuator_Digital("load", "Load", IRRIGATION_LOAD_PIN, DEFAULT_load_on_color);
@@ -286,6 +339,20 @@ void setup() {
   Control_Sector_Moisture* s3 = irr->addSector(new Control_Sector_Moisture("sector3", "Sector 3"));
   s3->moisture->wireFrom(soil3->humidity);
   s3->valve->wireTo(valve3);
+
+  // Sectors 4-7, where the board defines a valve for them (see the top): probes at slave ids 5-8
+  #ifdef IRRIGATION_SECTOR4
+    addExtraSector(irr, rs485, valve4, "soil4", "Sector 4 probe", 5, "sector4", "Sector 4");
+  #endif
+  #ifdef IRRIGATION_SECTOR5
+    addExtraSector(irr, rs485, valve5, "soil5", "Sector 5 probe", 6, "sector5", "Sector 5");
+  #endif
+  #ifdef IRRIGATION_SECTOR6
+    addExtraSector(irr, rs485, valve6, "soil6", "Sector 6 probe", 7, "sector6", "Sector 6");
+  #endif
+  #ifdef IRRIGATION_SECTOR7
+    addExtraSector(irr, rs485, valve7, "soil7", "Sector 7 probe", 8, "sector7", "Sector 7");
+  #endif
 
   #ifdef MPPT_DAC_PIN
     /* ---- Solar charge control ---------------------------------------------------------------
