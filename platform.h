@@ -107,10 +107,10 @@
   #define SENSOR_BATTERY_PIN 1
   #define SENSOR_BATTERY_VOLTAGE_DIVIDER 6.6
   #define IRRIGATION_RELAY_TCA9534_ADDRESS 0x20
-  #define IRRIGATION_VALVE1_BIT 0 // K1
-  #define IRRIGATION_VALVE2_BIT 1 // K2
-  #define IRRIGATION_VALVE3_BIT 2 // K3
-  #define IRRIGATION_PUMP_BIT 3 // K4
+  #define IRRIGATION_VALVE1_BIT 0 // J11
+  #define IRRIGATION_VALVE2_BIT 1 // J12
+  #define IRRIGATION_VALVE3_BIT 2 // J13
+  #define IRRIGATION_PUMP_BIT 3 // J14
   // #define IRRIGATION_RELAY_INVERT true // only for a relay board that is on when its pin is LOW
   // #define SENSOR_TANK_PIN 6 // GPIO_A terminal J6 (ADC1_CH6) - e.g. the tank gauge
   #define ACTUATOR_OLED_WANT

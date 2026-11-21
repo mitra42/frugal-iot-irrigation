@@ -20,16 +20,16 @@ def rs485(x, y):
         # bus: A straight to J11 pin 2, B jogs up one row to pin 3
         a, b = pin('U8', '6'), pin('U8', '7')
         jxx = a[0] + 38.1
-        put_pin('J11', '2', (jxx, a[1]))
-        p3 = pin('J11', '3')
-        S.wire(a, at(a, 10.16), at(a, 22.86), pin('J11', '2'))
+        put_pin('J10', '2', (jxx, a[1]))
+        p3 = pin('J10', '3')
+        S.wire(a, at(a, 10.16), at(a, 22.86), pin('J10', '2'))
         dbtag('RS485_A', at(a, 22.86), up=True, length=7.62)
         bx = b[0] + 27.94
         S.wire(b, at(b, 10.16), at(b, 20.32), (bx, b[1]), (bx, p3[1]), p3)
         dbtag('RS485_B', at(b, 20.32), up=False, length=7.62)
         rise('R36', at(a, 10.16), '+3V3_SW', bottom_pin='2')
         hang('R37', at(b, 10.16), 'GND')
-        pwr_pin('J11', '1', '+5V_SW', 5.08, 5.08); pwr_pin('J11', '4', 'GND', 5.08, 2.54)
+        pwr_pin('J10', '1', '+5V_SW', 5.08, 5.08); pwr_pin('J10', '4', 'GND', 5.08, 2.54)
         # termination (solder jumper) and TVS, hung off labels below the bus
         n = (a[0] + 2.54, b[1] + 12.7)
         S.wire(at(n, -5.08), n); S.label('RS485_A', n[0] - 5.08, n[1], angle=180)
@@ -58,7 +58,7 @@ def rs485(x, y):
 
 def relays(x, y):
     S = B.S
-    with S.block("VALVE DRIVERS (ULN2803A, TWO CHANNELS PER VALVE)"):
+    with S.block("VALVE DRIVERS (LOW-SIDE MOSFET PER VALVE)"):
         put('U7', x, y)
         v = pin('U7', '16')
         m = at(v, 0, -12.7); t = at(v, 0, -15.24)
@@ -68,60 +68,47 @@ def relays(x, y):
         term('U7', '14', 'I2C_SCL', 5.08); term('U7', '15', 'I2C_SDA', 5.08)
         S.nc('U7', '13')
         for p in ('1', '2', '3'): term('U7', p, 'GND', 2.54)
-        for p, net in (('9', 'EXP_IO4'), ('10', 'EXP_IO5'), ('11', 'EXP_IO6'), ('12', 'EXP_IO7')):
-            term('U7', p, net, 2.54)
-        # ULN2803A: Pk drives the pair I(2k+1), I(2k+2). P0 runs straight across to I1; each later Pk
-        # drops to its pair's row in its own column, further left each time, so no two wires cross.
-        p0 = pin('U7', '4')
-        put_pin('U9', '1', at(p0, 38.1))
-        tx = pin('U9', '1')[0] - 2.54                       # tie column, just left of the inputs
-        for k, tp in enumerate(('4', '5', '6', '7')):
-            a, b = pin('U9', str(2 * k + 1)), pin('U9', str(2 * k + 2))
-            src = pin('U7', tp)
-            if k == 0:
-                S.wire(src, (tx, a[1]), a)
-            else:
-                cx = tx - 5.08 * (k + 1)
-                S.wire(src, (cx, src[1]), (cx, a[1]), (tx, a[1]), a)
-            S.wire((tx, a[1]), (tx, b[1]), b)
-        # outputs: O1/O2 -> VALVE1 ... O7/O8 -> VALVE4, tied just right of the pins
-        ox = pin('U9', '18')[0] + 2.54
-        for k, (pa, pb) in enumerate((('18', '17'), ('16', '15'), ('14', '13'), ('12', '11'))):
-            a, b = pin('U9', pa), pin('U9', pb)
-            S.wire(b, (ox, b[1]), (ox, a[1]))
-            S.wire(a, (ox, a[1]), (ox + 5.08, a[1])); S.label(f'VALVE{k+1}', ox + 5.08, a[1])
-        term('U9', '9', 'GND')
-        # COM: up to +12V, with the local bulk cap hung off the same wire
-        c = pin('U9', '10')
-        n1 = at(c, 12.7); n2 = at(n1, 0, -7.62)
-        S.wire(c, n1, n2); port('+12V', *n2)
-        S.wire(at(n1, 0, -2.54), at(n1, 7.62, -2.54))
-        hang('C22', at(n1, 7.62, -2.54), 'GND')
-        # expander spare header (DNP)
-        put('J10', x + 5.08, y + 30.48, mirror='y')
-        for p, net in (('1', 'EXP_IO4'), ('2', 'EXP_IO5'), ('3', 'EXP_IO6'), ('4', 'EXP_IO7')):
-            term('J10', p, net, 2.54)
-        pwr_pin('J10', '6', 'GND', 2.54, 2.54); term('J10', '5', '+3V3', 2.54)
-        # four identical valve channels: V+ / OUT terminal, LED across the valve
-        for i in range(4):
-            r, d, j = f'R{39+i}', f'D{10+i}', f'J{12+i}'
-            jx, jy = x + 129.54 + 33.02 * i, y + 7.62
+        for k, tp in enumerate(('4', '5', '6', '7', '9', '10', '11', '12')):
+            term('U7', tp, f'REL{k+1}', 5.08)
+        # refs come from circuit.py's order, so look them up by what they connect to
+        def ref(prefix, net, pinno):
+            return next(r for r, p in B.NETS[net] if r[:len(prefix)] == prefix and r[len(prefix)].isdigit() and p == pinno)
+        # four identical valve channels: gate pull-down, MOSFET, LED, flyback diode, V+ / OUT terminal
+        for i in range(8):   # two rows of four
+            v = f'VALVE{i+1}'
+            q = ref('Q', v, '3'); df = ref('D', v, '2'); led = ref('D', v, '1')
+            rl = ref('R', f'LED_V{i+1}', '2'); rg = ref('R', f'REL{i+1}', '1'); j = ref('J', v, '2')
+            jx, jy = x + 114.3 + 60.96 * (i % 4), y + 7.62 + 55.88 * (i // 4)
             put(j, jx, jy)
             pwr_pin(j, '1', '+12V', 5.08, 5.08)
             p2 = pin(j, '2')
-            n = at(p2, -15.24)
-            S.wire(p2, n, at(n, -7.62)); S.label(f'VALVE{i+1}', n[0] - 7.62, n[1], angle=180)
-            a = at(n, 0, -2.54)
-            S.wire(n, a)
-            put_pin(d, '1', a, rot=90)
-            assert pin(d, '2')[1] < a[1], (d, 'LED not pointing down')
-            top = at(pin(d, '2'), 0, -2.54)
-            S.wire(pin(d, '2'), top)
-            rise(r, top, '+12V')
-        S.note("TCA9534 pins start as inputs: the ULN2803A's internal input resistors then hold every\n"
-               "valve off until firmware drives P0-P3 (D16). Address 0x20 (A0-A2 low). P0-P3 high = valve on.\n"
-               "Each output drives two Darlingtons in parallel (D68). Valves: 12 V DC, up to ~0.35 A, one at a\n"
-               "time - the SOP-18 package limits this, not the channels (D70). Not for pumps or latching valves.\n"
-               "FLYBACK (D69): COM must be on the same +12V as the valves' V+ pins, after D1. A valve wired to\n"
-               "any other supply loses its clamp and the Darlington avalanches at turn-off.",
-               x - 5.08, y + 48.26, 1.0)
+            nd = at(p2, -10.16); nl = at(nd, -15.24); nq = at(nl, -15.24)
+            S.wire(p2, nd, nl, nq)
+            # flyback diode, cathode up to +12V
+            a = at(nd, 0, -2.54); S.wire(nd, a)
+            put_pin(df, '2', a, rot=270)
+            assert pin(df, '1')[1] < a[1], (df, 'diode not pointing up')
+            drop('+12V', pin(df, '1'))
+            # LED + resistor across the valve
+            a = at(nl, 0, -2.54); S.wire(nl, a)
+            put_pin(led, '1', a, rot=90)
+            top = at(pin(led, '2'), 0, -2.54)
+            S.wire(pin(led, '2'), top)
+            rise(rl, top, '+12V')
+            # MOSFET: drain up to the valve node, source to GND, gate left with its pull-down
+            put_pin(q, '3', at(nq, 0, 2.54)); S.wire(nq, pin(q, '3'))
+            term(q, '2', 'GND')
+            g = pin(q, '1'); gn = at(g, -5.08); gl = at(gn, -7.62)
+            S.wire(g, gn, gl); S.label(f'REL{i+1}', gl[0], gl[1], angle=180)
+            hang(rg, gn, 'GND')
+        # local bulk on +12V near the terminals
+        cb = (x + 81.28, y - 5.08)
+        drop('+12V', cb); hang('C22', cb, 'GND')
+        S.note("TCA9534 pins start as inputs; the 100k pull-downs then hold every valve off until\n"
+               "firmware drives them. Address 0x20 (A0-A2 low). P0-P7 high = valve 1-8 on.\n"
+               "Valves 5-8 may be left unfitted (FET, pull-down, diode, LED, resistor, terminal) (D75).\n"
+               "Valves: 12 V DC, low-side switched, up to ~2 A each (D73); total from 12 V IN is\n"
+               "limited by D1 (SS34, 3 A). Not for latching valves or 24 V AC valves.\n"
+               "FLYBACK (D69): each diode returns to the same +12V as its valve's V+ pin, after D1.\n"
+               "A valve wired to any other supply loses its clamp.",
+               x - 5.08, y + 124.46, 1.0)

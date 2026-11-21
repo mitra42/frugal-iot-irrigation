@@ -34,7 +34,7 @@ def PFET(g, s, d, blk):
     part('Q', 'Transistor_FET:AO3401A', 'AO3401A', SOT23, {'1': g, '2': s, '3': d}, blk, lcsc='C15127')
 def NFET(g, s, d, blk, typ='2N7002'):
     part('Q', f'Transistor_FET:{typ}', typ, SOT23, {'1': g, '2': s, '3': d}, blk,
-         lcsc={'2N7002': 'C8545', 'BSS138': 'C78284'}[typ])
+         lcsc={'2N7002': 'C8545', 'BSS138': 'C78284', 'AO3400A': 'C20917'}[typ])
 def BUTTON(a, b, blk, val):
     part('SW', 'Switch:SW_Push', val, BTN, {'1': a, '2': b}, blk, lcsc='C318884', mpn='TS-1187A-B-A-B')
 
@@ -140,11 +140,10 @@ part('J', 'Connector:Screw_Terminal_01x04', 'I2C sensor', TB254.format(n=4),
 part('J', 'Connector:Conn_01x04_Pin', 'OLED', HDR.format(n=4), {'1': 'GND', '2': '+3V3_SW', '3': 'I2C_SCL', '4': 'I2C_SDA'}, B, lcsc='C492403', mpn='PZ254V-11-04P')
 part('U', 'Interface_Expansion:TCA9534', 'TCA9534PWR', 'Package_SO:TSSOP-16_4.4x5mm_P0.65mm',
      {'1': 'GND', '2': 'GND', '3': 'GND', '4': 'REL1', '5': 'REL2', '6': 'REL3', '7': 'REL4', '8': 'GND',
-      '9': 'EXP_IO4', '10': 'EXP_IO5', '11': 'EXP_IO6', '12': 'EXP_IO7', '13': 'NC', '14': 'I2C_SCL', '15': 'I2C_SDA',
+      '9': 'REL5', '10': 'REL6', '11': 'REL7', '12': 'REL8', '13': 'NC', '14': 'I2C_SCL', '15': 'I2C_SDA',
       '16': '+3V3'}, B, lcsc='C783615', mpn='TCA9534PWR')
 C('100nF', '+3V3', 'GND', B)
-part('J', 'Connector:Conn_01x06_Pin', 'Expander spare', HDR.format(n=6),
-     {'1': 'EXP_IO4', '2': 'EXP_IO5', '3': 'EXP_IO6', '4': 'EXP_IO7', '5': '+3V3', '6': 'GND'}, B, dnp=True)
+# No spare header: all eight expander pins drive valves (D75)
 
 # ---------------- RS485 ----------------
 B = 'rs485'
@@ -161,25 +160,22 @@ part('D', 'Diode:SM712_SOT23', 'PSM712', SOT23, {'1': 'RS485_A', '2': 'RS485_B',
 part('J', 'Connector:Screw_Terminal_01x04', 'RS485', TB254.format(n=4),
      {'1': '+5V_SW', '2': 'RS485_A', '3': 'RS485_B', '4': 'GND'}, B, lcsc='C915913', mpn='XY308-2.54-4P')
 
-# ---------------- Valve drivers (ULN2803A, channels paired) ----------------
-# Replaces the four relays (SRD-12VDC + ULN2003). Each TCA9534 output drives TWO Darlingtons, inputs and
-# outputs tied on the board, so each valve has two channels in parallel. Pairing is in hardware, not
-# firmware, so no firmware bug can switch on one half of a pair and overload it. Why paired (D68): the
-# input-on voltage is specified only to 300 mA at 3.0 V and our drive is ~3.2 V from the TCA9534, and half
-# the current per channel lowers VCE(sat). The PACKAGE is the real limit (0.625 W, SOP-18): ~0.35 A per
-# valve, one valve at a time (D70).
-# COM (pin 10, the common cathode of the eight flyback diodes) goes to +12V: the SAME node as the valves'
-# V+ terminal pin, after the reverse-polarity diode. That makes the flyback loop local to the board
-# (coil -> O -> diode -> COM -> +12V -> terminal V+ -> coil) and it never needs current back through D1 (D69).
+# ---------------- Valve drivers (one AO3400A per valve, eight valves) ----------------
+# Replaces the four relays (D73). Each valve: low-side logic-level N-MOSFET driven straight from a TCA9534
+# pin, 100k gate pull-down, SS34 Schottky across the valve, LED across the valve. All Basic parts.
+# Why not the ULN2803A tried first (D67-D70): its SOP-18 package limits a valve to ~0.35 A and drops ~1.1 V;
+# the AO3400A drops ~0.04 V at 1 A (48 mOhm max at VGS 2.5 V, and the TCA9534 gives ~3.2 V).
+# The pull-down holds each valve off while the TCA9534 pins are inputs (reset, boot, before firmware runs):
+# the ULN's internal resistors did that job before; a bare MOSFET gate would float.
+# Flyback diode cathode on +12V, the SAME node as the valve's V+ terminal pin, after D1: the turn-off loop
+# (coil -> diode -> +12V -> V+ pin -> coil) stays on the board and never needs current back through D1 (D69).
 B = 'rly'
-part('U', 'Transistor_Array:ULN2803A', 'ULN2803A', 'Package_SO:SOIC-18W_7.5x11.6mm_P1.27mm',
-     {'1': 'REL1', '2': 'REL1', '3': 'REL2', '4': 'REL2', '5': 'REL3', '6': 'REL3', '7': 'REL4', '8': 'REL4',
-      '9': 'GND', '10': '+12V', '18': 'VALVE1', '17': 'VALVE1', '16': 'VALVE2', '15': 'VALVE2',
-      '14': 'VALVE3', '13': 'VALVE3', '12': 'VALVE4', '11': 'VALVE4'},
-     B, lcsc='C33924', mpn='ULN2803G-S18-R')
-for i in range(1, 5):
+for i in range(1, 9):   # 8 valves, one per TCA9534 pin (D75); any of 5-8 can be left unfitted
+    NFET(f'REL{i}', 'GND', f'VALVE{i}', B, typ='AO3400A')
+    R('100k', f'REL{i}', 'GND', B, note='valve off at reset')
+    SCH(f'VALVE{i}', '+12V', B)
     R('4.7k', '+12V', f'LED_V{i}', B); LED('RED', f'LED_V{i}', f'VALVE{i}', B)
     part('J', 'Connector:Screw_Terminal_01x02', f'Valve {i}', TB508.format(n=2),
          {'1': '+12V', '2': f'VALVE{i}'}, B, lcsc='C474952', mpn='KF128-5.08-2P')
-# Local bulk on +12V at the driver: valve inrush and the flyback loop are close to the terminals, not the buck
+# Local bulk on +12V at the valve terminals: valve inrush and the flyback loops are here, not at the buck
 C('10uF 25V', '+12V', 'GND', B, fp=C12, lcsc='C13585')

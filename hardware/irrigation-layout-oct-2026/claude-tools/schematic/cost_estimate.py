@@ -94,9 +94,10 @@ NOTES = """Notes:
     layout); re-quote from the new gerbers then.
   * Shipping not included: DHL to Australia quoted A$30.47 (10) / A$70.86 (100) for bare boards only;
     assembled boards weigh more. Tax and import duty not included.
-  * Prices fetched live from JLCPCB on 20 Nov 2026. For comparison, the relay design (main branch) at the
-    SAME prices is $220.34 / 10 ($22.03 each) and $1262.86 / 100 ($12.63 each): the ULN2803A version saves
-    $2.23 per board at 10 and $1.39 at 100, before any saving from a smaller board (DECISIONS D71).
+  * Prices fetched live from JLCPCB on 21 Nov 2026. EIGHT valve channels, all fitted. For comparison at the
+    SAME prices: the relay design (main branch, 4 relays) is $22.04 / $12.63 per board, and this design with
+    4 valve channels was $19.69 / $11.29. Each valve channel adds ~$0.29 at 10 and ~$0.21 at 100; leaving
+    channels 5-8 unfitted saves that much each, nothing else (DECISIONS D75).
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).

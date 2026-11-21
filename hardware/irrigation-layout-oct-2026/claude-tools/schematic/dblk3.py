@@ -99,6 +99,6 @@ def ports(x, y):
             put_pin(j, '1', at(n, 10.16))
             S.wire(n, pin(j, '1')); pwr_pin(j, '2', 'GND', 2.54, 2.54)
         S.note("Pull-ups are on +3V3_SW, so nothing back-powers sensors when the rail is off.\n"
-               "Firmware must switch +3V3_SW on before ANY I2C traffic, including relay changes:\n"
+               "Firmware must switch +3V3_SW on before ANY I2C traffic, including valve changes:\n"
                "the TCA9534 (on always-on 3V3) holds its outputs meanwhile (D20). OLED shares the bus.",
                x - 15.24, y + 71.12, 1.0)

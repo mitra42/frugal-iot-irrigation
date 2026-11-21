@@ -8,31 +8,32 @@ Columns (part table):
   $@N     buy@N x unit price at that quantity's price tier.
 
 Refs                       Value                  LCSC       Type    /brd buy@10    $@10 buy@100   $@100
-C1,C4,C5,C10,C13,C14,C18,C 100nF                  C14663     Basic      9    105    0.58     915    5.03
+C1,C4,C5,C10,C13,C14,C18,C 100nF                  C14663     Basic      9    105    0.59     915    5.12
 C2,C3,C22                  10uF 25V               C13585     Basic      3     34    4.16     304   26.75
 C6,C7                      22uF                   C12891     Basic      2     24    2.46     204   16.85
 C8,C9,C11,C12,C16,C17      10uF                   C19702     Basic      6     70    1.17     610    7.20
 C15,C19                    1uF                    C15849     Basic      2     30    0.28     210    1.93
-D1,D2,D4,D7                SS34                   C8678      Basic      4     48    1.65     408   11.14
+D1,D2,D4,D7,D10,D12,D14,D1 SS34                   C8678      Basic     12    128    4.39    1208   29.48
 D3                         SMAJ15A                C19077535  PrefExt    1     14    0.52     104    3.88
-D5,D10-D13                 KT-0603R               C2286      Basic      5     60    0.46     510    3.88
+D5,D11,D13,D15,D17,D19,D21 KT-0603R               C2286      Basic      9    100    0.76     910    6.92
 D6,D8                      KT-0805G               C2297      Basic      2     30    0.49     210    3.44
 D9                         PSM712-LF-T7           C32677     Basic      1     11    3.72     101   26.94
 J1                         TYPE-C-31-M-12         C165948    Ext        1     10    1.86     100   14.73
-J2,J12,J13,J14,J15         KF128-5.08-2P          C474952    Ext        5     50    7.52     500   65.05
+J2,J11,J12,J13,J14,J15,J16 KF128-5.08-2P          C474952    Ext        9     90   13.54     900   97.74
 J4                         S2B-PH-K-S             C157932    Ext        1     10    1.72     100   13.80
 J6,J7                      XY308-2.54-2P          C557685    Ext        2     20    4.95     200   34.44
-J8,J11                     XY308-2.54-4P          C915913    Ext        2     20    7.77     200   57.46
+J8,J10                     XY308-2.54-4P          C915913    Ext        2     20    7.77     200   57.46
 J9                         PZ254V-11-04P          C492403    Ext        1     11    0.31     101    2.84
 L1                         SWPA5040S4R7NT         C305174    Ext        1     15    1.12     105    6.39
 Q1                         FS8205A                C908265    Ext        1     14    1.00     104    6.06
 Q2,Q3,Q5                   AO3401A                C15127     Basic      3     34    2.78     304   16.93
 Q4,Q6,Q7                   2N7002                 C8545      Basic      3     38    0.59     308    4.80
+Q8-Q15                     AO3400A                C20917     Basic      8     84    5.28     804   38.11
 R1,R2                      5.1k                   C23186     Basic      2     30    0.04     210    0.32
 R3,R4                      0R                     C21189     Basic      2     30    0.06     210    0.44
 R7                         560k                   C23203     PrefExt    1     20    0.03     110    0.17
-R8,R16,R19-R21             100k                   C25803     Basic      5     60    0.17     510    1.48
-R9,R10,R32,R33,R39-R42     4.7k                   C23162     Basic      8     90    0.25     810    2.27
+R8,R16,R19-R21,R39,R41,R43 100k                   C25803     Basic     13    140    0.41    1310    3.01
+R9,R10,R32,R33,R40,R42,R44 4.7k                   C23162     Basic     12    130    0.36    1210    2.66
 R12,R13,R15,R26            1k                     C21190     Basic      4     50    0.08     410    0.66
 R14                        100R                   C22775     Basic      1     20    0.04     110    0.20
 R17,R18                    1M                     C22935     Basic      2     30    0.05     210    0.38
@@ -48,32 +49,31 @@ U5                         AP2112K-3.3            C51118     Ext        1     10
 U6                         ESP32-C6-MINI-1U-H4    C20627095  Ext        1     10   37.39     100  325.95
 U7                         TCA9534PWR             C783615    Ext        1     10    7.59     100   58.93
 U8                         SP3485EN-L/TR          C8963      Basic      1     10    2.34     100   15.14
-U9                         ULN2803G-S18-R         C33924     Ext        1     10    3.14     100   25.22
 
-Per board: 317 SMT joints, 28 through-hole joints, 41 part numbers (15 Extended with fee).
+Per board: 371 SMT joints, 36 through-hole joints, 41 part numbers (14 Extended with fee).
 
                                              10 Economic 100 Economic, panelised
 Setup + stencil + confirm                         $10.16                  $18.37
-SMT joints                                         $5.07                  $50.72
-Through-hole joints (manual)                       $8.17                  $49.50
-Feeder loading                                    $46.05                  $46.05
+SMT joints                                         $5.94                  $59.36
+Through-hole joints (manual)                       $9.48                  $62.62
+Feeder loading                                    $42.98                  $42.98
 X-ray (module)                                    $16.40                  $49.00
 Fixture + packing                                  $0.00                   $0.00
-Components                                       $107.10                 $840.01
+Components                                       $118.67                 $908.99
 Bare PCB (JLCPCB quote 15 Oct 2026)                   $5.00                  $69.90
-TOTAL (excl. shipping)                           $197.96                $1123.55
-Per board                                         $19.80                  $11.24
+TOTAL (excl. shipping)                           $208.63                $1211.22
+Per board                                         $20.86                  $12.11
 
 Same, per board:
 Setup + stencil + confirm                          $1.02                   $0.18
-SMT joints                                         $0.51                   $0.51
-Through-hole joints (manual)                       $0.82                   $0.49
-Feeder loading                                     $4.60                   $0.46
+SMT joints                                         $0.59                   $0.59
+Through-hole joints (manual)                       $0.95                   $0.63
+Feeder loading                                     $4.30                   $0.43
 X-ray (module)                                     $1.64                   $0.49
 Fixture + packing                                  $0.00                   $0.00
-Components                                        $10.71                   $8.40
+Components                                        $11.87                   $9.09
 Bare PCB (JLCPCB quote 15 Oct 2026)                   $0.50                   $0.70
-Per board                                         $19.80                  $11.24
+Per board                                         $20.86                  $12.11
 
 Notes:
   * Bare PCB from JLCPCB's instant quote for the real gerbers (15 Oct 2026): A$7.18 / 10, A$100.31 / 100,
@@ -84,11 +84,12 @@ Notes:
     layout); re-quote from the new gerbers then.
   * Shipping not included: DHL to Australia quoted A$30.47 (10) / A$70.86 (100) for bare boards only;
     assembled boards weigh more. Tax and import duty not included.
-  * Prices fetched live from JLCPCB on 20 Nov 2026. For comparison, the relay design (main branch) at the
-    SAME prices is $220.34 / 10 ($22.03 each) and $1262.86 / 100 ($12.63 each): the ULN2803A version saves
-    $2.23 per board at 10 and $1.39 at 100, before any saving from a smaller board (DECISIONS D71).
+  * Prices fetched live from JLCPCB on 21 Nov 2026. EIGHT valve channels, all fitted. For comparison at the
+    SAME prices: the relay design (main branch, 4 relays) is $22.04 / $12.63 per board, and this design with
+    4 valve channels was $19.69 / $11.29. Each valve channel adds ~$0.29 at 10 and ~$0.21 at 100; leaving
+    channels 5-8 unfitted saves that much each, nothing else (DECISIONS D75).
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).
 
-Extended (fee-bearing on Economic): C165948 C474952 C157932 C557685 C915913 C492403 C305174 C908265 C7519 C2071056 C351410 C51118 C20627095 C783615 C33924
+Extended (fee-bearing on Economic): C165948 C474952 C157932 C557685 C915913 C492403 C305174 C908265 C7519 C2071056 C351410 C51118 C20627095 C783615
