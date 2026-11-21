@@ -1,13 +1,17 @@
-# Frugal-IoT Irrigation V0.1
+# Frugal-IoT Irrigation V0.1 — ULN2803A variant (branch `uln2803`)
 
-An ESP32 I/O board for irrigation and similar field control: four 12 V relays, RS485 (Modbus), I2C sensors,
+> **This branch replaces the four relays with a ULN2803A driving four 12 V DC solenoid valves directly**
+> (DECISIONS D67–D72). Phase 1 — schematic, BOM and cost — is done. **The PCB, PCB-LAYOUT.pdf and
+> `fabrication/` are still the relay board** until Phase 2 re-lays it out; do not order from them.
+
+An ESP32 I/O board for irrigation and similar field control: four 12 V DC valve outputs, RS485 (Modbus), I2C sensors,
 two spare GPIOs, and power from 12 V, USB or a single LiPo cell. Designed Oct 2026 for assembly by JLCPCB.
 This folder is for review: comments and suggested changes welcome — see "Points for reviewers" below.
 
 ## The board
 
 - 100 × 80 mm, 2 layers, 1.6 mm FR-4, 4 × M3 corner holes.
-- Relays and their screw terminals along one long edge; field connectors (12 V in, RS485, I2C, GPIOs, OLED)
+- (Relay layout — Phase 2 will change this.) Relays and their screw terminals along one long edge; field connectors (12 V in, RS485, I2C, GPIOs, OLED)
   along the other; USB-C on the right short edge, LiPo connector on the left.
 - Surface-mount parts on the top side, assembled by JLCPCB; relays and terminals are through-hole
   (JLCPCB hand-solders them, or you can).
@@ -25,7 +29,7 @@ This folder is for review: comments and suggested changes welcome — see "Point
 - Two switched rails turned on together by one GPIO: **3V3_SW** (sensors, I2C, RS485) and **5V_SW** (RS485
   sensor supply). Both off at reset. 5V_SW only exists when 12 V or USB is present, not on battery alone.
 - Monitoring: the 12 V input and the cell voltage are each read on an ADC pin.
-- The relay coils run from 12 V, so **relays work only when 12 V is connected**.
+- The valves run from 12 V, so **valves work only when 12 V is connected**.
 
 ## Processor
 
@@ -38,9 +42,11 @@ This folder is for review: comments and suggested changes welcome — see "Point
 
 ## Outputs and interfaces
 
-- **4 relays** (SRD-12VDC-SL-C), contacts NO/COM/NC on 5.08 mm screw terminals, isolated from the board rails.
-  Rated for 12 V DC loads up to about 4–5 A per channel with this copper. Driven through an I2C I/O expander
-  (TCA9534) and a ULN2003, so the relays stay off through reset and boot. A red LED per relay shows it is on.
+- **4 valve outputs** for 12 V DC solenoid valves, each a 2-way 5.08 mm terminal: V+ (+12V) and OUT (switched
+  to ground). One ULN2803A, two Darlington channels in parallel per valve, its flyback diodes returned to the
+  same +12V as the V+ pins (D69). **Up to ~0.35 A per valve, one valve on at a time** — the package's
+  dissipation sets this (D70). Not for pumps, latching valves or 24 V AC valves. Driven through an I2C I/O
+  expander (TCA9534), so the valves stay off through reset and boot. A red LED per valve shows it is on.
 - **RS485** (Modbus): 3.3 V transceiver, not isolated, transmit/receive switched automatically from the TX
   line; bias resistors, 120 Ω termination on a solder jumper, surge protection. Terminal: 5V_SW, A, B, GND.
 - **I2C**: 4-way 2.54 mm terminal (3V3_SW, SDA, SCL, GND) plus a 4-pin OLED header (GND, 3V3_SW, SCL, SDA).
@@ -51,7 +57,7 @@ This folder is for review: comments and suggested changes welcome — see "Point
 
 - Turn on RAIL_EN before any I2C traffic (relay changes included) or RS485; the expander itself is always
   powered and keeps the relays as set while the rail is off.
-- Relay outputs: TCA9534 P0–P3 high = relay on. P4–P7 go to an unfitted header — drive them low if unused.
+- Valve outputs: TCA9534 P0–P3 high = valve on (unchanged from the relay board, so no firmware change). P4–P7 go to an unfitted header — drive them low if unused.
 - GPIO map (module pad → use) is in DECISIONS.md, D18.
 
 ## Points for reviewers
@@ -63,15 +69,17 @@ Items that are deliberately "proposed" rather than final — opinions especially
 2. RS485 terminal supplies 5V_SW — should it be 12 V for your sensors? (D22)
 3. Cell thermistor (TEMP) disabled by default (D27); charge current 250/500 mA (D12).
 4. LiPo connector: pin 1 = −, pin 2 = + (D47). JST-PH polarity is not standard — check your cells.
-5. Relay contact copper ~4–5 A per channel (D50).
+5. **ULN2803A current limit (D70)**: ~0.35 A per valve. Is that enough for the valves you use? If not, the
+   recommended alternative is four logic-level MOSFETs + diodes (same cost, amps not hundreds of mA).
 6. The 5.08 mm terminals use the Phoenix MKDS footprint for KF128 parts of the same pitch (D42).
 7. Small bulk capacitance on 3V3_SW to limit inrush (D33).
 8. Before ordering: check part rotations in JLCPCB's assembly preview (see fabrication/README.md).
 
 ## Cost (JLCPCB, Oct 2026)
 
-About **$22 per board for 10**, **$13 per board for 100**, assembled, before shipping. Breakdown in
-COST-ESTIMATE.txt; the ESP32 module is the largest single item.
+About **$19.80 per board for 10**, **$11.24 per board for 100**, assembled, before shipping (JLCPCB prices of
+20 Nov 2026; the relay design is $22.03 / $12.63 at the same prices). Still priced on the 100 × 80 mm board.
+Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 
 ## What's in this folder
 

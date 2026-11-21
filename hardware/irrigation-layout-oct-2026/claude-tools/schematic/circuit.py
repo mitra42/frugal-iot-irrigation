@@ -161,16 +161,25 @@ part('D', 'Diode:SM712_SOT23', 'PSM712', SOT23, {'1': 'RS485_A', '2': 'RS485_B',
 part('J', 'Connector:Screw_Terminal_01x04', 'RS485', TB254.format(n=4),
      {'1': '+5V_SW', '2': 'RS485_A', '3': 'RS485_B', '4': 'GND'}, B, lcsc='C915913', mpn='XY308-2.54-4P')
 
-# ---------------- Relays ----------------
+# ---------------- Valve drivers (ULN2803A, channels paired) ----------------
+# Replaces the four relays (SRD-12VDC + ULN2003). Each TCA9534 output drives TWO Darlingtons, inputs and
+# outputs tied on the board, so each valve has two channels in parallel. Pairing is in hardware, not
+# firmware, so no firmware bug can switch on one half of a pair and overload it. Why paired (D68): the
+# input-on voltage is specified only to 300 mA at 3.0 V and our drive is ~3.2 V from the TCA9534, and half
+# the current per channel lowers VCE(sat). The PACKAGE is the real limit (0.625 W, SOP-18): ~0.35 A per
+# valve, one valve at a time (D70).
+# COM (pin 10, the common cathode of the eight flyback diodes) goes to +12V: the SAME node as the valves'
+# V+ terminal pin, after the reverse-polarity diode. That makes the flyback loop local to the board
+# (coil -> O -> diode -> COM -> +12V -> terminal V+ -> coil) and it never needs current back through D1 (D69).
 B = 'rly'
-part('U', 'Transistor_Array:ULN2003A', 'ULN2003A', 'Package_SO:SOIC-16_3.9x9.9mm_P1.27mm',
-     {'1': 'REL1', '2': 'REL2', '3': 'REL3', '4': 'REL4', '5': 'GND', '6': 'GND', '7': 'GND', '8': 'GND',
-      '9': '+12V', '16': 'COIL1', '15': 'COIL2', '14': 'COIL3', '13': 'COIL4', '12': 'NC', '11': 'NC', '10': 'NC'},
-     B, lcsc='C7512', mpn='ULN2003ADR')
+part('U', 'Transistor_Array:ULN2803A', 'ULN2803A', 'Package_SO:SOIC-18W_7.5x11.6mm_P1.27mm',
+     {'1': 'REL1', '2': 'REL1', '3': 'REL2', '4': 'REL2', '5': 'REL3', '6': 'REL3', '7': 'REL4', '8': 'REL4',
+      '9': 'GND', '10': '+12V', '18': 'VALVE1', '17': 'VALVE1', '16': 'VALVE2', '15': 'VALVE2',
+      '14': 'VALVE3', '13': 'VALVE3', '12': 'VALVE4', '11': 'VALVE4'},
+     B, lcsc='C33924', mpn='ULN2803G-S18-R')
 for i in range(1, 5):
-    b = 'rly'
-    part('K', 'Relay:SANYOU_SRD_Form_C', 'SRD-12VDC-SL-C', 'Relay_THT:Relay_SPDT_SANYOU_SRD_Series_Form_C',
-         {'2': '+12V', '5': f'COIL{i}', '1': f'K{i}_COM', '3': f'K{i}_NO', '4': f'K{i}_NC'}, b, lcsc='C30431')
-    R('4.7k', '+12V', f'LED_K{i}', b); LED('RED', f'LED_K{i}', f'COIL{i}', b)
-    part('J', 'Connector:Screw_Terminal_01x03', f'Relay {i}', TB508.format(n=3),
-         {'1': f'K{i}_NO', '2': f'K{i}_COM', '3': f'K{i}_NC'}, b, lcsc='C474953', mpn='KF128-5.08-3P')
+    R('4.7k', '+12V', f'LED_V{i}', B); LED('RED', f'LED_V{i}', f'VALVE{i}', B)
+    part('J', 'Connector:Screw_Terminal_01x02', f'Valve {i}', TB508.format(n=2),
+         {'1': '+12V', '2': f'VALVE{i}'}, B, lcsc='C474952', mpn='KF128-5.08-2P')
+# Local bulk on +12V at the driver: valve inrush and the flyback loop are close to the terminals, not the buck
+C('10uF 25V', '+12V', 'GND', B, fp=C12, lcsc='C13585')

@@ -90,8 +90,13 @@ NOTES = """Notes:
     converted at JLCPCB's displayed 1.435 AUD/USD. The 10-board price is JLCPCB's 'Special Offer' prototype
     price, so per board it is cheaper ($0.50) than at 100 ($0.70: engineering A$11.48 + film A$3.16 +
     board A$85.67). Every other line falls per board at 100.
+  * Bare PCB is STILL the 100 x 80 mm relay board's quote. Without relays the board can shrink (Phase 2,
+    layout); re-quote from the new gerbers then.
   * Shipping not included: DHL to Australia quoted A$30.47 (10) / A$70.86 (100) for bare boards only;
-    assembled boards with relays and terminals weigh more. Tax and import duty not included.
+    assembled boards weigh more. Tax and import duty not included.
+  * Prices fetched live from JLCPCB on 20 Nov 2026. For comparison, the relay design (main branch) at the
+    SAME prices is $220.34 / 10 ($22.03 each) and $1262.86 / 100 ($12.63 each): the ULN2803A version saves
+    $2.23 per board at 10 and $1.39 at 100, before any saving from a smaller board (DECISIONS D71).
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).
