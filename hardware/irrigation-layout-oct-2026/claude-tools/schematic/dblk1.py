@@ -80,7 +80,9 @@ def v12(x, y):
         a = at(p1, 7.62)
         S.wire(p1, at(p1, 2.54), a)
         dbtag('12V_IN', at(p1, 2.54), up=True, length=5.08)
-        k = diode_r('D2', a)
+        f = series('F1', a)
+        a2 = at(f, 5.08); S.wire(f, a2)
+        k = diode_r('D2', a2)
         n = at(k, 5.08)
         S.wire(k, n)
         drop('+12V', n, 2.54)
@@ -131,7 +133,8 @@ def v12(x, y):
         e = at(kk, 5.08); S.wire(kk, e); drop('+5V', e, 2.54)
         # ERC: 12 V and GND enter the board at J2
         S.wire(n, at(n, 0, 5.08)); S.power('PWR_FLAG', n[0], n[1] + 5.08, rot=180)
-        S.note("D2 blocks reverse polarity; D3 (SMAJ15A) clamps surges. 15 V max input.\n"
+        S.note("F1 (3 A hold, 16 V) trips on a shorted cable (D77); D2 (SS54, 5 A) blocks reverse\n"
+               "polarity; D3 (SMAJ15A) clamps surges. 15 V max input.\n"
                "V12_SENSE = 12 V x 100k/660k: 2.27 V at 15 V, inside the ADC range (D23).\n"
                "AP63205: fixed 5 V out. L1/C6/C7 to be checked against the datasheet (D25).",
                x - 5.08, y + 30.48, 1.0)

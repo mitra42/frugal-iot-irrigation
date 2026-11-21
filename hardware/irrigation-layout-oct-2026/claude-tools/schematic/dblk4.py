@@ -107,8 +107,8 @@ def relays(x, y):
         S.note("TCA9534 pins start as inputs; the 100k pull-downs then hold every valve off until\n"
                "firmware drives them. Address 0x20 (A0-A2 low). P0-P7 high = valve 1-8 on.\n"
                "Valves 5-8 may be left unfitted (FET, pull-down, diode, LED, resistor, terminal) (D75).\n"
-               "Valves: 12 V DC, low-side switched, up to ~2 A each (D73); total from 12 V IN is\n"
-               "limited by D1 (SS34, 3 A). Not for latching valves or 24 V AC valves.\n"
-               "FLYBACK (D69): each diode returns to the same +12V as its valve's V+ pin, after D1.\n"
+               "Valves: 12 V DC, low-side switched, up to ~2 A each (D73); total from 12 V IN ~3 A,\n"
+               "set by F1 (D77). Not for latching valves or 24 V AC valves.\n"
+               "FLYBACK (D69): each diode returns to the same +12V as its valve's V+ pin, after D2.\n"
                "A valve wired to any other supply loses its clamp.",
                x - 5.08, y + 124.46, 1.0)

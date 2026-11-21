@@ -20,7 +20,7 @@ This folder is for review: comments and suggested changes welcome — see "Point
 
 - Powered from **12 V** (screw terminal, up to 15 V), **5 V USB-C**, or a **local single LiPo cell** (optional,
   JST-PH, 18650 at most).
-- 12 V input: reverse-polarity protection (Schottky), 15 V TVS, then a 5 V buck (AP63205). USB 5 V and the
+- 12 V input: 3 A resettable fuse, reverse-polarity protection (5 A Schottky), 15 V TVS, then a 5 V buck (AP63205). USB 5 V and the
   buck output are diode-ORed onto the 5 V rail, so either or both can be connected.
 - The 5 V rail charges the cell (TP4056; 250 mA, or 500 mA with a solder jumper). The cell has its own
   protection (DW01A + FS8205A: over-charge, over-discharge, over-current/short).
@@ -45,7 +45,7 @@ This folder is for review: comments and suggested changes welcome — see "Point
 - **8 valve outputs** for 12 V DC solenoid valves (channels 5–8 can be left unfitted to save ~$0.21–0.29 each), each a 2-way 5.08 mm terminal: V+ (+12V) and OUT (switched
   to ground). One AO3400A MOSFET per valve with a 100k gate pull-down and an SS34 flyback diode returned to
   the same +12V as the V+ pins (D69, D73). **Up to ~2 A per valve**, any number at once; total from 12 V IN
-  limited to ~3 A by the input diode. Pumps can be driven too. Not for latching (pulse) valves or 24 V AC
+  limited to ~3 A by the input fuse F1 (D77). Fit an inline fuse at the battery too. Pumps can be driven too. Not for latching (pulse) valves or 24 V AC
   valves. Driven through an I2C I/O expander (TCA9534); the pull-downs keep the valves off through reset
   and boot. A red LED per valve shows it is on.
 - **RS485** (Modbus): 3.3 V transceiver, not isolated, transmit/receive switched automatically from the TX
@@ -70,7 +70,7 @@ Items that are deliberately "proposed" rather than final — opinions especially
 2. RS485 terminal supplies 5V_SW — should it be 12 V for your sensors? (D22)
 3. Cell thermistor (TEMP) disabled by default (D27); charge current 250/500 mA (D12).
 4. LiPo connector: pin 1 = −, pin 2 = + (D47). JST-PH polarity is not standard — check your cells.
-5. Valve outputs (D73): ~2 A per valve, ~3 A total from 12 V IN (input diode D1). Enough for your valves
+5. Valve outputs (D73): ~2 A per valve, ~3 A total from 12 V IN, where F1, a 3 A resettable fuse, trips on a short (D77). Enough for your valves
    and any pump?
 6. The 5.08 mm terminals use the Phoenix MKDS footprint for KF128 parts of the same pitch (D42).
 7. Small bulk capacitance on 3V3_SW to limit inrush (D33).
@@ -78,9 +78,9 @@ Items that are deliberately "proposed" rather than final — opinions especially
 
 ## Cost (JLCPCB, Oct 2026)
 
-About **$20.86 per board for 10**, **$12.11 per board for 100**, assembled, before shipping, with all eight
-valve channels fitted (JLCPCB prices of 21 Nov 2026; the four-relay design is $22.04 / $12.63 at the same prices).
-Still priced on the 100 × 80 mm board.
+About **$21.44 per board for 10**, **$12.32 per board for 100**, assembled, before shipping, with all eight
+valve channels fitted and the input fuse (JLCPCB prices of 21 Nov 2026; the four-relay design is $22.04 / $12.63
+at the same prices). Still priced on the 100 × 80 mm board.
 Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 
 ## What's in this folder
@@ -92,7 +92,7 @@ Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 | `PCB-LAYOUT.pdf` | 3D views and both copper layers |
 | `BOM.csv` | Bill of materials with LCSC (JLCPCB) part numbers |
 | `COST-ESTIMATE.txt` | JLCPCB cost for 10 and 100 boards |
-| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D64) |
+| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D77) |
 | `esp32_io_board/` | KiCad 10 project (schematic, PCB, project libraries) |
 | `fabrication/` | Files to order from JLCPCB — see its README |
 | `firmware/` | PlatformIO env for frugal-iot-irrigation + board variant (pins_arduino.h) |

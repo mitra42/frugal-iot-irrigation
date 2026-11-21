@@ -13,11 +13,13 @@ C2,C3,C22                  10uF 25V               C13585     Basic      3     34
 C6,C7                      22uF                   C12891     Basic      2     24    2.46     204   16.85
 C8,C9,C11,C12,C16,C17      10uF                   C19702     Basic      6     70    1.17     610    7.20
 C15,C19                    1uF                    C15849     Basic      2     30    0.28     210    1.93
-D1,D2,D4,D7,D10,D12,D14,D1 SS34                   C8678      Basic     12    128    4.39    1208   29.48
+D1,D4,D7,D10,D12,D14,D16,D SS34                   C8678      Basic     11    118    4.05    1108   27.04
+D2                         SS54                   C22452     Basic      1     14    0.62     104    3.74
 D3                         SMAJ15A                C19077535  PrefExt    1     14    0.52     104    3.88
 D5,D11,D13,D15,D17,D19,D21 KT-0603R               C2286      Basic      9    100    0.76     910    6.92
 D6,D8                      KT-0805G               C2297      Basic      2     30    0.49     210    3.44
 D9                         PSM712-LF-T7           C32677     Basic      1     11    3.72     101   26.94
+F1                         SMD1812P300TF/16       C702820    Ext        1     12    2.37     102   15.61
 J1                         TYPE-C-31-M-12         C165948    Ext        1     10    1.86     100   14.73
 J2,J11,J12,J13,J14,J15,J16 KF128-5.08-2P          C474952    Ext        9     90   13.54     900   97.74
 J4                         S2B-PH-K-S             C157932    Ext        1     10    1.72     100   13.80
@@ -50,30 +52,30 @@ U6                         ESP32-C6-MINI-1U-H4    C20627095  Ext        1     10
 U7                         TCA9534PWR             C783615    Ext        1     10    7.59     100   58.93
 U8                         SP3485EN-L/TR          C8963      Basic      1     10    2.34     100   15.14
 
-Per board: 371 SMT joints, 36 through-hole joints, 41 part numbers (14 Extended with fee).
+Per board: 373 SMT joints, 36 through-hole joints, 43 part numbers (15 Extended with fee).
 
                                              10 Economic 100 Economic, panelised
 Setup + stencil + confirm                         $10.16                  $18.37
-SMT joints                                         $5.94                  $59.36
+SMT joints                                         $5.97                  $59.68
 Through-hole joints (manual)                       $9.48                  $62.62
-Feeder loading                                    $42.98                  $42.98
+Feeder loading                                    $46.05                  $46.05
 X-ray (module)                                    $16.40                  $49.00
 Fixture + packing                                  $0.00                   $0.00
-Components                                       $118.67                 $908.99
+Components                                       $121.31                 $925.90
 Bare PCB (JLCPCB quote 15 Oct 2026)                   $5.00                  $69.90
-TOTAL (excl. shipping)                           $208.63                $1211.22
-Per board                                         $20.86                  $12.11
+TOTAL (excl. shipping)                           $214.37                $1231.52
+Per board                                         $21.44                  $12.32
 
 Same, per board:
 Setup + stencil + confirm                          $1.02                   $0.18
-SMT joints                                         $0.59                   $0.59
+SMT joints                                         $0.60                   $0.60
 Through-hole joints (manual)                       $0.95                   $0.63
-Feeder loading                                     $4.30                   $0.43
+Feeder loading                                     $4.60                   $0.46
 X-ray (module)                                     $1.64                   $0.49
 Fixture + packing                                  $0.00                   $0.00
-Components                                        $11.87                   $9.09
+Components                                        $12.13                   $9.26
 Bare PCB (JLCPCB quote 15 Oct 2026)                   $0.50                   $0.70
-Per board                                         $20.86                  $12.11
+Per board                                         $21.44                  $12.32
 
 Notes:
   * Bare PCB from JLCPCB's instant quote for the real gerbers (15 Oct 2026): A$7.18 / 10, A$100.31 / 100,
@@ -88,8 +90,9 @@ Notes:
     SAME prices: the relay design (main branch, 4 relays) is $22.04 / $12.63 per board, and this design with
     4 valve channels was $19.69 / $11.29. Each valve channel adds ~$0.29 at 10 and ~$0.21 at 100; leaving
     channels 5-8 unfitted saves that much each, nothing else (DECISIONS D75).
+  * Input fuse F1 + SS54 for D2 add $0.58 / board at 10 (mostly F1's $3.07 feeder fee) and $0.21 at 100 (D77).
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).
 
-Extended (fee-bearing on Economic): C165948 C474952 C157932 C557685 C915913 C492403 C305174 C908265 C7519 C2071056 C351410 C51118 C20627095 C783615
+Extended (fee-bearing on Economic): C702820 C165948 C474952 C157932 C557685 C915913 C492403 C305174 C908265 C7519 C2071056 C351410 C51118 C20627095 C783615

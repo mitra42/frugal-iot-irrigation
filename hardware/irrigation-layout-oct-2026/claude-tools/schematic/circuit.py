@@ -28,8 +28,9 @@ def C(v, a, b, blk, fp=C06, lcsc=None, dnp=False):
 def LED(col, anode, cathode, blk):  # both JLCPCB Basic: red KT-0603R, green KT-0805G (no Basic 0603 green)
     part('D', 'Device:LED', col, {'RED': LED06, 'GREEN': LED08}[col], {'2': anode, '1': cathode}, blk, rot=180,
          lcsc={'RED': 'C2286', 'GREEN': 'C2297'}[col], mpn={'RED': 'KT-0603R', 'GREEN': 'KT-0805G'}[col])
-def SCH(anode, cathode, blk):  # SS34 Schottky
-    part('D', 'Device:D_Schottky', 'SS34', SMA, {'2': anode, '1': cathode}, blk, lcsc='C8678', mpn='SS34', rot=180)
+def SCH(anode, cathode, blk, typ='SS34'):  # SMA Schottky: SS34 (3 A) or SS54 (5 A), both Basic
+    part('D', 'Device:D_Schottky', typ, SMA, {'2': anode, '1': cathode}, blk,
+         lcsc={'SS34': 'C8678', 'SS54': 'C22452'}[typ], mpn=typ, rot=180)
 def PFET(g, s, d, blk):
     part('Q', 'Transistor_FET:AO3401A', 'AO3401A', SOT23, {'1': g, '2': s, '3': d}, blk, lcsc='C15127')
 def NFET(g, s, d, blk, typ='2N7002'):
@@ -56,7 +57,12 @@ R('0R', 'USB_D_P', 'USB_C3_D_P', B, dnp=True, note='Fit for C3 module')
 # ---------------- 12 V input + buck ----------------
 B = 'v12'
 part('J', 'Connector:Screw_Terminal_01x02', '12V IN', TB508.format(n=2), {'1': '12V_IN', '2': 'GND'}, B, lcsc='C474952', mpn='KF128-5.08-2P')
-SCH('12V_IN', '+12V', B)
+# Resettable fuse, then reverse-polarity diode (D77). The fuse is for a shorted field cable fed from a battery,
+# not a current budget: 3 A hold, 5 A trip, ~4 s. It MUST be rated >= 16 V - most 1812 PTCs at JLCPCB are
+# 6-8 V and cannot reliably interrupt 12 V. Ahead of the TVS, so a TVS conducting for long trips it.
+part('F', 'Device:Polyfuse', '3A 16V', 'Fuse:Fuse_1812_4532Metric', {'1': '12V_IN', '2': '12V_FUSED'}, B,
+     lcsc='C702820', mpn='SMD1812P300TF/16')
+SCH('12V_FUSED', '+12V', B, typ='SS54')   # 5 A: all valve current passes through it (D77)
 part('D', 'Diode:SMAJ15A', 'SMAJ15A', SMA, {'1': '+12V', '2': 'GND'}, B, lcsc='C19077535', mpn='SMAJ15A')
 R('560k', '+12V', 'V12_SENSE', B); R('100k', 'V12_SENSE', 'GND', B); C('100nF', 'V12_SENSE', 'GND', B)
 part('U', 'Regulator_Switching:AP63205WU', 'AP63205WU', 'Package_TO_SOT_SMD:TSOT-23-6',
@@ -167,8 +173,8 @@ part('J', 'Connector:Screw_Terminal_01x04', 'RS485', TB254.format(n=4),
 # the AO3400A drops ~0.04 V at 1 A (48 mOhm max at VGS 2.5 V, and the TCA9534 gives ~3.2 V).
 # The pull-down holds each valve off while the TCA9534 pins are inputs (reset, boot, before firmware runs):
 # the ULN's internal resistors did that job before; a bare MOSFET gate would float.
-# Flyback diode cathode on +12V, the SAME node as the valve's V+ terminal pin, after D1: the turn-off loop
-# (coil -> diode -> +12V -> V+ pin -> coil) stays on the board and never needs current back through D1 (D69).
+# Flyback diode cathode on +12V, the SAME node as the valve's V+ terminal pin, after D2: the turn-off loop
+# (coil -> diode -> +12V -> V+ pin -> coil) stays on the board and never needs current back through D2 (D69).
 B = 'rly'
 for i in range(1, 9):   # 8 valves, one per TCA9534 pin (D75); any of 5-8 can be left unfitted
     NFET(f'REL{i}', 'GND', f'VALVE{i}', B, typ='AO3400A')
