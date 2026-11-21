@@ -27,7 +27,6 @@ J6,J7                      XY308-2.54-2P          C557685    Ext        2     20
 J8,J10                     XY308-2.54-4P          C915913    Ext        2     20    7.79     200   57.60
 J9                         PZ254V-11-04P          C492403    Ext        1     11    0.31     101    2.85
 L1                         SWPA5040S4R7NT         C305174    Ext        1     15    1.12     105    6.42
-Q1                         FS8205A                C908265    Ext        1     14    1.00     104    6.08
 Q2,Q3,Q5                   AO3401A                C15127     Basic      3     34    2.79     304   16.96
 Q4,Q6,Q7                   2N7002                 C8545      Basic      3     38    0.59     308    4.80
 Q8-Q15                     AO3400A                C20917     Basic      8     84    5.29     804   38.19
@@ -36,8 +35,7 @@ R3,R4                      0R                     C21189     Basic      2     30
 R7                         560k                   C23203     PrefExt    1     20    0.03     110    0.17
 R8,R16,R19-R21,R39,R41,R43 100k                   C25803     Basic     13    140    0.41    1310    3.01
 R9,R10,R32,R33,R40,R42,R44 4.7k                   C23162     Basic     12    130    0.36    1210    2.66
-R12,R13,R15,R26            1k                     C21190     Basic      4     50    0.08     410    0.66
-R14                        100R                   C22775     Basic      1     20    0.04     110    0.20
+R12,R13,R26                1k                     C21190     Basic      3     40    0.06     310    0.50
 R17,R18                    1M                     C22935     Basic      2     30    0.05     210    0.38
 R22-R25,R27,R34,R35        10k                    C25804     Basic      7     80    0.14     710    1.21
 R36,R37                    680R                   C23228     Basic      2     30    0.06     210    0.44
@@ -46,36 +44,36 @@ SW1,SW2,SW3                TS-1187A-B-A-B         C318884    Basic      3     38
 U1                         USBLC6-2SC6            C7519      Ext        1     12    1.87     102   12.16
 U2                         AP63205WU-7            C2071056   Ext        1     10    3.67     100   27.49
 U3                         TP4056                 C16581     PrefExt    1     10    1.83     100   14.48
-U4                         DW01A                  C351410    Ext        1     14    0.74     104    5.53
-U5                         AP2112K-3.3            C51118     Ext        1     10    1.67     100   12.88
+U4                         XB5353A                C80628     Ext        1     12    1.05     102    7.02
+U5                         RT9080-33GJ5           C841192    Ext        1     12    1.44     102    9.93
 U6                         ESP32-C6-MINI-1U-H4    C20627095  Ext        1     10   37.48     100  326.73
 U7                         TCA9534PWR             C783615    Ext        1     10    7.61     100   59.07
 U8                         SP3485EN-L/TR          C8963      Basic      1     10    2.34     100   15.17
 
-Per board: 373 SMT joints, 36 through-hole joints, 43 part numbers (15 Extended with fee).
+Per board: 362 SMT joints, 36 through-hole joints, 41 part numbers (14 Extended with fee).
 
                                              10 Economic 100 Economic, panelised
 Setup + stencil + confirm                         $10.16                  $18.37
-SMT joints                                         $5.97                  $59.68
+SMT joints                                         $5.79                  $57.92
 Through-hole joints (manual)                       $9.48                  $62.62
-Feeder loading                                    $46.05                  $46.05
+Feeder loading                                    $42.98                  $42.98
 X-ray (module)                                    $16.40                  $49.00
 Fixture + packing                                  $0.00                   $0.00
-Components                                       $121.59                 $927.97
+Components                                       $120.61                 $920.06
 Bare PCB (see notes)                               $5.00                  $56.47
-TOTAL (excl. shipping)                           $214.66                $1220.16
-Per board                                         $21.47                  $12.20
+TOTAL (excl. shipping)                           $210.43                $1207.42
+Per board                                         $21.04                  $12.07
 
 Same, per board:
 Setup + stencil + confirm                          $1.02                   $0.18
-SMT joints                                         $0.60                   $0.60
+SMT joints                                         $0.58                   $0.58
 Through-hole joints (manual)                       $0.95                   $0.63
-Feeder loading                                     $4.60                   $0.46
+Feeder loading                                     $4.30                   $0.43
 X-ray (module)                                     $1.64                   $0.49
 Fixture + packing                                  $0.00                   $0.00
-Components                                        $12.16                   $9.28
+Components                                        $12.06                   $9.20
 Bare PCB (see notes)                               $0.50                   $0.56
-Per board                                         $21.47                  $12.20
+Per board                                         $21.04                  $12.07
 
 Notes:
   * Bare PCB from JLCPCB's instant quote for the real gerbers (15 Oct 2026): A$7.18 / 10, A$100.31 / 100,
@@ -92,8 +90,11 @@ Notes:
     4 valve channels was $19.69 / $11.29. Each valve channel adds ~$0.29 at 10 and ~$0.21 at 100; leaving
     channels 5-8 unfitted saves that much each, nothing else (DECISIONS D75).
   * Input fuse F1 + SS54 for D2 add $0.58 / board at 10 (mostly F1's $3.07 feeder fee) and $0.21 at 100 (D77).
+  * Power parts as frugal-iot-hw-lora (D87-D89): XB5353A for DW01A + FS8205A + 2 resistors, RT9080 for the
+    AP2112K, nine test pads (no part, no cost). At the same prices: -$0.43 / board at 10 (one feeder fee fewer),
+    -$0.13 at 100.
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).
 
-Extended (fee-bearing on Economic): C702820 C165948 C474952 C157932 C557685 C915913 C492403 C305174 C908265 C7519 C2071056 C351410 C51118 C20627095 C783615
+Extended (fee-bearing on Economic): C702820 C165948 C474952 C157932 C557685 C915913 C492403 C305174 C7519 C2071056 C80628 C841192 C20627095 C783615

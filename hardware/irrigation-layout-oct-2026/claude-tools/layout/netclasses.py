@@ -23,7 +23,7 @@ d['net_settings'] = {
         [{"netclass": "Power", "pattern": n} for n in ['GND', '+12V', '/5V_BUCK', 'Net-(U2-SW)']] +
         # sub-1 A rails, 0.4 mm in the router (route/dsn_classes.py, D83)
         [{"netclass": "PowerFine", "pattern": n} for n in ['+3V3', '+3V3_SW', '+5V_SW', 'VBUS', '+5V', 'VBAT',
-                                                             '/CELL_NEG', 'Net-(Q1A-D)', 'Net-(D7-K)']] +
+                                                             '/CELL_NEG', 'VSYS']] +
         [{"netclass": "USB", "pattern": "/USB_*"}]}
 bd = d.setdefault('board', {}).setdefault('design_settings', {})
 bd.setdefault('rules', {}).update({"min_clearance": 0.15, "min_track_width": 0.15, "min_via_diameter": 0.5,

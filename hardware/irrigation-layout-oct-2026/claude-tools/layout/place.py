@@ -91,7 +91,7 @@ P['C5'] = (P['U2'][0] + 3.7, P['U2'][1] - 1.35, 0)    # courtyard just clear of 
 P['L1'] = (P['U2'][0] + 8.3, P['U2'][1] + 0.9, 0)     # and L1 just clear of C5
 P['U3'] = (15.0, 22.0, 0)             # TP4056, beside the LiPo connector
 P['U8'] = (16.0, 15.0, 0)             # SP3485, under J10 (RS485)
-P['U5'] = (40.0, 22.0, 0)             # AP2112 LDO, centre of the power block
+P['U5'] = (40.0, 22.0, 0)             # RT9080 LDO (D88), centre of the power block
 BLK = json.load(open('blocks.json'))
 MID_BOT = BAND_TOP - 1.0                      # middle blocks stop here; below is the gate-line channel and valves
 REGION = {   # x0, y0, x1, y1 -- a packed part's courtyard must lie inside its block's region
@@ -108,7 +108,7 @@ REGION = {   # x0, y0, x1, y1 -- a packed part's courtyard must lie inside its b
 # decoupling / tight-loop parts: pulled hard to a specific pad (cost x NEAR_W)
 NEAR = {'D3': ('D2', '1'), 'R7': ('C4', '1'),
         'C2': ('U2', '3'), 'C3': ('U2', '3'), 'C4': ('U2', '3'),
-        'C6': ('L1', '2'), 'C7': ('L1', '2'), 'C8': ('U3', '4'), 'C9': ('U3', '5'), 'C10': ('U4', '5'),
+        'C6': ('L1', '2'), 'C7': ('L1', '2'), 'C8': ('U3', '4'), 'C9': ('U3', '5'), 'C10': ('U4', '3'),
         'C11': ('U5', '1'), 'C12': ('U5', '5'), 'C13': ('U5', '5'), 'C17': ('U6', '3'), 'C18': ('U6', '3'),
         'C19': ('U6', '8'), 'C20': ('U7', '16'), 'C21': ('U8', '8'), 'U1': ('J1', 'A6')}
 NEAR_W = 6.0

@@ -10,7 +10,7 @@ Valve copper is 1–2 mm on 1 oz; ask for 2 oz only if the valves draw more than
 | `BOM_JLCPCB.csv` | PCB Assembly — BOM (columns: Comment, Designator, Footprint, LCSC Part #) |
 | `CPL_JLCPCB.csv` | PCB Assembly — CPL / pick-and-place (Designator, Mid X, Mid Y, Layer, Rotation) |
 
-138 placed parts, all with LCSC numbers; DNP parts (J3, J5, R5, R6, R11, R28–R31) and the three solder jumpers
+135 placed parts, all with LCSC numbers; the nine test pads TP1–TP9 are bare copper, not parts (D89); DNP parts (J3, J5, R5, R6, R11, R28–R31) and the three solder jumpers
 are excluded from both files. To leave valve channels 5–8 off (D75), delete their rows (Q12–Q15, R47–R54,
 D18–D25, J15–J18) from both files.
 
@@ -18,7 +18,9 @@ D18–D25, J15–J18) from both files.
 rotation of some packages (commonly SOT-23, SOIC/TSSOP, the USB-C, the SS34/SS54 diodes and the terminals); the preview shows
 each part on its footprint — fix any that are turned, or tick JLCPCB's "Confirm parts placement" option
 (about $0.45) so their engineer checks it. The ESP32 module (U6) uses project footprint
-irrigation:ESP32-C3-C6-MINI-1U; check its pin-1 dot matches pad 1.
+irrigation:ESP32-C3-C6-MINI-1U; check its pin-1 dot matches pad 1. **U4 (XB5353A, C80628)**: on the LoRa board,
+which was ordered with this part, JLCPCB's model needed 180° where its other SOT-23-5 needed −90°, so expect U4
+to need turning by a different amount from U5 (RT9080, TSOT-23-5).
 
 Assembly options to choose: Economic, top side only; through-hole parts (J2, J4, J6–J10, J11–J18) are
 hand-soldered by JLCPCB (manual-assembly fee) — or untick them and solder yourself (D43). The eight valve

@@ -29,12 +29,17 @@ routing — use them only for a full re-layout.
      renders the board to `out/look.png` (`preview.py` needs matplotlib).
   2. `preroute.sh` — build_pcb, net classes, `valve_route.py` (the 1–2 mm valve and +12V copper, D82),
      `prep_route.py` (GND fan-out, DSN), `copper_snap.py save`, `dsn_prep.py`, `route/dsn_classes.py`.
-  3. Routing, local: `FR=<dir with freerouting-2.1.0.jar and Route.class> route/loop_local.sh out/board_r.dsn r 8 25`
-     (Java 21+; compile `route/Route.java` against the jar). Rounds restart from the last result (`route/merge.py`).
+  3. Routing, local: `route/loop_local.sh out/board_r.dsn r 8 25` (needs `~/tools/freerouting/freerouting-2.1.0.jar`; `FR=<dir>` overrides; compiles `Route.java` itself)
+     (Java 21+). Rounds restart from the last result (`route/merge.py`).
   4. `real_unrouted.sh <x.ses>` — import, restore the fixed copper the .ses drops, DRC, list what is still open.
      Freerouting's own count is not reliable; use this. Leaves the imported board in place.
   5. `post_route.sh --no-import` — pours, stitching, island vias, stub removal, refdes placement, DRC. Then
      `addtext.py "Frugal-IoT Irrigation V0.2"`, `fab.sh`, `jlc_files.py`, `renders.sh`.
+- Changing a routed board without re-laying it out (power parts, D87–D90): `patch_power.py` (swap and remove
+  parts, place test pads, delete the copper that no longer fits) → `route_patch.sh prep` (snapshot the copper, DSN
+  without the pours via `nozone_dsn.py`) → `cd out && ../route/loop_local.sh board_r.dsn p 4 25` →
+  `route_patch.sh import out/p_N.ses` (import, restore the snapshot, pour, DRC). `gnd_via.py` adds a GND via to a
+  pad left in a cut-off pocket of pour; `islands2.py` finds those.
 - One-offs: `mkfp_module.py` (project footprint for the -1U module), `mkfp_kf128.py` (KF128 terminal footprint,
   D79), `netclasses.py` (net classes and rules into the .kicad_pro).
 

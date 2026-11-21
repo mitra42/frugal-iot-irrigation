@@ -104,6 +104,9 @@ NOTES = """Notes:
     4 valve channels was $19.69 / $11.29. Each valve channel adds ~$0.29 at 10 and ~$0.21 at 100; leaving
     channels 5-8 unfitted saves that much each, nothing else (DECISIONS D75).
   * Input fuse F1 + SS54 for D2 add $0.58 / board at 10 (mostly F1's $3.07 feeder fee) and $0.21 at 100 (D77).
+  * Power parts as frugal-iot-hw-lora (D87-D89): XB5353A for DW01A + FS8205A + 2 resistors, RT9080 for the
+    AP2112K, nine test pads (no part, no cost). At the same prices: -$0.43 / board at 10 (one feeder fee fewer),
+    -$0.13 at 100.
   * JLCPCB's FAQ says Economic PCBA above 30 pieces needs panelising; the panel fee ($8.21) is included
     in the 100-board column.
   * X-ray assumed for the LGA module only (U6).

@@ -2,8 +2,9 @@
 
 > **This branch replaces the V0.1 board's four relays with MOSFETs driving 12 V DC solenoid valves directly**
 > (DECISIONS D67–D78; a ULN2803A was tried first and dropped, D70). Eight valve outputs, D75. Phase 1 (schematic,
-> BOM, cost) and Phase 2 (layout, D79–D86) are done: the PCB, PCB-LAYOUT.pdf and `fabrication/` are the valve
-> board, laid out, routed and DRC clean (21 Nov 2026), **for review — not yet ordered or built**.
+> BOM, cost) and Phase 2 (layout, D79–D86) are done, and the power parts now match the LoRa board (D87–D90): the
+> PCB, PCB-LAYOUT.pdf and `fabrication/` are the valve board, laid out, routed and DRC clean (21 Nov 2026),
+> **for review — not yet ordered or built**.
 
 An ESP32 I/O board for irrigation and similar field control: eight 12 V DC valve outputs, RS485 (Modbus), I2C sensors,
 two spare GPIOs, and power from 12 V, USB or a single LiPo cell. Designed Oct 2026 for assembly by JLCPCB.
@@ -27,13 +28,17 @@ This folder is for review: comments and suggested changes welcome — see "Point
 - 12 V input: 3 A resettable fuse, reverse-polarity protection (5 A Schottky), 15 V TVS, then a 5 V buck (AP63205). USB 5 V and the
   buck output are diode-ORed onto the 5 V rail, so either or both can be connected.
 - The 5 V rail charges the cell (TP4056; 250 mA, or 500 mA with a solder jumper). The cell has its own
-  protection (DW01A + FS8205A: over-charge, over-discharge, over-current/short).
+  protection (XB5353A, one chip with its MOSFETs inside: over-charge 4.30 V, over-discharge 2.4 V,
+  3 A over-current/short), as on the LoRa board.
 - Load sharing: when 5 V is present it powers the board and the charger only charges; when 5 V goes away a
-  P-FET switches the cell in. Either source then feeds a 3.3 V LDO (AP2112K, 600 mA) for the module.
+  P-FET switches the cell in. Either source then feeds a 3.3 V LDO (RT9080, 600 mA, 2 µA quiescent) for the
+  module.
 - Two switched rails turned on together by one GPIO: **3V3_SW** (sensors, I2C, RS485) and **5V_SW** (RS485
   sensor supply). Both off at reset. 5V_SW only exists when 12 V or USB is present, not on battery alone.
 - Monitoring: the 12 V input and the cell voltage are each read on an ADC pin.
 - The valves run from 12 V, so **valves work only when 12 V is connected**.
+- Test pads TP1–TP9 on every supply rail (+12V, +5V, VBUS, VBAT, VSYS, +3V3, +3V3_SW, +5V_SW) and GND, each
+  labelled on the silkscreen with its rail, for a meter probe or a soldered wire.
 
 ## Processor
 
@@ -82,7 +87,7 @@ Items that are deliberately "proposed" rather than final — opinions especially
 
 ## Cost (JLCPCB, Nov 2026)
 
-About **$21.47 per board for 10**, **$12.20 per board for 100**, assembled, before shipping, with all eight
+About **$21.04 per board for 10**, **$12.07 per board for 100**, assembled, before shipping, with all eight
 valve channels fitted and the input fuse (JLCPCB prices of 21 Nov 2026; the four-relay design is $22.04 / $12.63).
 The bare PCB for the 100 × 62 mm board is estimated from the 100 × 80 mm quote, not yet re-quoted (D86): the
 smaller board saves nothing at 10 and about $0.13 per board at 100.
@@ -97,7 +102,7 @@ Breakdown in COST-ESTIMATE.txt; the ESP32 module is the largest single item.
 | `PCB-LAYOUT.pdf` | 3D views and both copper layers |
 | `BOM.csv` | Bill of materials with LCSC (JLCPCB) part numbers |
 | `COST-ESTIMATE.txt` | JLCPCB cost for 10 and 100 boards |
-| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D86) |
+| `DECISIONS.md` | Every design decision, why, and what would reopen it (D1–D90) |
 | `esp32_io_board/` | KiCad 10 project (schematic, PCB, project libraries) |
 | `fabrication/` | Files to order from JLCPCB — see its README |
 | `firmware/` | PlatformIO env for frugal-iot-irrigation + board variant (pins_arduino.h) |

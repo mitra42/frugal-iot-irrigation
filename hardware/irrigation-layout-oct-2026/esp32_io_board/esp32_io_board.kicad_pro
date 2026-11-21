@@ -457,11 +457,7 @@
       },
       {
         "netclass": "PowerFine",
-        "pattern": "Net-(Q1A-D)"
-      },
-      {
-        "netclass": "PowerFine",
-        "pattern": "Net-(D7-K)"
+        "pattern": "VSYS"
       },
       {
         "netclass": "USB",

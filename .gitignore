@@ -31,3 +31,7 @@ ota-stage/
 .vscode/
 .DS_Store
 *.swp
+
+# Scratch output of the hardware scripts (netlists, DSN/SES routing rounds, compiled Route.class, renders).
+# Everything worth keeping is copied out of it into the board, fabrication/ or the PDFs.
+hardware/**/claude-tools/**/out/

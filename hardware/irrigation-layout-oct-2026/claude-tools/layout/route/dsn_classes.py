@@ -4,7 +4,7 @@ src, dst = sys.argv[1], sys.argv[2]
 s = open(src).read()
 # Sub-1 A rails at 0.4 mm. +5V, VBAT and the cell-protection path joined them on the 62 mm board (D83): at 0.6 mm
 # the router could not get between the TP4056 / FS8205A / AP2112 pins in the dense charger corner.
-FINE = ['+3V3', '+3V3_SW', '+5V_SW', 'VBUS', '+5V', 'VBAT', '/CELL_NEG', 'Net-(Q1A-D)', 'Net-(D7-K)']
+FINE = ['+3V3', '+3V3_SW', '+5V_SW', 'VBUS', '+5V', 'VBAT', '/CELL_NEG', 'VSYS']
 if '(class PowerFine ' in s:    # KiCad already exported it from the project's net classes (netclasses.py)
     FINE = []
 i = s.index('(class Power '); j = s.index('(circuit', i)

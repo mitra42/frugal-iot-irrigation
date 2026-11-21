@@ -6,6 +6,11 @@ P = []
 def part(prefix, lib, value, fp, nets, block, dnp=False, lcsc='', mpn='', rot=None, note=''):
     P.append(dict(prefix=prefix, lib=lib, value=value, fp=fp, nets=nets, block=block,
                   dnp=dnp, lcsc=lcsc, mpn=mpn, rot=rot, note=note))
+def GAP(prefix):
+    """A reference number that belonged to a removed part. References are numbered in this file's order, so
+    removing a part would renumber everything after it - including the valve channels that place.py and
+    valve_route.py name, and the unnamed nets KiCad names after them (Net-(D10-A)). Kept as a gap instead."""
+    P.append(dict(prefix=prefix, gap=True))
 
 R06 = 'Resistor_SMD:R_0603_1608Metric'; C06 = 'Capacitor_SMD:C_0603_1608Metric'
 C12 = 'Capacitor_SMD:C_1206_3216Metric'; LED06 = 'LED_SMD:LED_0603_1608Metric'; LED08 = 'LED_SMD:LED_0805_2012Metric'
@@ -90,12 +95,15 @@ R('1k', '+5V', 'LED_CHRG', B); LED('RED', 'LED_CHRG', 'nCHRG', B)
 R('1k', '+5V', 'LED_STDBY', B); LED('GREEN', 'LED_STDBY', 'nSTDBY', B)
 part('J', 'Connector:Conn_01x02_Pin', 'LiPo', 'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal',
      {'2': 'VBAT', '1': 'CELL_NEG'}, B, lcsc='C157932', mpn='S2B-PH-K-S')
-part('U', 'Battery_Management:DW01A', 'DW01A', 'Package_TO_SOT_SMD:SOT-23-6',
-     {'1': 'DW_OD', '2': 'DW_CS', '3': 'DW_OC', '4': 'NC', '5': 'DW_VCC', '6': 'CELL_NEG'}, B, lcsc='C351410')
-R('100R', 'VBAT', 'DW_VCC', B); C('100nF', 'DW_VCC', 'CELL_NEG', B)
-R('1k', 'DW_CS', 'GND', B)
-part('Q', 'irrigation:FS8205A', 'FS8205A', 'Package_TO_SOT_SMD:SOT-23-6',
-     {'6': 'DW_OD', '1': 'CELL_NEG', '4': 'DW_OC', '3': 'GND', '2': 'PROT_D', '5': 'PROT_D'}, B, lcsc='C908265')
+# XB5353A (D65, D87): one-chip protection with its MOSFETs inside, as frugal-iot-hw-lora. Replaced DW01A + FS8205A
+# (+ R14 100R, R15 1k): one Extended part instead of two, two fewer parts. Pins per datasheet (C80628): 1 VT (test,
+# open), 2 GND = cell -, 3 VDD = cell +, 4/5 VM = pack - = board GND. 4.30 / 2.4 V, 3 A discharge over-current.
+part('U', 'irrigation:XB5353A', 'XB5353A', 'Package_TO_SOT_SMD:SOT-23-5',
+     {'1': 'NC', '2': 'CELL_NEG', '3': 'VBAT', '4': 'GND', '5': 'GND'}, B, lcsc='C80628', mpn='XB5353A')
+GAP('R')                                   # R14 was the DW01A's 100R supply resistor
+C('100nF', 'VBAT', 'CELL_NEG', B)          # C10, at the XB5353A's VDD
+GAP('R')                                   # R15 was the DW01A's 1k current-sense resistor
+GAP('Q')                                   # Q1 was the FS8205A
 
 # ---------------- System power ----------------
 B = 'pwr'
@@ -103,8 +111,10 @@ SCH('+5V', 'VSYS', B)
 PFET('+5V', 'VSYS', 'VBAT', B)
 R('100k', '+5V', 'GND', B)
 C('10uF', 'VSYS', 'GND', B)
-part('U', 'Regulator_Linear:AP2112K-3.3', 'AP2112K-3.3', 'Package_TO_SOT_SMD:SOT-23-5',
-     {'1': 'VSYS', '3': 'VSYS', '2': 'GND', '4': 'NC', '5': '+3V3'}, B, lcsc='C51118')
+# RT9080-33GJ5 (D88), as frugal-iot-hw-lora's L18: 2 uA quiescent (AP2112K: 55 uA), 600 mA, same pins
+# (1 VIN, 2 GND, 3 EN, 4 NC, 5 VOUT). KiCad has no RT9080 symbol; the XC6220B331MR's is the same pinout.
+part('U', 'Regulator_Linear:XC6220B331MR', 'RT9080-33GJ5', 'Package_TO_SOT_SMD:TSOT-23-5',
+     {'1': 'VSYS', '3': 'VSYS', '2': 'GND', '4': 'NC', '5': '+3V3'}, B, lcsc='C841192', mpn='RT9080-33GJ5')
 C('10uF', '+3V3', 'GND', B); C('100nF', '+3V3', 'GND', B)
 R('1M', 'VBAT', 'VBAT_SENSE', B); R('1M', 'VBAT_SENSE', 'GND', B); C('100nF', 'VBAT_SENSE', 'GND', B)
 PFET('G_3V3SW', '+3V3', '+3V3_SW', B); R('100k', '+3V3', 'G_3V3SW', B); NFET('RAIL_EN', 'GND', 'G_3V3SW', B)
@@ -112,6 +122,11 @@ C('1uF', '+3V3_SW', 'GND', B)
 PFET('G_5VSW', '+5V', '+5V_SW', B); R('100k', '+5V', 'G_5VSW', B); NFET('RAIL_EN', 'GND', 'G_5VSW', B)
 C('10uF', '+5V_SW', 'GND', B)
 R('100k', 'RAIL_EN', 'GND', B, note='rails off at reset')
+# Test points on every supply rail (D89), as frugal-iot-hw-lora's L20: bare 1.5 mm pads, no LCSC part, so not in
+# the JLCPCB BOM or pick-and-place. The value is the rail, which the silkscreen shows instead of the reference.
+TP_RAILS = ('+12V', '+5V', 'VBUS', 'VBAT', 'VSYS', '+3V3', '+3V3_SW', '+5V_SW', 'GND')
+for net in TP_RAILS:
+    part('TP', 'Connector:TestPoint', net, 'TestPoint:TestPoint_Pad_D1.5mm', {'1': net}, B)
 
 # ---------------- MCU ----------------
 B = 'mcu'

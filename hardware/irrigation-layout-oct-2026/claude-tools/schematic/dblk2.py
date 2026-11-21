@@ -1,5 +1,6 @@
 """Blocks 3-4: charger + protection; system power."""
 import dbase as B
+import circuit
 from dbase import tag as dbtag, pwr_pin, put, put_pin, pin, port, drop, term, hang, rise, series, diode_r, at
 
 def charger(x, y):
@@ -59,46 +60,30 @@ def charger(x, y):
         S.wire(s1, at(s1, 7.62), pin('J3', '1'))
         dbtag('CHG_TEMP', at(s1, 7.62), up=False, length=5.08)
         pwr_pin('J3', '2', 'GND')
-        # ---- protection: DW01A + FS8205A in the cell's negative lead ----
+        # ---- protection: XB5353A in the cell's negative lead (D87), drawn as frugal-iot-hw-lora's ----
         px, py = x + 10.16, y + 50.8
         put('U4', px, py)
-        vc = pin('U4', '5')
-        n = at(vc, -5.08)
-        S.wire(vc, n)
-        series('R14', at(n, -17.78)); S.wire(pin('R14', '2'), at(n, -5.08), n)
-        S.wire(at(n, -5.08), at(n, -5.08, -5.08)); S.power('PWR_FLAG', n[0] - 5.08, n[1] - 5.08)
-        term('R14', '1', 'VBAT')
-        cb = hang('C10', n)
-        g = pin('U4', '6')
-        jn = (g[0] - 2.54, cb[1] + 2.54)
-        S.wire(g, at(g, -2.54), jn); S.wire(cb, (cb[0], jn[1]), jn)
-        S.wire((cb[0], jn[1]), (cb[0] - 5.08, jn[1])); S.label('CELL_NEG', cb[0] - 5.08, jn[1], angle=180)
-        S.wire(jn, at(jn, 0, 5.08)); S.power('PWR_FLAG', jn[0], jn[1] + 5.08, rot=180)
-        cs = pin('U4', '2')
-        e = series('R15', at(cs, 2.54)); S.wire(cs, at(cs, 2.54)); term('R15', '2', 'GND')
-        S.nc('U4', '4')
-        # FS8205A: two N-MOSFETs back to back, drains common. A switches discharge (OD),
-        # B switches charge (OC); the cell's negative lead runs S1 -> D -> D -> S2 -> GND.
-        od, oc = pin('U4', '1'), pin('U4', '3')
-        ym = od[1] + 5.08
-        fy = ym + 10.16
-        put('Q1', px - 10.16, fy, rot=270, unit=1)
-        put('Q1', px + 10.16, fy, rot=270, mirror='y', unit=2)
-        ga, gb = pin('Q1', '6'), pin('Q1', '4')
-        assert abs(ga[0] - (px - 10.16)) < 1e-6 and ga[1] < fy, ga
-        S.wire(od, (od[0], ym), (ga[0], ym), ga)
-        S.wire(oc, (oc[0], ym), (gb[0], ym), gb)
-        da, db = pin('Q1', '2'), pin('Q1', '5')
-        S.wire(da, db)
-        sa, sb = pin('Q1', '1'), pin('Q1', '3')
-        S.wire(sa, at(sa, -5.08)); S.label('CELL_NEG', sa[0] - 5.08, sa[1], angle=180)
-        e = at(sb, 5.08); S.wire(sb, e, at(e, 0, 2.54)); port('GND', *at(e, 0, 2.54))
+        vdd = pin('U4', '3')
+        n = at(vdd, -5.08)
+        S.wire(vdd, n, at(n, 0, -5.08)); port('VBAT', *at(n, 0, -5.08))
+        c = at(n, -10.16)
+        S.wire(n, c)
+        cb = hang('C10', c)
+        S.wire(cb, at(cb, 0, 2.54)); S.label('CELL_NEG', cb[0], cb[1] + 2.54, angle=270)
+        g = pin('U4', '2')
+        S.wire(g, at(g, -2.54), at(g, -2.54, 5.08)); S.label('CELL_NEG', g[0] - 2.54, g[1] + 5.08, angle=270)
+        p4, p5 = pin('U4', '4'), pin('U4', '5')
+        e4, e5 = at(p4, 5.08), at(p5, 5.08)
+        S.wire(p4, e4); S.wire(p5, e5); S.wire(e4, e5)
+        S.wire(e5, at(e5, 0, 2.54)); port('GND', *at(e5, 0, 2.54))
+        S.nc('U4', '1')
         S.note("PROG: I = 1200 / R. 4.7k = 255 mA; bridge JP1 (2.35k) = 510 mA (D12).\n"
                "TEMP: JP2 bridged disables the NTC input. For a cell NTC, cut JP2 and fit\n"
                "R11 + J3 with values from the TP4056 datasheet (D27).\n"
                "J4 (JST-PH): pin 1 = cell -, pin 2 = cell +. JST-PH polarity is not standardised:\n"
                "check each cell before connecting (D28).\n"
-               "Protection (DW01A + FS8205A) sits in the cell's negative lead: board GND is the pack's P-.",
+               "XB5353A (D87) sits in the cell's negative lead: board GND is the pack's P-.\n"
+               "Trips at 4.30 V / 2.4 V, 3 A discharge; C10 at its VDD pin.",
                x - 45.72, y - 27.94, 1.0)
     return
 
@@ -120,7 +105,9 @@ def syspwr(x, y):
         S.wire(a, gn, gp)
         hang('R16', gn, 'GND')
         hang('C11', (xs[1], ry), 'GND')
-        S.wire((xs[1], ry), at((xs[1], ry), 0, -2.54)); S.power('PWR_FLAG', xs[1], ry - 2.54)
+        # the rail is named VSYS (it was an unnamed Net-(D7-K) until its test point needed the name, D89)
+        drop('VSYS', (xs[1], ry), 2.54)
+        S.wire((xs[2], ry), at((xs[2], ry), 0, -2.54)); S.power('PWR_FLAG', xs[2], ry - 2.54)
         # LDO
         put_pin('U5', '1', (xs[2] + 7.62, ry))
         S.wire((xs[2], ry), pin('U5', '1'))
@@ -166,8 +153,16 @@ def syspwr(x, y):
                 S.wire(r, at(r, -2.54)); S.label('RAIL_EN', r[0] - 2.54, r[1], angle=180)
             else:
                 term(qn, '1', 'RAIL_EN', 5.08)
+        # test points (D89): one pad per supply rail, plus GND for the probe's ground
+        for i, net in enumerate(circuit.TP_RAILS):
+            ref = f'TP{i + 1}'
+            assert B.PARTS[ref]['value'] == net, ref
+            put_pin(ref, '1', (x + 12.7 * (i % 5), y + 88.9 + 20.32 * (i // 5)), rot=0 if net == 'GND' else 180)
+            term(ref, '1', net, 2.54)
         S.note("D7 + Q2: with 5 V present VSYS comes through D7 and Q2 is off;\n"
                "without it Q2 turns on and the cell feeds VSYS. The charger never carries the load.\n"
                "VBAT_SENSE = VBAT / 2 (1M/1M, ~2 uA). RAIL_EN low (default, R21) = both rails off.\n"
-               "+5V_SW only exists while USB or 12 V is present (no boost from the cell).",
+               "+5V_SW only exists while USB or 12 V is present (no boost from the cell).\n"
+               "U5 RT9080 (D88): 600 mA, 2 uA quiescent.\n"
+               "TP1-TP9: probe pads on every supply rail and GND (D89); the silkscreen names the rail.",
                x - 5.08, y + 66.04, 1.0)

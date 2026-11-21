@@ -14,6 +14,7 @@ _cnt = {}
 for p in circuit.P:
     _cnt[p['prefix']] = _cnt.get(p['prefix'], 0) + 1
     ref = f"{p['prefix']}{_cnt[p['prefix']]}"
+    if p.get('gap'): continue          # a removed part's number, kept so later references do not shift
     props = {'Footprint': p['fp'], 'MPN': p['mpn'] or p['value']}
     if p['lcsc']: props['LCSC'] = p['lcsc']
     if p['note']: props['Note'] = p['note']

@@ -1,4 +1,4 @@
-"""Write esp32_io_board/irrigation.kicad_sym: custom rail power symbols + module + FS8205A."""
+"""Write esp32_io_board/irrigation.kicad_sym: custom rail power symbols + module + XB5353A."""
 import os, re, sys, copy
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sexp import dumps, Str
@@ -29,25 +29,17 @@ def plain(sym, name):
     return '\t' + dumps(s, 1)
 mod, _ = customsyms.module_symbol()
 blocks.append(plain(mod, 'ESP32-C3-C6-MINI-1U'))
-# FS8205A as a 2-unit part, each unit a standard N-MOSFET (graphics from KiCad's 2N7002)
-from libload import flat_symbol
-from customsyms import _prop, _pin
-nm = flat_symbol('Transistor_FET', '2N7002')
-gfx = [c for c in nm if isinstance(c, list) and c and c[0] == 'symbol' and str(c[1]).endswith('_0_1')][0]
-gfx = copy.deepcopy(gfx); gfx[1] = Str('FS8205A_0_1')
-def unit(n, g, s, d):
-    return ['symbol', Str(f'FS8205A_{n}_1'),
-            _pin(g, 'G', 'input', -5.08, 0, 0), _pin(s, 'S', 'passive', 2.54, -5.08, 90),
-            _pin(d, 'D', 'passive', 2.54, 5.08, 270)]
-fs = ['symbol', Str('FS8205A'), ['pin_numbers', ['hide', 'yes']], ['pin_names', ['hide', 'yes']],
-      ['exclude_from_sim', 'no'], ['in_bom', 'yes'], ['on_board', 'yes'], ['in_pos_files', 'yes'],
-      ['duplicate_pin_numbers_are_jumpers', 'no'],
-      _prop('Reference', 'Q', 5.08, 1.27), _prop('Value', 'FS8205A', 5.08, -1.27),
-      _prop('Footprint', 'Package_TO_SOT_SMD:SOT-23-6', 0, 0, True),
-      _prop('Datasheet', '~', 0, 0, True),
-      _prop('Description', 'Dual N-MOSFET SOT-23-6 (Fuxinsemi), common drain pins 2+5, for 1-cell Li-ion protection with DW01A. Unit A: G1=6 S1=1, unit B: G2=4 S2=3', 0, 0, True),
-      gfx, unit(1, '6', '1', '2'), unit(2, '4', '3', '5')]
-blocks.append('\t' + dumps(fs, 1))
+# XB5353A (XySemi, C80628): one-cell Li-ion protection with integrated MOSFETs, SOT-23-5 (D87). Same symbol as
+# frugal-iot-hw-lora. Pins per datasheet: 1 VT (test, leave open), 2 GND (cell -), 3 VDD (cell +), 4/5 VM (pack -).
+# It replaced DW01A + FS8205A; the FS8205A's two-unit symbol (D36) went with it.
+from customsyms import _prop, _pin, _sym, _rect
+pins = [_pin('3', 'VDD', 'power_in', -7.62, 2.54, 0), _pin('2', 'GND', 'passive', -7.62, -2.54, 0),
+        _pin('4', 'VM', 'passive', 7.62, 2.54, 180), _pin('5', 'VM', 'passive', 7.62, -2.54, 180),
+        _pin('1', 'VT', 'passive', 2.54, 7.62, 270)]
+props = [_prop('Reference', 'U', 0, 7.62 + 1.27), _prop('Value', 'XB5353A', 0, -6.35),
+         _prop('Footprint', 'Package_TO_SOT_SMD:SOT-23-5', 0, 0, True), _prop('Datasheet', '~', 0, 0, True),
+         _prop('Description', 'XySemi XB5353A one-cell Li-ion protection IC with integrated MOSFETs (3 A discharge OC, 4.30/2.4 V), SOT-23-5', 0, 0, True)]
+blocks.append('\t' + dumps(_sym('XB5353A', props, _rect(-5.08, -5.08, 5.08, 5.08), pins), 1))
 out = '(kicad_symbol_lib\n\t(version 20251024)\n\t(generator "kicad_symbol_editor")\n\t(generator_version "10.0")\n' + '\n'.join(blocks) + '\n)\n'
 open(OUT, 'w').write(out)
 print('wrote', OUT, len(out))
