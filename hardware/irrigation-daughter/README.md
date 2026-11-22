@@ -29,6 +29,8 @@ switches valves when the host tells it to over I2C.
 - **Valves:** eight channels, each a logic-level MOSFET switching the valve's low side, a flyback diode, and a red
   LED that shows when it is on. 12 V DC solenoid valves, ~2 A each, ~3 A in total. Not latching valves, not
   24 V AC valves. Channels 5–8 can be left unfitted.
+- **I2C pull-ups:** R19/R20, 4.7k to 3V3, fitted - an S2 Mini host has none of its own. With a sensor or LoRa
+  host they sit in parallel with the host's, which is fine (D12).
 - **OLED:** J3, a 4-pin header for a 128×64 SSD1306 module (GND, VCC, SCL, SDA), on the same I2C bus.
 - **Not here:** RS485 soil probes stay on the host's RS485 terminal; how to power them (most need 5–30 V) is
   open until there is experimental evidence (D1).
@@ -38,7 +40,7 @@ and OLED connectors on the top.
 
 ## Cost (JLCPCB, Nov 2026)
 
-About **$8.20 per board for 10, $4.45 for 100**, assembled, before shipping. With a sensor board, $19.71 / $11.61
+About **$8.21 per board for 10, $4.46 for 100**, assembled, before shipping. With a sensor board, $19.72 / $11.62
 — slightly under the all-in-one irrigation board ($21.04 / $12.07). The bare PCB is estimated, not yet quoted.
 Breakdown in COST-ESTIMATE.txt; comparison in DECISIONS D7.
 

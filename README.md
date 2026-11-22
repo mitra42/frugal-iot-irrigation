@@ -100,8 +100,8 @@ socket. To the daughter board's J1: GND, SDA (GPIO16), SCL (GPIO18), 3V3, and th
 The daughter board's logic runs from the S2's 3V3, so it is always on. An RS485 module for the soil probes on
 GPIO33 (RX, from the module's RO) and GPIO35 (TX, to its DI). It must run from **3.3 V** and switch direction
 by itself: a module powered from 5 V puts 5 V on RO, which the S2 cannot take. The I2C pins are 16/18 rather
-than the S2's usual 33/35 so that none of these wires cross. The S2 Mini has no I2C pull-ups and nor has the
-daughter board: an SSD1306 OLED module's own do the job - without an OLED, fit 4.7k from SDA and from SCL to 3V3.
+than the S2's usual 33/35 so that none of these wires cross. The S2 Mini has no I2C pull-ups; the daughter board's
+4.7k pull-ups (R19/R20) are fitted for that reason.
 
 ![S2 Mini and the irrigation daughter board](docs/wiring_s2_daughter.png)
 

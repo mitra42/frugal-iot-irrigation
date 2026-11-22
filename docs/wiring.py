@@ -155,8 +155,7 @@ def s2_daughter():
     d.wire((gx, sb["GND"][1]), t["GND"], "ground", via=[f"x={t['GND'][0]}"])
     d.note(far + 40, t.box[1] + 40, "A, B to the probes,\nwhich need their own\n5-30 V supply", size=13)
     d.note(760, 440, "S2 Mini: SDA = GPIO16, SCL = GPIO18,\nV12 (the battery) on GPIO3.\n"
-           "The S2 has no I2C pull-ups: the OLED\nmodule's do the job - without an OLED,\n"
-           "fit 4.7k from SDA and SCL to 3V3.", size=13)
+           "The S2 has no I2C pull-ups: the\ndaughter board's R19/R20 provide them.", size=13)
     mppt, bat = power(d, 40, db["+12V"], db["GND_IN"], usb="right")
     # USB from the charger to the S2 Mini's USB-C, at the middle of its bottom edge
     ux, uy = SX + S2W * 0.465, SY + sb.box[3] - 8

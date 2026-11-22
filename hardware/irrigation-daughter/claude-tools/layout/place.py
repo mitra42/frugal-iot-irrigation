@@ -73,6 +73,9 @@ P['J3'] = (62.0, 2.6, 90)
 # under J1, where pinlabels.py writes the pin names.
 P['R1'] = (40.2, 3.2, 90)
 P['R2'] = (40.2, 6.8, 90)
+# I2C pull-ups (D12) beside them, between J1 and J3 where SDA, SCL and 3V3_SW already run along the top
+P['R19'] = (45.0, 3.0, 90)
+P['R20'] = (47.5, 3.0, 90)
 # TCA9534 centred above the valve row: P0-P3 (pins 4-7) on its left face channels 1-4, P4-P7 (pins 9-12) 5-8.
 P['U1'] = (W / 2, BAND_TOP - 5.0, 0)
 import os

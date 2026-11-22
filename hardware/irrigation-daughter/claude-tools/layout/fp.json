@@ -1327,6 +1327,50 @@
 },
 "tht": false
 },
+"R19": {
+"fp": "Resistor_SMD:R_0603_1608Metric",
+"value": "4.7k",
+"dnp": false,
+"bbox": [
+-1.525,
+-0.775,
+1.525,
+0.775
+],
+"pads": {
+"1": [
+-0.825,
+0.0
+],
+"2": [
+0.825,
+0.0
+]
+},
+"tht": false
+},
+"R20": {
+"fp": "Resistor_SMD:R_0603_1608Metric",
+"value": "4.7k",
+"dnp": false,
+"bbox": [
+-1.525,
+-0.775,
+1.525,
+0.775
+],
+"pads": {
+"1": [
+-0.825,
+0.0
+],
+"2": [
+0.825,
+0.0
+]
+},
+"tht": false
+},
 "U1": {
 "fp": "Package_SO:TSSOP-16_4.4x5mm_P0.65mm",
 "value": "TCA9534PWR",

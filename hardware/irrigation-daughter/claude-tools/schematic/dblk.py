@@ -17,9 +17,13 @@ def host(x, y):
         term('J3', '4', 'I2C_SDA', 5.08); term('J3', '3', 'I2C_SCL', 5.08)
         pwr_pin('J3', '1', 'GND', 2.54, 2.54)
         p2 = pin('J3', '2'); a2 = at(p2, side('J3', '2') * 10.16); S.wire(p2, a2, at(a2, 0, 7.62)); port('+3V3_SW', *at(a2, 0, 7.62), up=False)
+        # I2C pull-ups (D12), hanging from a short 3V3_SW rail between J1 and the OLED header
+        t = (x + 60.96, y - 7.62); t2 = at(t, 12.7)
+        S.wire(t, t2); port('+3V3_SW', *t)
+        hang('R19', t, 'I2C_SDA'); hang('R20', t2, 'I2C_SCL')
         S.note("J1 -> host J2 by a 5-wire cable: GND, SDA, SCL, 3V3_SW to host J2.1-4, V12 to host J2.9\n"
                "(SENS2, analog; the host's 100 nF filter is fitted). On the board J1 reads in that order (D2, D4).\n"
-               "No I2C pull-ups here: the host's 4.7k on 3V3_SW are the bus's only ones.\n"
+               "R19/R20 4.7k pull-ups are fitted: an S2 Mini host has none. Remove them on a host that has (D12).\n"
                "Everything on this board's logic side is powered from the host's 3V3_SW (D3).",
                x - 5.08, y + 22.86, 1.0)
 

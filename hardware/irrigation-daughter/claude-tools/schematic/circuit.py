@@ -38,7 +38,7 @@ B = 'host'
 # SCL, 3V3_SW, V12 - the host's J2 pins 1, 2, 3, 4, 9 read top to bottom - so with the two boards side by side a
 # cable runs straight without twisting. That puts GND on the terminal's pin 5 and V12 on pin 1: the footprint faces
 # the edge, which makes its pin 1 the rightmost. V12_SENSE goes to host J2.9 (SENS2, analog, 100 nF fitted there).
-# XY308, the part the hosts use, so it rides on their volume. No I2C pull-ups here: the host has 4.7k on 3V3_SW.
+# XY308, the part the hosts use, so it rides on their volume. I2C pull-ups are R19/R20, at the end of this file.
 part('J', 'Connector:Screw_Terminal_01x05', 'HOST', TB254.format(n=5),
      {'5': 'GND', '4': 'I2C_SDA', '3': 'I2C_SCL', '2': '+3V3_SW', '1': 'V12_SENSE'}, B, lcsc='C915914', mpn='XY308-2.54-5P')
 # ---------------- 12 V input ----------------
@@ -79,3 +79,12 @@ for i in range(1, 9):
     R('4.7k', '+12V', f'LED_V{i}', B); LED('RED', f'LED_V{i}', f'VALVE{i}', B)
     part('J', 'Connector:Screw_Terminal_01x02', f'Valve {i}', TB508, {'1': '+12V', '2': f'VALVE{i}'}, B,
          lcsc='C474952', mpn='KF128-5.08-2P')
+
+# ---------------- I2C pull-ups ----------------
+B = 'host'
+# 4.7k from SDA and SCL to 3V3_SW, FITTED (D12). The sensor and LoRa boards already have 4.7k, a Lolin S2 Mini has
+# none, and an OLED module's own pull-ups are there only when an OLED is - which most installations will not have.
+# Fitted because removing a 0603 from a host that has its own is easier than adding one; with both fitted the bus
+# sees ~2.35k, ~1.4 mA at 3.3 V, well inside the 3 mA I2C allows. Last in this file so no other reference moves.
+R('4.7k', '+3V3_SW', 'I2C_SDA', B, note='I2C pull-up; remove if the host has its own')
+R('4.7k', '+3V3_SW', 'I2C_SCL', B, note='I2C pull-up; remove if the host has its own')

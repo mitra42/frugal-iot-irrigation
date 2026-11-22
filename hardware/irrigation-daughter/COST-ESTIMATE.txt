@@ -21,33 +21,33 @@ J3                         PZ254V-11-04P          C492403    Ext        1     11
 Q1-Q8                      AO3400A                C20917     Basic      8     84    5.29     804   38.19
 R1                         560k                   C23203     PrefExt    1     20    0.03     110    0.17
 R2,R3,R5,R7,R9,R11,R13,R15 100k                   C25803     Basic      9    100    0.29     910    2.64
-R4,R6,R8,R10,R12,R14,R16,R 4.7k                   C23162     Basic      8     90    0.25     810    2.27
+R4,R6,R8,R10,R12,R14,R16,R 4.7k                   C23162     Basic     10    110    0.31    1010    2.22
 U1                         TCA9534PWR             C783615    Ext        1     10    7.61     100   59.07
 
-Per board: 118 SMT joints, 27 through-hole joints, 15 part numbers (5 Extended with fee).
+Per board: 122 SMT joints, 27 through-hole joints, 15 part numbers (5 Extended with fee).
 
                                              10 Economic 100 Economic, panelised
 Setup + stencil + confirm                         $10.16                  $18.37
-SMT joints                                         $1.89                  $18.88
+SMT joints                                         $1.95                  $19.52
 Through-hole joints (manual)                       $8.01                  $47.86
 Feeder loading                                    $15.35                  $15.35
 X-ray (module)                                     $0.00                   $0.00
 Fixture + packing                                  $0.00                   $0.00
-Components                                        $41.56                 $303.29
+Components                                        $41.62                 $303.24
 Bare PCB (see notes)                               $5.00                  $41.54
-TOTAL (excl. shipping)                            $81.97                 $445.29
-Per board                                          $8.20                   $4.45
+TOTAL (excl. shipping)                            $82.09                 $445.88
+Per board                                          $8.21                   $4.46
 
 Same, per board:
 Setup + stencil + confirm                          $1.02                   $0.18
-SMT joints                                         $0.19                   $0.19
+SMT joints                                         $0.20                   $0.20
 Through-hole joints (manual)                       $0.80                   $0.48
 Feeder loading                                     $1.53                   $0.15
 X-ray (module)                                     $0.00                   $0.00
 Fixture + packing                                  $0.00                   $0.00
 Components                                         $4.16                   $3.03
 Bare PCB (see notes)                               $0.50                   $0.42
-Per board                                          $8.20                   $4.45
+Per board                                          $8.21                   $4.46
 
 Notes:
   * Bare PCB (100 x 42 mm) ESTIMATED from the irrigation board's quote, not quoted: A$7.18 / 10 (JLCPCB's

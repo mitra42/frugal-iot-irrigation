@@ -9,8 +9,10 @@ Board: 100 × 42 mm, 2 layers, 1.6 mm FR-4, 1 oz copper, 4 × M3 corner holes. M
 | `BOM_JLCPCB.csv` | PCB Assembly — BOM (columns: Comment, Designator, Footprint, LCSC Part #) |
 | `CPL_JLCPCB.csv` | PCB Assembly — CPL / pick-and-place (Designator, Mid X, Mid Y, Layer, Rotation) |
 
-59 placed parts, all with LCSC numbers. To leave valve channels 5–8 off, delete their rows (Q5–Q8, R11–R18,
-D11–D18, J8–J11) from both files.
+61 placed parts, all with LCSC numbers. To leave valve channels 5–8 off, delete their rows (Q5–Q8, R11–R18,
+D11–D18, J8–J11) from both files. R19/R20 are the 4.7k I2C pull-ups (DECISIONS D12): fitted, because an S2 Mini
+host has none; to leave them off for a sensor or LoRa host, delete them likewise - no need, though, as both fitted
+is fine.
 
 **Before paying, check part rotations in JLCPCB's assembly preview.** KiCad and JLCPCB disagree on the zero
 rotation of some packages (commonly SOT-23, TSSOP, the SMA diodes and the terminals); fix any that are turned,
