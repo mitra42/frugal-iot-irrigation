@@ -49,7 +49,7 @@ Breakdown in COST-ESTIMATE.txt; comparison in DECISIONS D7.
 1. The MPPT controller's USB ground must be the battery negative (D9) — check before wiring.
 2. Firmware: the irrigation app needs a build for each host board (D10).
 3. One I2C address (0x20): two add-ons on one host would need address jumpers (D3).
-4. Before ordering: check part rotations in JLCPCB's assembly preview (fabrication/README.md).
+4. Before ordering: follow *How to order from JLCPCB* in `fabrication/README.md`, including checking part rotations in the assembly preview.
 
 ## What's in this folder
 
